@@ -49,11 +49,8 @@ A comprehensive, high-performance Point of Sale (POS) system built with **C#**, 
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
----
 
-## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 ---
 
