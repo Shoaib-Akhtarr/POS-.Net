@@ -1,0 +1,132 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:s="clr-namespace:System;assembly=mscorlib">
+
+    <!-- Global / Sidebar -->
+    <s:String x:Key="Lang_Overview">جائزہ</s:String>
+    <s:String x:Key="Lang_Sale">فروخت</s:String>
+    <s:String x:Key="Lang_Products">مصنوعات</s:String>
+    <s:String x:Key="Lang_Purchases">خریداری</s:String>
+    <s:String x:Key="Lang_Customers">گاہک</s:String>
+    <s:String x:Key="Lang_Records">ریکارڈز</s:String>
+    <s:String x:Key="Lang_MyProfile">پروفائل</s:String>
+
+    <!-- Purchases -->
+    <s:String x:Key="Lang_InventoryRestock">اسٹاک میں اضافہ</s:String>
+    <s:String x:Key="Lang_NewArrival">نیا سامان</s:String>
+    <s:String x:Key="Lang_RestockExisting">پرانا سامان</s:String>
+    <s:String x:Key="Lang_SupplierName">سپلائر کا نام</s:String>
+    <s:String x:Key="Lang_ProductSearch">سامان کی تلاش / نام</s:String>
+    <s:String x:Key="Lang_UnitCost">قیمت خرید (روپے)</s:String>
+    <s:String x:Key="Lang_FutureSellingPrice">قیمت فروخت (روپے)</s:String>
+    <s:String x:Key="Lang_RecordRestock">اسٹاک محفوظ کریں</s:String>
+    <s:String x:Key="Lang_ItemName">نام</s:String>
+    <s:String x:Key="Lang_TOTAL_AMOUNT">کل رقم</s:String>
+    <s:String x:Key="Lang_TotalSales">کل فروخت</s:String>
+    <s:String x:Key="Lang_StockItems">کل اسٹاک</s:String>
+    <s:String x:Key="Lang_PendingDues">باقی ادائیگی</s:String>
+    <s:String x:Key="Lang_RecentTransactions">حالیہ لین دین</s:String>
+    <s:String x:Key="Lang_LowStock">اسٹاک الرٹ</s:String>
+    <s:String x:Key="Lang_PerformanceOverview">کاروباری صورتحال</s:String>
+    <s:String x:Key="Lang_Last7Days">پچھلے 7 دنوں کی فروخت</s:String>
+    <s:String x:Key="Lang_SaleRevenue">کل آمدنی</s:String>
+    <s:String x:Key="Lang_ProfitWeek">اس ہفتے کا منافع</s:String>
+    <s:String x:Key="Lang_PurchaseWeek">اس ہفتے کی کل خریداری</s:String>
+    <s:String x:Key="Lang_LowStockSub">کم اسٹاک</s:String>
+    <s:String x:Key="Lang_ViewItems">تفصیل دیکھیں ←</s:String>
+    <s:String x:Key="Lang_TotalAlerts">کل الرٹس</s:String>
+    <s:String x:Key="Lang_Critical">انتہائی کم (&lt;10)</s:String>
+    <s:String x:Key="Lang_LowestUnits">کم ترین اسٹاک</s:String>
+    <s:String x:Key="Lang_DismissedMessage">تمام الرٹس ختم کر دیے گئے</s:String>
+    <s:String x:Key="Lang_DismissedSub">آپ نے تمام ضروری اسٹاک کام مکمل کر لیے ہیں!</s:String>
+    <s:String x:Key="Lang_ReopenAlerts">دوبارہ لسٹ دیکھیں</s:String>
+    <s:String x:Key="Lang_DONE">مکمل</s:String>
+
+    <!-- Categories -->
+    <s:String x:Key="Lang_All">سب</s:String>
+    <s:String x:Key="Lang_Hardware">ہارڈ ویئر</s:String>
+    <s:String x:Key="Lang_Supplies">سپلائیز</s:String>
+    <s:String x:Key="Lang_Staff">سٹاف</s:String>
+
+    <!-- POS -->
+    <s:String x:Key="Lang_CustomerSearch">کسٹمر تلاش کریں</s:String>
+    <s:String x:Key="Lang_ProductSearch">پروڈکٹ تلاش کریں</s:String>
+    <s:String x:Key="Lang_CartList">فہرست اشیاء</s:String>
+    <s:String x:Key="Lang_Subtotal">رقم</s:String>
+    <s:String x:Key="Lang_Discount">رعایت</s:String>
+    <s:String x:Key="Lang_Total">کل رقم</s:String>
+    <s:String x:Key="Lang_Paid">وصول شدہ</s:String>
+    <s:String x:Key="Lang_PrevDues">سابقہ واجبات:</s:String>
+    <s:String x:Key="Lang_BillNow">موجودہ بل:</s:String>
+    <s:String x:Key="Lang_TotalWithOld">سابقہ بقایا کے ساتھ کل بل:</s:String>
+    <s:String x:Key="Lang_PayNow">رقم جو اب ادا کی گئی:</s:String>
+    <s:String x:Key="Lang_RemainingKhata">کھاتہ میں باقی رقم:</s:String>
+    <s:String x:Key="Lang_ProcessCheckout">انفارمیشن محفوظ کریں</s:String>
+    <s:String x:Key="Lang_StockCount">اسٹاک: </s:String>
+
+    <!-- Product / Purchase -->
+    <s:String x:Key="Lang_Inventory">اسٹاک مینجمنٹ</s:String>
+    <s:String x:Key="Lang_AddProduct">نئی پروڈکٹ</s:String>
+    <s:String x:Key="Lang_ProductName">پروڈکٹ کا نام</s:String>
+    <s:String x:Key="Lang_Category">کیٹگری</s:String>
+    <s:String x:Key="Lang_Stock">اسٹاک</s:String>
+    <s:String x:Key="Lang_Price">قیمت</s:String>
+    <s:String x:Key="Lang_CostPrice">خرید قیمت</s:String>
+    <s:String x:Key="Lang_SellingPrice">فروخت قیمت</s:String>
+    <s:String x:Key="Lang_Supplier">سپلائر</s:String>
+    <s:String x:Key="Lang_RecordPurchase">خریداری درج کریں</s:String>
+    <s:String x:Key="Lang_TotalProduct">کل مصنوعات</s:String>
+    <s:String x:Key="Lang_InventoryUnits">کل موجودہ اسٹاک</s:String>
+    <s:String x:Key="Lang_Actions">ایکشن</s:String>
+    <s:String x:Key="Lang_Edit">تبدیل کریں</s:String>
+    <s:String x:Key="Lang_Delete">ختم کریں</s:String>
+    <s:String x:Key="Lang_EditProduct">پروڈکٹ تبدیل کریں</s:String>
+    <s:String x:Key="Lang_SaveChanges">محفوظ کریں</s:String>
+    <s:String x:Key="Lang_Cancel">کینسل</s:String>
+
+    <!-- Customer -->
+    <s:String x:Key="Lang_CustomerDirectory">گاہک لسٹ</s:String>
+    <s:String x:Key="Lang_NewCustomer">نیا گاہک</s:String>
+    <s:String x:Key="Lang_TotalDues">کل واجبات</s:String>
+    <s:String x:Key="Lang_Payment">ادائیگی وصول کریں</s:String>
+    <s:String x:Key="Lang_Ledger">پرانا ریکارڈ</s:String>
+    <s:String x:Key="Lang_Phone">فون نمبر</s:String>
+    <s:String x:Key="Lang_InitialBalance">پہلے سے باقی رقم</s:String>
+    <s:String x:Key="Lang_Activity">تفصیل</s:String>
+    <s:String x:Key="Lang_Debit">باقی (نام)</s:String>
+    <s:String x:Key="Lang_Credit">وصولی (جمع)</s:String>
+    <s:String x:Key="Lang_RefID">شمار</s:String>
+    <s:String x:Key="Lang_Entries"> ریکارڈز</s:String>
+    <s:String x:Key="Lang_Confirm">کنفرم کریں</s:String>
+    <s:String x:Key="Lang_Save">محفوظ کریں</s:String>
+    <s:String x:Key="Lang_Activity_Sale">فروخت</s:String>
+    <s:String x:Key="Lang_Activity_Payment">وصولی</s:String>
+
+    <!-- Records -->
+    <s:String x:Key="Lang_BusinessRecords">کاروباری ریکارڈ</s:String>
+    <s:String x:Key="Lang_AllRecords">تمام ریکارڈ</s:String>
+    <s:String x:Key="Lang_Sales">فروخت کا ریکارڈ</s:String>
+    <s:String x:Key="Lang_Purchases">خریداری کا ریکارڈ</s:String>
+    <s:String x:Key="Lang_MasterLedger">کاروباری کھاتہ</s:String>
+    <s:String x:Key="Lang_DateTime">تاریخ اور وقت</s:String>
+    <s:String x:Key="Lang_Type">قسم</s:String>
+    <s:String x:Key="Lang_Reference">تفصیل</s:String>
+    <s:String x:Key="Lang_Entity">نام</s:String>
+    <s:String x:Key="Lang_RecordDetails">ریکارڈ کی تفصیل</s:String>
+    <s:String x:Key="Lang_Close">بند کریں</s:String>
+    <s:String x:Key="Lang_LogEnd">سسٹم ریکارڈ ڈاؤن</s:String>
+
+    <!-- Profile -->
+    <s:String x:Key="Lang_ProfileSettings">پروفائل سیٹینگز</s:String>
+    <s:String x:Key="Lang_Language">ایپ کی زبان</s:String>
+    <s:String x:Key="Lang_SelectLanguage">اپنی پسندیدہ زبان منتخب کریں</s:String>
+    <s:String x:Key="Lang_Theme">ڈسپلے تھیم</s:String>
+
+    <!-- Messages -->
+    <s:String x:Key="Msg_SaleSaved">سیل کامیابی سے محفوظ ہو گئی ہے!</s:String>
+    <s:String x:Key="Msg_Error">معذرت، کوئی خرابی پیش آ گئی ہے۔ دوبارہ کوشش کریں۔</s:String>
+    <s:String x:Key="Msg_ProductSaved">پراڈکٹ کامیابی سے محفوظ ہو گئی ہے۔</s:String>
+    <s:String x:Key="Msg_CustomerSaved">گاہک کا ریکارڈ کامیابی سے محفوظ ہو گیا ہے۔</s:String>
+    <s:String x:Key="Msg_PaymentProcessed">ادائیگی موصول ہو گئی اور کھاتہ اپ ڈیٹ کر دیا گیا ہے۔</s:String>
+    <s:String x:Key="Msg_RestockSaved">اسٹاک کامیابی سے اپ ڈیٹ ہو گیا ہے۔</s:String>
+</ResourceDictionary>

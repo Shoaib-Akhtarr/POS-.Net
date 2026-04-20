@@ -1,0 +1,252 @@
+<UserControl x:Class="POS.Views.RecordsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="800" d:DesignWidth="1200" Background="#F5F5F5">
+    
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Top Bar -->
+            <RowDefinition Height="24"/>   <!-- Spacer -->
+            <RowDefinition Height="*"/>      <!-- Table -->
+        </Grid.RowDefinitions>
+
+        <!-- TOP BAR: FILTERS & SEARCH -->
+        <Border Grid.Row="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="16" Padding="24">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/> <!-- Status Filters -->
+                    <ColumnDefinition Width="*"/>    <!-- Spacer -->
+                    <ColumnDefinition Width="350"/>  <!-- Search Box -->
+                </Grid.ColumnDefinitions>
+
+                <!-- Filter Chips -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <StackPanel.Resources>
+                        <Style TargetType="RadioButton">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="RadioButton">
+                                        <Border x:Name="border" Background="Transparent" Padding="20,10" CornerRadius="20" Margin="0,0,10,0">
+                                            <TextBlock x:Name="text" Text="{TemplateBinding Content}" FontWeight="Bold" Foreground="#555555" HorizontalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter Property="Background" Value="#111111" TargetName="border"/>
+                                                <Setter Property="Foreground" Value="White" TargetName="text"/>
+                                            </Trigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#F5F5F5" TargetName="border"/>
+                                            </Trigger>
+                                            <MultiTrigger>
+                                                <MultiTrigger.Conditions>
+                                                    <Condition Property="IsMouseOver" Value="True"/>
+                                                    <Condition Property="IsChecked" Value="True"/>
+                                                </MultiTrigger.Conditions>
+                                                <MultiTrigger.Setters>
+                                                    <Setter Property="Background" Value="#222222" TargetName="border"/>
+                                                </MultiTrigger.Setters>
+                                            </MultiTrigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </StackPanel.Resources>
+                    
+                    <RadioButton Content="ALL TRANSACTIONS" IsChecked="{Binding SelectedFilter, Converter={StaticResource EqualityConverter}, ConverterParameter='All'}"/>
+                    <RadioButton Content="SALES" IsChecked="{Binding SelectedFilter, Converter={StaticResource EqualityConverter}, ConverterParameter='Sales'}"/>
+                    <RadioButton Content="PURCHASES" IsChecked="{Binding SelectedFilter, Converter={StaticResource EqualityConverter}, ConverterParameter='Purchases'}"/>
+                </StackPanel>
+
+                <!-- Search Box -->
+                <Border Grid.Column="2" Background="#F9F9F9" CornerRadius="24" BorderBrush="#E0E0E0" BorderThickness="1" Padding="20,0">
+                    <Grid Height="48">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="🔍" VerticalAlignment="Center" Margin="0,0,12,0" Opacity="0.4" FontSize="16"/>
+                        <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
+                                 Background="Transparent" BorderThickness="0" VerticalAlignment="Center" 
+                                 FontSize="14" Foreground="#111111"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- MASTER LEDGER TABLE -->
+        <Border Grid.Row="2" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="16" Padding="24">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="MASTER TRANSACTION LEDGER" FontSize="12" FontWeight="Black" Foreground="#111111" FontStyle="Italic" Margin="0,0,0,25"/>
+
+                <DataGrid Grid.Row="1" ItemsSource="{Binding FilteredRecords}" SelectedItem="{Binding SelectedRecord}" 
+                          AutoGenerateColumns="False" CanUserAddRows="False" Background="Transparent" BorderThickness="0" 
+                          HeadersVisibility="Column" GridLinesVisibility="None" RowHeight="64">
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="#555555"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="FontSize" Value="10"/>
+                            <Setter Property="Padding" Value="0,15"/>
+                            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+                        </Style>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                            <Setter Property="BorderBrush" Value="#F5F5F5"/>
+                            <Setter Property="Cursor" Value="Hand"/>
+                            <EventSetter Event="MouseLeftButtonUp" Handler="RecordRow_MouseLeftButtonUp"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#F0F0F0"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.Resources>
+
+                    <DataGrid.Columns>
+                        <!-- DATE -->
+                        <DataGridTextColumn Header="DATE &amp; TIME" Binding="{Binding Date, StringFormat='dd MMM, HH:mm'}" Width="150">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="Foreground" Value="#555555"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- TYPE BADGE -->
+                        <DataGridTemplateColumn Header="TYPE" Width="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Width="80" Padding="0,4" CornerRadius="4" HorizontalAlignment="Left">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="#F0F0F0"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Type}" Value="SALE">
+                                                        <Setter Property="Background" Value="#111111"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock Text="{Binding Type}" FontSize="9" FontWeight="Black" HorizontalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="#111111"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Type}" Value="SALE">
+                                                            <Setter Property="Foreground" Value="White"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- REF ID (Monospace) -->
+                        <DataGridTextColumn Header="REFERENCE ID" Binding="{Binding RefId}" Width="150">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontFamily" Value="Consolas"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- ENTITY NAME -->
+                        <DataGridTextColumn Header="CUSTOMER / SUPPLIER" Binding="{Binding Name}" Width="*">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- AMOUNT -->
+                        <DataGridTextColumn Header="AMOUNT (PKR)" Binding="{Binding Amount, Converter={StaticResource CurrencyConv}}" Width="150">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontWeight" Value="Black"/>
+                                    <Setter Property="FontSize" Value="15"/>
+                                    <Setter Property="TextAlignment" Value="Right"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontFamily" Value="Consolas"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+
+        <!-- DETAIL MODAL -->
+        <Border Grid.RowSpan="3" Background="#99000000" Visibility="{Binding IsDetailModalOpen, Converter={StaticResource BoolToVis}}" Margin="-24">
+            <Border Background="White" CornerRadius="16" Width="440" VerticalAlignment="Center" Padding="32">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Margin="0,0,0,25">
+                        <TextBlock Text="RECORD DETAILS" FontSize="12" FontWeight="Black" FontStyle="Italic" Margin="0,0,0,5"/>
+                        <TextBlock Text="{Binding SelectedRecord.RefId}" FontSize="11" FontFamily="Consolas" Foreground="#555555"/>
+                    </StackPanel>
+
+                    <Border Grid.Row="1" Background="#F9F9F9" CornerRadius="8" Padding="15" Margin="0,0,0,25">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,10">
+                                <TextBlock Text="TYPE" FontSize="10" FontWeight="Bold" Foreground="#555555"/>
+                                <TextBlock Text="{Binding SelectedRecord.Type}" HorizontalAlignment="Right" FontWeight="Black"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,10">
+                                <TextBlock Text="DATE" FontSize="10" FontWeight="Bold" Foreground="#555555"/>
+                                <TextBlock Text="{Binding SelectedRecord.Date, StringFormat='dd MMM yyyy, HH:mm'}" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            </Grid>
+                            <Grid>
+                                <TextBlock Text="ENTITY" FontSize="10" FontWeight="Bold" Foreground="#555555"/>
+                                <TextBlock Text="{Binding SelectedRecord.Name}" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="2" MaxHeight="300" BorderBrush="#F5F5F5" BorderThickness="0,1,0,1" Margin="0,0,0,25">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding SelectedRecord.Details}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Padding="0,12" BorderBrush="#F9F9F9" BorderThickness="0,0,0,1">
+                                            <TextBlock Text="{Binding}" FontWeight="Bold"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
+
+                    <Button Grid.Row="3" Command="{Binding CloseDetailCommand}" Content="CLOSE DETAILS" Background="#111111" Foreground="White" FontWeight="Bold" Height="50" Cursor="Hand">
+                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="10"/></Style></Button.Resources>
+                    </Button>
+                </Grid>
+            </Border>
+        </Border>
+    </Grid>
+</UserControl>

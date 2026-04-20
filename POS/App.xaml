@@ -1,0 +1,57 @@
+<Application x:Class="POS.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:POS"
+             xmlns:converters="clr-namespace:POS.Converters"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
+        <converters:InverseBooleanConverter x:Key="InverseBool" />
+        <converters:CurrencyFormatConverter x:Key="CurrencyConv" />
+        <converters:NameToInitialConverter x:Key="InitialConv" />
+        <converters:EqualityConverter x:Key="EqualityConverter" />
+        <converters:DuesColorConverter x:Key="DuesColorConv" />
+        <converters:StockToBadgeBackgroundConverter x:Key="StockBgConv" />
+        <converters:StockToBadgeForegroundConverter x:Key="StockFgConv" />
+        <converters:StockToPillVisibilityConverter x:Key="StockPillVis" />
+        <converters:StockToDeleteVisibilityConverter x:Key="StockDelVis" />
+        <converters:PriceToDashConverter x:Key="PriceDashConv" />
+
+
+        
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="BorderBrush" Value="#DFE6E9"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="15" ShadowDepth="1" Color="#000000" Opacity="0.05"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ToggleButtonStyle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="#F8F9FA"/>
+            <Setter Property="BorderBrush" Value="#DFE6E9"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Background" Value="#00B894"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Application.Resources>
+</Application>

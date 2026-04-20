@@ -1,0 +1,505 @@
+<UserControl x:Class="POS.Views.CustomersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="800" d:DesignWidth="1200" Background="#F5F5F5">
+    
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Top Bar: Search & Action -->
+            <RowDefinition Height="24"/>   <!-- Spacer -->
+            <RowDefinition Height="*"/>      <!-- Content Area -->
+        </Grid.RowDefinitions>
+
+        <!-- TOP BAR: SEARCH & ACTION -->
+        <Border Grid.Row="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="16" Padding="24">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/> <!-- New Customer -->
+                    <ColumnDefinition Width="*"/>    <!-- Spacer -->
+                    <ColumnDefinition Width="400"/>  <!-- Search Box -->
+                </Grid.ColumnDefinitions>
+
+                <!-- New Customer Button -->
+                <Button Grid.Column="0" Command="{Binding OpenAddModalCommand}" Background="#111111" Foreground="White" Height="48" Padding="25,0" Cursor="Hand">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="24">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="25,0">
+                                    <TextBlock Text="+ " FontSize="18" FontWeight="Bold"/>
+                                    <TextBlock Text="ADD NEW CUSTOMER" FontWeight="Bold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+
+                <!-- Search Box -->
+                <Border Grid.Column="2" Background="#F9F9F9" CornerRadius="24" BorderBrush="#E0E0E0" BorderThickness="1" Padding="20,0">
+                    <Grid Height="48">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="🔍" VerticalAlignment="Center" Margin="0,0,12,0" Opacity="0.4" FontSize="16"/>
+                        <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
+                                 Background="Transparent" BorderThickness="0" VerticalAlignment="Center" 
+                                 FontSize="14" Foreground="#111111" Tag="Search customers..."/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- CONTENT AREA: SIDE-BY-SIDE TABLES -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>   <!-- Directory -->
+                <ColumnDefinition Width="24"/>  <!-- Gap -->
+                <ColumnDefinition Width="450"/> <!-- Ledger -->
+            </Grid.ColumnDefinitions>
+
+            <!-- PANEL 1: CUSTOMER DIRECTORY TABLE -->
+            <Border Grid.Column="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="16" Padding="24">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="CUSTOMER DIRECTORY" FontSize="12" FontWeight="Black" Foreground="#111111" FontStyle="Italic" Margin="0,0,0,25"/>
+
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding FilteredCustomers}" SelectedItem="{Binding SelectedCustomer}" 
+                            AutoGenerateColumns="False" CanUserAddRows="False" Background="Transparent" BorderThickness="0" 
+                            HeadersVisibility="Column" GridLinesVisibility="None" SelectionMode="Single" RowHeight="64">
+                        <DataGrid.Resources>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Foreground" Value="#555555"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="FontSize" Value="10"/>
+                                <Setter Property="Padding" Value="0,15"/>
+                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                <Setter Property="BorderBrush" Value="#E0E0E0"/>
+                            </Style>
+                            <Style TargetType="DataGridRow">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                <Setter Property="BorderBrush" Value="#F5F5F5"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#F0F0F0"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.Resources>
+
+                        <DataGrid.Columns>
+                            <!-- AVATAR + NAME -->
+                            <DataGridTemplateColumn Header="CUSTOMER NAME" Width="*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,0">
+                                            <Border Width="36" Height="36" Background="#222222" CornerRadius="18" Margin="0,0,12,0">
+                                                <TextBlock Text="{Binding Name, Converter={StaticResource InitialConv}}" 
+                                                        Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="#111111" FontSize="14" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTextColumn Header="PHONE NUMBER" Binding="{Binding Phone}" Width="150">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="#555555"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="BALANCE" Binding="{Binding TotalDues, Converter={StaticResource CurrencyConv}}" Width="150">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontWeight" Value="Black"/>
+                                        <Setter Property="Foreground" Value="#111111"/>
+                                        <Setter Property="FontSize" Value="15"/>
+                                        <Setter Property="TextAlignment" Value="Right"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="FontFamily" Value="Consolas"/> <!-- Tabular figures -->
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+
+            <!-- PANEL 2: CUSTOMER LEDGER -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <!-- Hero Balance Card -->
+                    <RowDefinition Height="24"/>  <!-- Spacer -->
+                    <RowDefinition Height="*"/>    <!-- Archives -->
+                </Grid.RowDefinitions>
+
+                <!-- Outstanding Balance Hero -->
+                <Border Grid.Row="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="16" Padding="24">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <StackPanel Grid.Column="0">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <Ellipse Width="6" Height="6" Fill="#111111" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="TOTAL OUTSTANDING" FontSize="10" FontWeight="Black" Foreground="#555555"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding SelectedCustomer.TotalDues, Converter={StaticResource CurrencyConv}, ConverterParameter=''}" 
+                                    FontSize="32" FontWeight="Black" Foreground="#111111" FontFamily="Consolas"/>
+                        </StackPanel>
+
+                        <Button Grid.Column="1" Command="{Binding OpenPaymentModalCommand}" Background="#111111" Foreground="White" Padding="20,10" VerticalAlignment="Center" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="20">
+                                        <StackPanel Orientation="Horizontal">
+                                             <TextBlock Text="+ " FontWeight="Bold" Margin="15,6,2,6"/>
+                                             <TextBlock Text="RECEIVE PAYMENT" FontWeight="Bold" Margin="0,6,15,6" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- Transaction Archives Table -->
+                <Border Grid.Row="2" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="16" Padding="24">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Section Title & Badge -->
+                        <Grid Grid.Row="0" Margin="0,0,0,25">
+                            <TextBlock Text="ACCOUNT LEDGER" FontSize="11" FontWeight="Black" Foreground="#111111" FontStyle="Italic" VerticalAlignment="Center"/>
+                            <Border HorizontalAlignment="Right" Background="#111111" CornerRadius="10" Padding="10,2">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding CustomerHistory.Count}" Foreground="White" FontSize="10" FontWeight="Black" VerticalAlignment="Center"/>
+                                    <TextBlock Text=" entries" Foreground="White" FontSize="10" FontWeight="Black" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <DataGrid Grid.Row="1" ItemsSource="{Binding CustomerHistory}" AutoGenerateColumns="False" 
+                                CanUserAddRows="False" Background="Transparent" BorderThickness="0" 
+                                HeadersVisibility="Column" GridLinesVisibility="None" RowHeight="56">
+                            <DataGrid.Resources>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Foreground" Value="#555555"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="FontSize" Value="9"/>
+                                    <Setter Property="Padding" Value="0,10"/>
+                                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                    <Setter Property="BorderBrush" Value="#E0E0E0"/>
+                                </Style>
+                                <Style TargetType="DataGridRow">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                    <Setter Property="BorderBrush" Value="#F5F5F5"/>
+                                    <Setter Property="Cursor" Value="Hand"/>
+                                    <EventSetter Event="MouseLeftButtonUp" Handler="ArchiveRow_MouseLeftButtonUp"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#F0F0F0"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.Resources>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="REF ID" Binding="{Binding ReceiptNumber}" Width="80">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="FontFamily" Value="Consolas"/>
+                                            <Setter Property="FontSize" Value="10"/>
+                                            <Setter Property="Foreground" Value="#555555"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+
+                                <DataGridTextColumn Header="DATE" Binding="{Binding CreatedAt, StringFormat=dd MMM}" Width="70">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock"><Setter Property="VerticalAlignment" Value="Center"/></Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+
+                                <DataGridTemplateColumn Header="ACTIVITY" Width="*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <!-- Icon Badge -->
+                                                <Border Width="24" Height="24" Background="#2D3436" CornerRadius="4" Margin="0,0,10,0">
+                                                    <Grid>
+                                                        <TextBlock Text="📦" Visibility="{Binding TotalAmount, Converter={StaticResource BoolToVis}}" 
+                                                                Foreground="White" FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="✔️" Visibility="{Binding TotalAmount, Converter={StaticResource InverseBoolToVis}}" 
+                                                                Foreground="White" FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Grid>
+                                                </Border>
+                                                <StackPanel>
+                                                    <TextBlock FontWeight="Bold" FontSize="12">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Text" Value="SALE"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding TotalAmount}" Value="0">
+                                                                        <Setter Property="Text" Value="PAYMENT"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    <TextBlock Text="Transaction confirmed" FontSize="10" Foreground="#555555"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTextColumn Header="DEBIT (+)" Width="80">
+                                    <DataGridTextColumn.Binding>
+                                        <Binding Path="TotalAmount" Converter="{StaticResource CurrencyConv}" ConverterParameter=""/>
+                                    </DataGridTextColumn.Binding>
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                            <Setter Property="TextAlignment" Value="Right"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding TotalAmount}" Value="0">
+                                                    <Setter Property="Text" Value="---"/>
+                                                    <Setter Property="Foreground" Value="#999999"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+
+                                <DataGridTextColumn Header="CREDIT (-)" Width="80">
+                                    <DataGridTextColumn.Binding>
+                                        <Binding Path="AmountPaid" Converter="{StaticResource CurrencyConv}" ConverterParameter=""/>
+                                    </DataGridTextColumn.Binding>
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                            <Setter Property="TextAlignment" Value="Right"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding AmountPaid}" Value="0">
+                                                    <Setter Property="Text" Value="---"/>
+                                                    <Setter Property="Foreground" Value="#999999"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <!-- Footer -->
+                        <Grid Grid.Row="2" Margin="0,15,0,0">
+                            <TextBlock Text="SYSTEM LOG END" FontSize="9" FontWeight="Black" Foreground="#999999" FontStyle="Italic"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <TextBlock Text="TOTAL BALANCE" FontSize="9" FontWeight="Black" Foreground="#555555" Margin="0,0,10,0"/>
+                                <TextBlock Text="{Binding SelectedCustomer.TotalDues, Converter={StaticResource CurrencyConv}}" FontSize="14" FontWeight="Black"/>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- MONOCHROMATIC MODALS -->
+        <Border Grid.RowSpan="3" Background="#99000000" Visibility="{Binding IsAddModalOpen, Converter={StaticResource BoolToVis}}" Margin="-24">
+            <Border Background="White" CornerRadius="16" Width="400" VerticalAlignment="Center" Padding="32">
+                <StackPanel>
+                    <TextBlock Text="ADD NEW CUSTOMER" FontSize="12" FontWeight="Black" FontStyle="Italic" Margin="0,0,0,25" RenderTransformOrigin="0.5,0.5">
+                        <TextBlock.RenderTransform><ScaleTransform ScaleX="1.2"/></TextBlock.RenderTransform>
+                    </TextBlock>
+                    
+                    <TextBlock Text="NAME" FontSize="10" FontWeight="Bold" Foreground="#555555" Margin="0,0,0,8"/>
+                    <TextBox Text="{Binding NewCustomerName, UpdateSourceTrigger=PropertyChanged}" Padding="12" Margin="0,0,0,20" BorderBrush="#E0E0E0"/>
+
+                    <TextBlock Text="PHONE NUMBER" FontSize="10" FontWeight="Bold" Foreground="#555555" Margin="0,0,0,8"/>
+                    <TextBox Text="{Binding NewCustomerPhone, UpdateSourceTrigger=PropertyChanged}" Padding="12" Margin="0,0,0,20" BorderBrush="#E0E0E0"/>
+
+                    <TextBlock Text="INITIAL BALANCE (IF ANY)" FontSize="10" FontWeight="Bold" Foreground="#555555" Margin="0,0,0,8"/>
+                    <TextBox Text="{Binding NewCustomerInitialDues, UpdateSourceTrigger=PropertyChanged}" Padding="12" Margin="0,0,0,30" BorderBrush="#E0E0E0"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Command="{Binding CloseModalsCommand}" Content="CANCEL" Background="Transparent" Foreground="#555555" BorderThickness="0" Margin="0,0,10,0" Padding="15"/>
+                        <Button Grid.Column="1" Command="{Binding SaveCustomerCommand}" Content="SAVE CUSTOMER" Background="#111111" Foreground="White" FontWeight="Bold" BorderThickness="0" Padding="15">
+                            <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="8"/></Style></Button.Resources>
+                        </Button>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <Border Grid.RowSpan="3" Background="#99000000" Visibility="{Binding IsPaymentModalOpen, Converter={StaticResource BoolToVis}}" Margin="-24">
+            <Border Background="White" CornerRadius="16" Width="400" VerticalAlignment="Center" Padding="32">
+                <StackPanel>
+                    <TextBlock Text="RECEIVE PAYMENT" FontSize="12" FontWeight="Black" FontStyle="Italic" Margin="0,0,0,5"/>
+                    <TextBlock Text="{Binding SelectedCustomer.Name}" FontSize="14" Foreground="#555555" Margin="0,0,0,25"/>
+
+                    <TextBlock Text="AMOUNT (PKR)" FontSize="10" FontWeight="Bold" Foreground="#555555" Margin="0,0,0,8"/>
+                    <TextBox Text="{Binding PaymentAmount, UpdateSourceTrigger=PropertyChanged}" Padding="15" Margin="0,0,0,25" FontSize="24" FontWeight="Black" FontFamily="Consolas" BorderBrush="#111111"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Command="{Binding CloseModalsCommand}" Content="CANCEL" Background="Transparent" Foreground="#555555" BorderThickness="0" Margin="0,0,10,0" Padding="15"/>
+                        <Button Grid.Column="1" Command="{Binding ProcessPaymentCommand}" Content="CONFIRM PAYMENT" Background="#111111" Foreground="White" FontWeight="Bold" BorderThickness="0" Padding="15">
+                            <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="8"/></Style></Button.Resources>
+                        </Button>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Border>
+        <!-- RECEIPT DETAILS MODAL -->
+        <Border Grid.RowSpan="3" Background="#99000000" Visibility="{Binding IsReceiptModalOpen, Converter={StaticResource BoolToVis}}" Margin="-24">
+            <Border Background="#F7F8FA" CornerRadius="24" Width="440" VerticalAlignment="Center" HorizontalAlignment="Center" ClipToBounds="True">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="40" ShadowDepth="0" Color="#000000" Opacity="0.15"/>
+                </Border.Effect>
+                
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- Gradient Header -->
+                        <RowDefinition Height="Auto"/> <!-- Customer Hero -->
+                        <RowDefinition Height="Auto"/> <!-- Unified Info Row -->
+                        <RowDefinition Height="1*"/>    <!-- Items Table breakdown -->
+                        <RowDefinition Height="Auto"/> <!-- Detailed Summary -->
+                        <RowDefinition Height="Auto"/> <!-- Footer Button -->
+                    </Grid.RowDefinitions>
+
+                    <!-- 1. Gradient Header -->
+                    <Border Grid.Row="0" Height="80" Padding="30,0">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#111111" Offset="0.0"/>
+                                <GradientStop Color="#333333" Offset="1.0"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="🧾" FontSize="22" Foreground="White" Margin="0,0,15,0"/>
+                            <TextBlock Text="SALE RECEIPT" FontSize="11" FontWeight="Black" Foreground="White" Opacity="0.9"/>
+                            <TextBlock Text="{Binding SelectedSaleHistory.ReceiptNumber}" FontSize="12" FontWeight="Bold" Foreground="White" Opacity="0.6" Margin="15,0,0,0" FontFamily="Consolas" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 2. Customer Hero Section -->
+                    <StackPanel Grid.Row="1" Margin="30,30,30,20">
+                        <TextBlock Text="CUSTOMER" FontSize="9" FontWeight="Black" Foreground="#94A3B8" Margin="0,0,0,4"/>
+                        <TextBlock Text="{Binding SelectedSaleHistory.CustomerName}" FontSize="32" FontWeight="Black" Foreground="#1E293B" TextWrapping="Wrap" LineHeight="36"/>
+                    </StackPanel>
+
+                    <!-- 3. Unified Info Row (Pill Style) -->
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="30,0,30,25">
+                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="100" Padding="12,6" Margin="0,0,10,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🕒" FontSize="10" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding SelectedSaleHistory.CreatedAt, StringFormat='dd MMM yyyy, HH:mm'}" FontSize="12" FontWeight="Bold" Foreground="#475569"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- 4. Items Table Breakdown -->
+                    <Border Grid.Row="3" Margin="30,0,30,20" Background="White" CornerRadius="16" BorderBrush="#E2E8F0" BorderThickness="1" MaxHeight="250">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            
+                            <!-- Header -->
+                            <Grid Grid.Row="0" Margin="15,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="ITEM DESCRIPTION" FontSize="9" FontWeight="Black" Foreground="#94A3B8"/>
+                                <TextBlock Grid.Column="1" Text="SUBTOTAL" FontSize="9" FontWeight="Black" Foreground="#94A3B8"/>
+                            </Grid>
+                            
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                <ItemsControl ItemsSource="{Binding SelectedSaleHistory.SaleItems}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="#F1F5F9" BorderThickness="0,0,0,1" Padding="15,10">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="#1E293B" FontSize="12"/>
+                                                        <TextBlock Text="{Binding Price, StringFormat='Rs {0:N0} x {1}'}" FontSize="10" Foreground="#555555" Margin="0,2,0,0"/>
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="1" Text="{Binding Subtotal, StringFormat='Rs {0:N0}'}" FontWeight="Black" VerticalAlignment="Center" Foreground="#1E293B" FontSize="12"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+
+                    <!-- 5. Advanced Summary Card -->
+                    <Border Grid.Row="4" Margin="30,0,30,30" Background="#F1F5F9" CornerRadius="16" Padding="20">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,10" Visibility="{Binding SelectedSaleHistory.TotalAmount, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Text="Bill Total" Foreground="#475569" FontSize="12"/>
+                                <TextBlock Text="{Binding SelectedSaleHistory.TotalAmount, StringFormat='Rs {0:N0}'}" HorizontalAlignment="Right" FontWeight="Bold" Foreground="#1E293B"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,10" Visibility="{Binding SelectedSaleHistory.PreviousDues, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Text="Previous Balance" Foreground="#475569" FontSize="12"/>
+                                <TextBlock Text="{Binding SelectedSaleHistory.PreviousDues, StringFormat='Rs {0:N0}'}" HorizontalAlignment="Right" FontWeight="Bold" Foreground="#DC2626"/>
+                            </Grid>
+                            
+                            <Rectangle Height="1" Fill="#E2E8F0" Margin="-20,5,-20,15"/>
+                            
+                            <Grid Margin="0,0,0,10">
+                                <TextBlock Text="AMOUNT PAID" VerticalAlignment="Center" FontWeight="Black" Foreground="#64748B" FontSize="9"/>
+                                <TextBlock Text="{Binding SelectedSaleHistory.AmountPaid, StringFormat='Rs {0:N0}'}" HorizontalAlignment="Right" FontSize="20" FontWeight="Black" Foreground="#1D9E75"/>
+                            </Grid>
+                            
+                            <Grid>
+                                <TextBlock Text="REMAINING BALANCE" VerticalAlignment="Center" FontWeight="Black" Foreground="#64748B" FontSize="9"/>
+                                <TextBlock Text="{Binding SelectedSaleHistory.BalanceDue, StringFormat='Rs {0:N0}'}" HorizontalAlignment="Right" FontSize="16" FontWeight="Black" Foreground="#1E293B"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 6. Footer Button -->
+                    <Button Grid.Row="5" Margin="30,0,30,35" Command="{Binding CloseReceiptCommand}" Height="54" 
+                            Background="#111111" Foreground="White" FontSize="15" FontWeight="Black" Cursor="Hand">
+                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="27"/></Style></Button.Resources>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="DONE" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
+        </Border>
+    </Grid>
+</UserControl>

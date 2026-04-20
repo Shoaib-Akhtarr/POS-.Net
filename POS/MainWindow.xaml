@@ -1,0 +1,274 @@
+<Window x:Class="POS.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:POS"
+        xmlns:vm="clr-namespace:POS.ViewModels"
+        xmlns:views="clr-namespace:POS.Views"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
+        mc:Ignorable="d"
+        Title="Karobar Sahulat POS" Height="800" Width="1200" WindowState="Maximized"
+        Icon="Resources/icon.png">
+    <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext>
+
+    <Window.Resources>
+        <!-- Sidebar Button Styles -->
+        <Style x:Key="SidebarButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#94A3B8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Padding" Value="20,15"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" BorderThickness="3,0,0,0" BorderBrush="Transparent">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#2D3748" TargetName="border"/>
+                                <Setter Property="Foreground" Value="White" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="SidebarButtonSelected" BasedOn="{StaticResource SidebarButton}" TargetType="Button">
+            <Setter Property="Background" Value="#2D3748"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" BorderThickness="3,0,0,0" BorderBrush="#10A574">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="SidebarColumn" Width="250">
+                <ColumnDefinition.Style>
+                    <Style TargetType="ColumnDefinition">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsSidebarCollapsed}" Value="True">
+                                <Setter Property="Width" Value="70"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ColumnDefinition.Style>
+            </ColumnDefinition>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Sidebar Navigation -->
+        <Border Grid.Column="0" Background="#1E2530">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header / Logo -->
+                <StackPanel Grid.Row="0" Margin="15,40,15,40" HorizontalAlignment="Center">
+                    <TextBlock Text="KS" Foreground="White" FontSize="20" FontWeight="Black" Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource BoolToVis}}"/>
+                    <TextBlock Text="KAROBAR SAHULAT" Foreground="White" FontSize="14" FontWeight="Black" Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                </StackPanel>
+                
+                <!-- Nav Items -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <!-- Overview (formerly Dashboard) -->
+                        <Button Command="{Binding NavigateToHomeCommand}">
+                            <TextBlock Text="DASHBOARD" Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource SidebarButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentViewModel.GetType().Name}" Value="HomeViewModel">
+                                            <Setter Property="Background" Value="#2D3748"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="border" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" BorderThickness="3,0,0,0" BorderBrush="#10A574">
+                                                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <!-- Sale -->
+                        <Button Command="{Binding NavigateToPOSCommand}">
+                            <TextBlock Text="NEW SALE" Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource SidebarButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentViewModel.GetType().Name}" Value="POSViewModel">
+                                            <Setter Property="Background" Value="#2D3748"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="border" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" BorderThickness="3,0,0,0" BorderBrush="#10A574">
+                                                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <Button Command="{Binding NavigateToProductsCommand}">
+                            <TextBlock Text="INVENTORY" Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource SidebarButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentViewModel.GetType().Name}" Value="ProductsViewModel">
+                                            <Setter Property="Background" Value="#2D3748"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="border" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" BorderThickness="3,0,0,0" BorderBrush="#10A574">
+                                                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <Button Command="{Binding NavigateToPurchasesCommand}">
+                            <TextBlock Text="STOCK IN" Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource SidebarButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentViewModel.GetType().Name}" Value="PurchasesViewModel">
+                                            <Setter Property="Background" Value="#2D3748"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="border" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" BorderThickness="3,0,0,0" BorderBrush="#10A574">
+                                                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <Button Command="{Binding NavigateToCustomersCommand}">
+                            <TextBlock Text="CUSTOMERS" Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource SidebarButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentViewModel.GetType().Name}" Value="CustomersViewModel">
+                                            <Setter Property="Background" Value="#2D3748"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="border" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" BorderThickness="3,0,0,0" BorderBrush="#10A574">
+                                                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <Button Command="{Binding NavigateToRecordsCommand}">
+                            <TextBlock Text="RECORDS" Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource SidebarButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentViewModel.GetType().Name}" Value="RecordsViewModel">
+                                            <Setter Property="Background" Value="#2D3748"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="border" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" BorderThickness="3,0,0,0" BorderBrush="#10A574">
+                                                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        
+                        <Border Height="1" Background="#444" Margin="15,20" Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Footer (Optional Spacer) -->
+                <Border Grid.Row="2" Height="20"/>
+            </Grid>
+        </Border>
+
+        <!-- Main Dynamic Content Area -->
+        <ContentControl Grid.Column="1" Content="{Binding CurrentViewModel}">
+            <ContentControl.Resources>
+                <!-- Tell WPF which View to render for each ViewModel type -->
+                <DataTemplate DataType="{x:Type vm:HomeViewModel}">
+                    <views:HomeView/>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type vm:POSViewModel}">
+                    <views:POSView/>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type vm:ProductsViewModel}">
+                    <views:ProductsView/>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type vm:PurchasesViewModel}">
+                    <views:PurchasesView/>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type vm:CustomersViewModel}">
+                    <views:CustomersView/>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type vm:RecordsViewModel}">
+                    <views:RecordsView/>
+                </DataTemplate>
+            </ContentControl.Resources>
+        </ContentControl>
+    </Grid>
+</Window>
