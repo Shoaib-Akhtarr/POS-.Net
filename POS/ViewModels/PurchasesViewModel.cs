@@ -1,43 +1,70 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using POS.Models;
+using POS.Services;
 
 namespace POS.ViewModels
 {
-    public partial class PurchasesViewModel : ObservableObject
+    public partial class PurchasesViewModel : ObservableObject, IRecipient<DataChangedMessage>
     {
-        [ObservableProperty]
-        private ObservableCollection<Purchase> _purchases;
+        public List<string> AvailableDepartments { get; } = new()
+        {
+            "Electric", "Sanitary", "Hardware", "Tiles", "Paint", "Solar System", "Electronics"
+        };
 
-        [ObservableProperty]
-        private ObservableCollection<Product> _availableProducts;
+        public List<string> AvailableUnits { get; } = new()
+        {
+            "pcs", "m", "ft", "coil", "box", "sqft", "kg", "L"
+        };
 
-        [ObservableProperty]
-        private Purchase? _selectedPurchaseHistory;
-
-        [ObservableProperty]
-        private bool _isDetailModalOpen;
+        [ObservableProperty] private ObservableCollection<Purchase> _purchases = new();
+        [ObservableProperty] private ObservableCollection<Product> _availableProducts = new();
+        [ObservableProperty] private Purchase? _selectedPurchaseHistory;
+        [ObservableProperty] private bool _isDetailModalOpen;
 
         // Form Fields
-        [ObservableProperty]
-        private string _supplierName = string.Empty;
+        [ObservableProperty] private string _supplierName = string.Empty;
+        [ObservableProperty] private decimal _costPrice;
+        [ObservableProperty] private decimal _sellingPrice;
+        [ObservableProperty] private decimal _quantity = 1m;
+        [ObservableProperty] private bool _isNewProduct;
+        [ObservableProperty] private Product? _selectedProduct;
+        [ObservableProperty] private string _newProductName = string.Empty;
+        [ObservableProperty] private string _barcode = string.Empty;
+        [ObservableProperty] private string _brand = string.Empty;
+        [ObservableProperty] private string _category = "Electric";
+        [ObservableProperty] private string _unit = "pcs";
+        [ObservableProperty] private string _packUnitName = string.Empty;
+        [ObservableProperty] private decimal _unitsPerPack = 1m;
+        [ObservableProperty] private string _defaultWarranty = string.Empty;
 
-        [ObservableProperty]
-        private decimal _costPrice;
+        [ObservableProperty] private string _statusMessage = string.Empty;
+        [ObservableProperty] private bool _isErrorStatus;
 
-        [ObservableProperty]
-        private decimal _sellingPrice;
+        public bool IsOwner => SessionService.IsOwner;
 
-        [ObservableProperty]
-        private int _quantity = 1;
+        public PurchasesViewModel()
+        {
+            RefreshData();
+            WeakReferenceMessenger.Default.Register(this);
+        }
 
-        [ObservableProperty]
-        private bool _isNewProduct = false;
-
-        [ObservableProperty]
-        private Product? _selectedProduct;
+        public void Receive(DataChangedMessage message)
+        {
+            if (message.Value is "Product" or "Transaction")
+            {
+                App.Current?.Dispatcher.Invoke(RefreshData);
+            }
+            else if (message.Value == "Session")
+            {
+                App.Current?.Dispatcher.Invoke(() => OnPropertyChanged(nameof(IsOwner)));
+            }
+        }
 
         partial void OnSelectedProductChanged(Product? value)
         {
@@ -45,129 +72,175 @@ namespace POS.ViewModels
             {
                 CostPrice = value.CostPrice;
                 SellingPrice = value.SellingPrice;
+                Category = string.IsNullOrWhiteSpace(value.Category) ? "Electric" : value.Category;
+                Unit = string.IsNullOrWhiteSpace(value.Unit) ? "pcs" : value.Unit;
+                Brand = value.Brand;
+                Barcode = value.Barcode;
             }
         }
 
-        [CommunityToolkit.Mvvm.Input.RelayCommand]
-        private void IncrementQuantity() => Quantity++;
+        [RelayCommand]
+        private void IncrementQuantity() => Quantity += 1m;
 
-        [CommunityToolkit.Mvvm.Input.RelayCommand]
+        [RelayCommand]
         private void DecrementQuantity()
         {
-            if (Quantity > 1) Quantity--;
+            if (Quantity > 1m) Quantity -= 1m;
         }
 
-        [CommunityToolkit.Mvvm.Input.RelayCommand]
-        private void OpenDetail(Purchase purchase)
+        [RelayCommand]
+        private void OpenDetail(Purchase? purchase)
         {
+            if (purchase == null) return;
             SelectedPurchaseHistory = purchase;
             IsDetailModalOpen = true;
         }
 
-        [CommunityToolkit.Mvvm.Input.RelayCommand]
+        [RelayCommand]
         private void CloseDetail() => IsDetailModalOpen = false;
-
-        [ObservableProperty]
-        private string _newProductName = string.Empty;
-
-        [ObservableProperty]
-        private string _category = "General";
-
-        public PurchasesViewModel()
-        {
-            Purchases = new ObservableCollection<Purchase>();
-            AvailableProducts = new ObservableCollection<Product>();
-            RefreshData();
-        }
 
         public void RefreshData()
         {
-            using (var context = new AppDbContext())
-            {
-                // Refresh History
-                var dbPurchases = context.Purchases.OrderByDescending(p => p.PurchaseDate).ToList();
-                Purchases.Clear();
-                foreach (var p in dbPurchases) Purchases.Add(p);
+            using var context = new AppDbContext();
 
-                // Refresh Product List for selection
-                var products = context.Products.OrderBy(p => p.Name).ToList();
-                AvailableProducts.Clear();
-                foreach (var p in products) AvailableProducts.Add(p);
-            }
+            var dbPurchases = context.Purchases.OrderByDescending(p => p.PurchaseDate).ToList();
+            Purchases = new ObservableCollection<Purchase>(dbPurchases);
+
+            var products = context.Products.Where(p => !p.IsDeleted).OrderBy(p => p.Name).ToList();
+            AvailableProducts = new ObservableCollection<Product>(products);
         }
 
-        [CommunityToolkit.Mvvm.Input.RelayCommand]
+        [RelayCommand]
         private void RecordPurchase()
         {
-            if (string.IsNullOrWhiteSpace(SupplierName)) return;
-            if (CostPrice <= 0 || Quantity <= 0) return;
+            StatusMessage = string.Empty;
+            IsErrorStatus = false;
 
-            using (var context = new AppDbContext())
+            if (string.IsNullOrWhiteSpace(SupplierName))
             {
-                Product? targetProduct = null;
+                SetStatus("Please enter the supplier name.", isError: true);
+                return;
+            }
+            if (CostPrice <= 0m)
+            {
+                SetStatus("Unit cost must be greater than 0.", isError: true);
+                return;
+            }
+            if (Quantity <= 0m)
+            {
+                SetStatus("Quantity must be greater than 0.", isError: true);
+                return;
+            }
 
-                if (IsNewProduct)
+            using var context = new AppDbContext();
+            Product? targetProduct;
+
+            if (IsNewProduct)
+            {
+                string trimmedName = NewProductName.Trim();
+                if (string.IsNullOrWhiteSpace(trimmedName))
                 {
-                    if (string.IsNullOrWhiteSpace(NewProductName)) return;
-                    
-                    // Check if exists
-                    targetProduct = context.Products.FirstOrDefault(p => p.Name.ToLower() == NewProductName.ToLower());
-                    if (targetProduct == null)
+                    SetStatus("Please enter the new product name.", isError: true);
+                    return;
+                }
+
+                targetProduct = context.Products.FirstOrDefault(p => p.Name.ToLower() == trimmedName.ToLower());
+                if (targetProduct == null)
+                {
+                    targetProduct = new Product
                     {
-                        targetProduct = new Product
-                        {
-                            Name = NewProductName,
-                            Category = Category,
-                            Quantity = 0, // Initial
-                            CostPrice = CostPrice,
-                            SellingPrice = SellingPrice
-                        };
-                        context.Products.Add(targetProduct);
-                        context.SaveChanges(); // Get ID
-                    }
+                        Name = trimmedName,
+                        Barcode = Barcode.Trim(),
+                        Brand = Brand.Trim(),
+                        Category = string.IsNullOrWhiteSpace(Category) ? "Electric" : Category.Trim(),
+                        Unit = string.IsNullOrWhiteSpace(Unit) ? "pcs" : Unit.Trim(),
+                        PackUnitName = PackUnitName.Trim(),
+                        UnitsPerPack = UnitsPerPack > 0m ? UnitsPerPack : 1m,
+                        DefaultWarranty = DefaultWarranty.Trim(),
+                        Quantity = 0m,
+                        CostPrice = CostPrice,
+                        SellingPrice = SellingPrice > 0m ? SellingPrice : CostPrice,
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now
+                    };
+                    context.Products.Add(targetProduct);
+                    context.SaveChanges();
                 }
                 else
                 {
-                    if (SelectedProduct == null) return;
-                    targetProduct = context.Products.Find(SelectedProduct.Id);
+                    // Reactivate if previously soft-deleted
+                    targetProduct.IsDeleted = false;
+                    if (!string.IsNullOrWhiteSpace(Barcode)) targetProduct.Barcode = Barcode.Trim();
+                    if (!string.IsNullOrWhiteSpace(Brand)) targetProduct.Brand = Brand.Trim();
+                    if (!string.IsNullOrWhiteSpace(Category)) targetProduct.Category = Category.Trim();
+                    if (!string.IsNullOrWhiteSpace(Unit)) targetProduct.Unit = Unit.Trim();
+                    targetProduct.UpdatedAt = DateTime.Now;
                 }
-
-                if (targetProduct == null) return;
-
-                // 1. Create Purchase record
-                var purchase = new Purchase
-                {
-                    ProductId = targetProduct.Id,
-                    ProductName = targetProduct.Name,
-                    SupplierName = SupplierName,
-                    CostPrice = CostPrice,
-                    Quantity = Quantity,
-                    TotalCost = CostPrice * Quantity,
-                    PurchaseDate = System.DateTime.Now
-                };
-
-                // 2. Update Product
-                targetProduct.Quantity += Quantity;
-                targetProduct.CostPrice = CostPrice; // Update to latest cost
-                if (SellingPrice > 0) targetProduct.SellingPrice = SellingPrice;
-
-                context.Purchases.Add(purchase);
-                context.SaveChanges();
             }
+            else
+            {
+                if (SelectedProduct == null)
+                {
+                    SetStatus("Please select a product to restock.", isError: true);
+                    return;
+                }
+                targetProduct = context.Products.Find(SelectedProduct.Id);
+                if (targetProduct == null)
+                {
+                    SetStatus("Selected product was not found.", isError: true);
+                    return;
+                }
+            }
+
+            var purchase = new Purchase
+            {
+                ProductId = targetProduct.Id,
+                ProductName = targetProduct.Name,
+                SupplierName = SupplierName.Trim(),
+                CostPrice = CostPrice,
+                Quantity = Quantity,
+                Unit = targetProduct.Unit,
+                TotalCost = CostPrice * Quantity,
+                CreatedBy = SessionService.CurrentUserName,
+                PurchaseDate = DateTime.Now
+            };
+
+            targetProduct.Quantity += Quantity;
+            targetProduct.CostPrice = CostPrice;
+            if (SellingPrice > 0m) targetProduct.SellingPrice = SellingPrice;
+            targetProduct.UpdatedAt = DateTime.Now;
+
+            context.Purchases.Add(purchase);
+            context.SaveChanges();
+
+            string recordedName = targetProduct.Name;
+            decimal recordedQty = Quantity;
+            string recordedUnit = targetProduct.Unit;
 
             // Reset Form
             SupplierName = string.Empty;
-            CostPrice = 0;
-            SellingPrice = 0;
-            Quantity = 1;
+            CostPrice = 0m;
+            SellingPrice = 0m;
+            Quantity = 1m;
             NewProductName = string.Empty;
+            Barcode = string.Empty;
+            Brand = string.Empty;
+            PackUnitName = string.Empty;
+            UnitsPerPack = 1m;
+            DefaultWarranty = string.Empty;
             SelectedProduct = null;
 
             RefreshData();
-            
-            // Notify other ViewModels to refresh (POS, Products, Records)
             WeakReferenceMessenger.Default.Send(DataChangedMessage.ProductUpdated);
             WeakReferenceMessenger.Default.Send(DataChangedMessage.TransactionUpdated);
+
+            SetStatus($"Restocked {(recordedQty % 1m == 0 ? recordedQty.ToString("N0") : recordedQty.ToString("0.##"))} {recordedUnit} of {recordedName}.", isError: false);
+        }
+
+        private void SetStatus(string msg, bool isError)
+        {
+            StatusMessage = msg;
+            IsErrorStatus = isError;
         }
     }
 }

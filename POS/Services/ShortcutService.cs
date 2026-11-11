@@ -8,31 +8,31 @@ namespace POS.Services
     {
         public static void EnsureShortcut()
         {
+            if (!OperatingSystem.IsWindows()) return;
+
             try
             {
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                string shortcutPath = Path.Combine(desktopPath, "Karobar POS.lnk");
+                if (string.IsNullOrWhiteSpace(desktopPath)) return;
 
-                // If shortcut already exists, don't recreate it every time 
-                // unless the user wants it forced. For now, just ensure it exists.
+                string shortcutPath = Path.Combine(desktopPath, "Karobar POS.lnk");
                 if (File.Exists(shortcutPath)) return;
 
-                string currentExePath = Environment.ProcessPath;
+                string? currentExePath = Environment.ProcessPath;
                 if (string.IsNullOrEmpty(currentExePath)) return;
 
-                string currentDir = Path.GetDirectoryName(currentExePath);
+                string? currentDir = Path.GetDirectoryName(currentExePath) ?? AppDomain.CurrentDomain.BaseDirectory;
 
-                // Use PowerShell to create the shortcut (WshShell alternative)
                 string script = $@"
                     $WshShell = New-Object -ComObject WScript.Shell
                     $Shortcut = $WshShell.CreateShortcut('{shortcutPath}')
                     $Shortcut.TargetPath = '{currentExePath}'
                     $Shortcut.WorkingDirectory = '{currentDir}'
-                    $Shortcut.Description = 'Karobar POS Ledger System'
+                    $Shortcut.Description = 'Aizaz Fareed Center POS System'
                     $Shortcut.Save()
                 ";
 
-                ProcessStartInfo psi = new ProcessStartInfo
+                var psi = new ProcessStartInfo
                 {
                     FileName = "powershell",
                     Arguments = $"-NoProfile -WindowStyle Hidden -Command \"{script.Replace("\"", "\\\"")}\"",
@@ -44,7 +44,6 @@ namespace POS.Services
             }
             catch (Exception ex)
             {
-                // Fail silently or log
                 Debug.WriteLine($"Failed to create shortcut: {ex.Message}");
             }
         }

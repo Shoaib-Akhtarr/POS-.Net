@@ -1,134 +1,311 @@
 <UserControl x:Class="POS.Views.ProfileView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:POS.Views"
-             xmlns:vm="clr-namespace:POS.ViewModels"
-             mc:Ignorable="d" 
-             d:DesignHeight="800" d:DesignWidth="1200"
-             Background="#F5F5F5">
-    
-    <Grid Margin="40">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:conv="clr-namespace:POS.Converters"
+             mc:Ignorable="d"
+             d:DesignHeight="820" d:DesignWidth="1150"
+             Background="{DynamicResource BgCanvasBrush}">
 
-        <!-- Header -->
-        <StackPanel Grid.Row="0" Margin="0,0,0,40">
-            <TextBlock Text="{DynamicResource Lang_ProfileSettings}" 
-                       FontSize="32" FontWeight="Bold" Foreground="#111111"
-                       FontStyle="Italic"/>
-            <Border Height="1" Background="#E0E0E0" Margin="0,15,0,0"/>
-        </StackPanel>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-        <!-- Profile Content -->
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="400"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+            <!-- Header -->
+            <StackPanel Grid.Row="0" Margin="0,0,0,18">
+                <TextBlock Text="{DynamicResource Lang_ProfileSettings}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                <TextBlock Text="{Binding CurrentUserName, StringFormat='Signed in as: {0}'}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+            </StackPanel>
 
-            <!-- Settings Card -->
-            <Border Grid.Column="0" Background="White" CornerRadius="4" BorderBrush="#E0E0E0" BorderThickness="1" VerticalAlignment="Top" Padding="30">
-                <StackPanel>
-                    <TextBlock Text="{DynamicResource Lang_Language}" FontSize="18" FontWeight="Bold" Margin="0,0,0,10" Foreground="#111111"/>
-                    <TextBlock Text="{DynamicResource Lang_SelectLanguage}" FontSize="13" Foreground="#555555" Margin="0,0,0,25" TextWrapping="Wrap"/>
+            <!-- Status Banner -->
+            <Border Grid.Row="1" CornerRadius="8" Padding="12,8" Margin="0,0,0,14" Visibility="{Binding StatusMessage, Converter={StaticResource StrNotEmptyToVis}}">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Background" Value="{DynamicResource SuccessSoftBrush}"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsErrorStatus}" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource DangerSoftBrush}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <TextBlock Text="{Binding StatusMessage}" FontWeight="SemiBold" FontSize="12">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsErrorStatus}" Value="True">
+                                    <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Border>
 
-                    <!-- Language Toggle Buttons -->
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <Button Grid.Column="0" Content="ENGLISH" Margin="0,0,5,0" Height="45"
-                                Command="{Binding ChangeLanguageCommand}" CommandParameter="English">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Background" Value="White"/>
-                                    <Setter Property="Foreground" Value="#111111"/>
-                                    <Setter Property="BorderBrush" Value="#E0E0E0"/>
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1">
-                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding CurrentLanguage}" Value="English">
-                                            <Setter Property="Background" Value="#111111"/>
-                                            <Setter Property="Foreground" Value="White"/>
-                                            <Setter Property="BorderBrush" Value="#111111"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
+            <!-- Two-Column Settings Layout -->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-                        <Button Grid.Column="1" Content="اردو" Margin="5,0,0,0" Height="45"
-                                Command="{Binding ChangeLanguageCommand}" CommandParameter="Urdu" FontFamily="Urdu Typesetting, Jameel Noori Nastaleeq, Arial">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Background" Value="White"/>
-                                    <Setter Property="Foreground" Value="#111111"/>
-                                    <Setter Property="BorderBrush" Value="#E0E0E0"/>
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1">
-                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding CurrentLanguage}" Value="Urdu">
-                                            <Setter Property="Background" Value="#111111"/>
-                                            <Setter Property="Foreground" Value="White"/>
-                                            <Setter Property="BorderBrush" Value="#111111"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
-                    </Grid>
+                <!-- LEFT COLUMN: Shop Branding + Printer + Language/Theme -->
+                <StackPanel Grid.Column="0">
+                    <!-- Store Branding Card -->
+                    <Border Style="{StaticResource SurfaceCardStyle}" Padding="22" Margin="0,0,0,18">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource Lang_StoreBranding}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,14"/>
 
-                    <Border Height="1" Background="#F0F0F0" Margin="0,30"/>
-                    
-                    <TextBlock Text="{DynamicResource Lang_Theme}" FontSize="18" FontWeight="Bold" Margin="0,0,0,15" Foreground="#111111"/>
-                    <Border Background="#F9F9F9" Padding="15" BorderBrush="#E0E0E0" BorderThickness="1">
-                        <StackPanel Orientation="Horizontal">
-                            <Ellipse Width="20" Height="20" Fill="#111111" Margin="0,0,10,0"/>
-                            <TextBlock Text="MONOCHROME (Active)" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12"/>
+                            <TextBlock Text="SHOP NAME" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding ShopName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,10"/>
+
+                            <TextBlock Text="DEPARTMENTS / SUBTITLE" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding Subtitle, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,10"/>
+
+                            <TextBlock Text="ADDRESS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,10"/>
+
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="PHONE 1" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                    <TextBox Text="{Binding Phone1, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="PHONE 2" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                    <TextBox Text="{Binding Phone2, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock Text="RECEIPT FOOTER NOTE" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding ReceiptFooter, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,14"/>
+
+                            <TextBlock Text="{DynamicResource Lang_PrinterSettings}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,6,0,10"/>
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="140"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="PRINTER NAME" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                    <ComboBox ItemsSource="{Binding InstalledPrinters}" Text="{Binding PrinterName}" IsEditable="True" Padding="10,8"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="DEFAULT FORMAT" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                    <ComboBox ItemsSource="{Binding PrintFormats}" SelectedItem="{Binding PreferredPrintFormat}" Padding="10,8"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <CheckBox IsChecked="{Binding UseBitmapThermalForUrdu}" Content="Use Bitmap Thermal Printing (enables Urdu on 80mm receipts)" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,14"/>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" Command="{Binding SaveStoreSettingsCommand}" Content="{DynamicResource Lang_SaveChanges}" Style="{StaticResource PrimaryButtonStyle}"/>
+                                <Button Grid.Column="2" Command="{Binding TestPrintCommand}" Content="Test Print" Style="{StaticResource SecondaryButtonStyle}"/>
+                            </Grid>
                         </StackPanel>
                     </Border>
                 </StackPanel>
-            </Border>
 
-            <!-- User Info (Placeholder for now) -->
-            <StackPanel Grid.Column="1" Margin="60,0,0,0">
-                <Border Width="120" Height="120" Background="#111111" CornerRadius="60" HorizontalAlignment="Left" Margin="0,0,0,20">
-                    <TextBlock Text="A" Foreground="White" FontSize="48" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                </Border>
-                <TextBlock Text="Karobar Sahulat Admin" FontSize="24" FontWeight="Bold" Foreground="#111111"/>
-                <TextBlock Text="Business Owner" FontSize="14" Foreground="#555555" Margin="0,0,0,30"/>
-                
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                    <TextBlock Text="Software Version:" Width="150" Foreground="#555555"/>
-                    <TextBlock Text="v2.4.0 (Enterprise)" FontWeight="Bold"/>
+                <!-- RIGHT COLUMN: Language, Theme, PIN Management, DB Backup -->
+                <StackPanel Grid.Column="2">
+                    <!-- Language & Theme Card -->
+                    <Border Style="{StaticResource SurfaceCardStyle}" Padding="22" Margin="0,0,0,18">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource Lang_Language}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource Lang_SelectLanguage}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,12"/>
+
+                            <Grid Margin="0,0,0,18">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" Content="ENGLISH" Command="{Binding ChangeLanguageCommand}" CommandParameter="English" Cursor="Hand">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="Bd" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                                                            <TextBlock x:Name="Txt" Text="{TemplateBinding Content}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"/>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource BgMutedBrush}"/>
+                                                            </Trigger>
+                                                            <DataTrigger Binding="{Binding CurrentLanguage}" Value="English">
+                                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                                                <Setter TargetName="Txt" Property="Foreground" Value="White"/>
+                                                            </DataTrigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                                <Button Grid.Column="2" Content="اردو" Command="{Binding ChangeLanguageCommand}" CommandParameter="Urdu" Cursor="Hand">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="Bd" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                                                            <TextBlock x:Name="Txt" Text="{TemplateBinding Content}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"/>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource BgMutedBrush}"/>
+                                                            </Trigger>
+                                                            <DataTrigger Binding="{Binding CurrentLanguage}" Value="Urdu">
+                                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                                                <Setter TargetName="Txt" Property="Foreground" Value="White"/>
+                                                            </DataTrigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </Grid>
+
+                            <TextBlock Text="{DynamicResource Lang_Theme}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,10"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" Content="Light Slate + Emerald" Command="{Binding ChangeThemeCommand}" CommandParameter="Light" Cursor="Hand">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="Bd" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                                                            <TextBlock x:Name="Txt" Text="{TemplateBinding Content}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"/>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource BgMutedBrush}"/>
+                                                            </Trigger>
+                                                            <DataTrigger Binding="{Binding CurrentTheme}" Value="Light">
+                                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                                                <Setter TargetName="Txt" Property="Foreground" Value="White"/>
+                                                            </DataTrigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                                <Button Grid.Column="2" Content="Dark Slate + Emerald" Command="{Binding ChangeThemeCommand}" CommandParameter="Dark" Cursor="Hand">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="Bd" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                                                            <TextBlock x:Name="Txt" Text="{TemplateBinding Content}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"/>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource BgMutedBrush}"/>
+                                                            </Trigger>
+                                                            <DataTrigger Binding="{Binding CurrentTheme}" Value="Dark">
+                                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                                                <Setter TargetName="Txt" Property="Foreground" Value="White"/>
+                                                            </DataTrigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Staff & Owner PINs (Owner Only) -->
+                    <Border Style="{StaticResource SurfaceCardStyle}" Padding="22" Margin="0,0,0,18" Visibility="{Binding IsOwner, Converter={StaticResource BoolToVis}}">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource Lang_StaffPins}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,12"/>
+
+                            <TextBlock Text="CHANGE STAFF PIN" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                            <Grid Margin="0,0,0,14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="110"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ComboBox Grid.Column="0" ItemsSource="{Binding StaffUsers}" SelectedItem="{Binding SelectedStaffUser}" DisplayMemberPath="DisplayName" Padding="8,7"/>
+                                <TextBox Grid.Column="2" Text="{Binding ResetPinValue, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="New PIN"/>
+                                <Button Grid.Column="4" Command="{Binding UpdateSelectedUserPinCommand}" Content="Update" Style="{StaticResource PrimaryButtonStyle}" Padding="14,8"/>
+                            </Grid>
+
+                            <TextBlock Text="ADD NEW STAFF USER" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="90"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding NewStaffName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="Name"/>
+                                <ComboBox Grid.Column="2" ItemsSource="{Binding AvailableRoles}" SelectedItem="{Binding NewStaffRole}" Padding="8,7"/>
+                                <TextBox Grid.Column="4" Text="{Binding NewStaffPin, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="PIN"/>
+                                <Button Grid.Column="6" Command="{Binding AddStaffUserCommand}" Content="Add" Style="{StaticResource SecondaryButtonStyle}" Padding="14,8"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Database Backup & Restore -->
+                    <Border Style="{StaticResource SurfaceCardStyle}" Padding="22">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource Lang_DatabaseBackup}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,6"/>
+                            <TextBlock Text="{Binding DatabasePath}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,14"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" Command="{Binding BackupDatabaseCommand}" Content="Backup Database (.db)" Style="{StaticResource PrimaryButtonStyle}"/>
+                                <Button Grid.Column="2" Command="{Binding RestoreDatabaseCommand}" Content="Restore Backup" Style="{StaticResource DangerButtonStyle}" Visibility="{Binding IsOwner, Converter={StaticResource BoolToVis}}"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Last Database Sync:" Width="150" Foreground="#555555"/>
-                    <TextBlock Text="Just Now" FontWeight="Bold"/>
-                </StackPanel>
-            </StackPanel>
+            </Grid>
         </Grid>
-    </Grid>
+    </ScrollViewer>
 </UserControl>

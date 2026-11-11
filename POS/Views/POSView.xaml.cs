@@ -1,4 +1,5 @@
 using System.Windows.Controls;
+using POS.ViewModels;
 
 namespace POS.Views
 {
@@ -7,6 +8,14 @@ namespace POS.Views
         public POSView()
         {
             InitializeComponent();
+        }
+
+        private void AmountPaidBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (sender is TextBox tb && tb.IsKeyboardFocusWithin && DataContext is POSViewModel vm)
+            {
+                vm.MarkCustomPaymentCommand.Execute(null);
+            }
         }
     }
 }

@@ -6,6 +6,7 @@ namespace POS.Models
     public class Sale
     {
         public int Id { get; set; }
+        public string RecordType { get; set; } = "Sale"; // Sale, Estimate, Return, Payment
         public decimal TotalAmount { get; set; }
         public decimal Discount { get; set; }
         public string? CustomerName { get; set; }
@@ -14,14 +15,19 @@ namespace POS.Models
         public decimal PreviousDues { get; set; }
         public decimal AmountPaid { get; set; }
         public decimal BalanceDue { get; set; }
-        public string PaymentMethod { get; set; } = "Cash"; // Cash or Credit
+        public decimal CashTendered { get; set; }
+        public decimal ChangeReturned { get; set; }
+        public string PaymentMethod { get; set; } = "Cash"; // Cash, Credit, Bank, JazzCash, EasyPaisa
         public bool IsPaid { get; set; } = true;
         public string ReceiptId { get; set; } = Guid.NewGuid().ToString();
         public bool Printed { get; set; } = false;
         public string? ReceiptNumber { get; set; }
-        
+        public string Notes { get; set; } = string.Empty;
+        public int? OriginalSaleId { get; set; }
+        public string CreatedBy { get; set; } = string.Empty;
+
         public ICollection<SaleItem> SaleItems { get; set; } = new List<SaleItem>();
-        
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
     }

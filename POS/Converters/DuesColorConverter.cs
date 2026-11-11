@@ -9,15 +9,15 @@ namespace POS.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is decimal dues)
+            if (value != null && decimal.TryParse(value.ToString(), out decimal dues))
             {
-                // In this system, negative values represent debt (Dues)
-                if (dues < 0)
-                    return new SolidColorBrush((Color)ColorConverter.ConvertFromString("#D63031")); // Red
-                
-                return new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00B894")); // green
+                // Positive TotalDues means customer owes money
+                if (dues > 0)
+                    return new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DC2626"));
+
+                return new SolidColorBrush((Color)ColorConverter.ConvertFromString("#059669"));
             }
-            return Brushes.Black;
+            return new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0F172A"));
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

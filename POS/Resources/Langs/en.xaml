@@ -3,130 +3,92 @@
                     xmlns:s="clr-namespace:System;assembly=mscorlib">
 
     <!-- Global / Sidebar -->
+    <s:String x:Key="Lang_Dashboard">Dashboard</s:String>
     <s:String x:Key="Lang_Overview">Overview</s:String>
+    <s:String x:Key="Lang_NewSale">New Sale</s:String>
     <s:String x:Key="Lang_Sale">Sale</s:String>
-    <s:String x:Key="Lang_Products">Products</s:String>
-    <s:String x:Key="Lang_Purchases">Purchases</s:String>
+    <s:String x:Key="Lang_InventoryNav">Inventory</s:String>
+    <s:String x:Key="Lang_StockIn">Stock In</s:String>
     <s:String x:Key="Lang_Customers">Customers</s:String>
     <s:String x:Key="Lang_Records">Records</s:String>
-    <s:String x:Key="Lang_MyProfile">My Profile</s:String>
+    <s:String x:Key="Lang_Settings">Settings</s:String>
+    <s:String x:Key="Lang_SwitchUser">Switch User</s:String>
 
-    <!-- Purchases -->
-    <s:String x:Key="Lang_InventoryRestock">Inventory Restock</s:String>
+    <!-- Dashboard -->
+    <s:String x:Key="Lang_PerformanceOverview">Performance Overview</s:String>
+    <s:String x:Key="Lang_SaleRevenue">NET SALES REVENUE</s:String>
+    <s:String x:Key="Lang_ProfitPeriod">NET PROFIT</s:String>
+    <s:String x:Key="Lang_PurchasePeriod">INVENTORY PURCHASES</s:String>
+    <s:String x:Key="Lang_PendingDues">CUSTOMER KHATA DUES</s:String>
+    <s:String x:Key="Lang_LowStock">Low Stock Alerts</s:String>
+    <s:String x:Key="Lang_ViewItems">View Items</s:String>
+    <s:String x:Key="Lang_TotalAlerts">TOTAL ALERTS</s:String>
+    <s:String x:Key="Lang_CriticalOut">OUT OF STOCK (0)</s:String>
+    <s:String x:Key="Lang_LowestUnits">LOWEST STOCK</s:String>
+    <s:String x:Key="Lang_DismissedMessage">Alerts Dismissed</s:String>
+    <s:String x:Key="Lang_DismissedSub">The low stock warning has been acknowledged.</s:String>
+    <s:String x:Key="Lang_ReopenAlerts">Reopen Alerts</s:String>
+
+    <!-- POS / Cart -->
+    <s:String x:Key="Lang_ProductSearch">Search by name, barcode, or brand...</s:String>
+    <s:String x:Key="Lang_CustomerSearch">Search customer by name or phone...</s:String>
+    <s:String x:Key="Lang_OrderCart">Order Cart</s:String>
+    <s:String x:Key="Lang_HoldBill">Hold</s:String>
+    <s:String x:Key="Lang_HeldBills">Held Bills</s:String>
+    <s:String x:Key="Lang_ClearCart">Clear</s:String>
+    <s:String x:Key="Lang_Subtotal">Subtotal</s:String>
+    <s:String x:Key="Lang_Discount">Bill Discount</s:String>
+    <s:String x:Key="Lang_PrevDues">Previous Dues</s:String>
+    <s:String x:Key="Lang_BillNow">Current Bill</s:String>
+    <s:String x:Key="Lang_TotalWithOld">Grand Total (with Dues)</s:String>
+    <s:String x:Key="Lang_PayNow">Amount Paid</s:String>
+    <s:String x:Key="Lang_CashTendered">Cash Tendered</s:String>
+    <s:String x:Key="Lang_ChangeReturn">Change Return</s:String>
+    <s:String x:Key="Lang_RemainingKhata">Remaining Khata</s:String>
+    <s:String x:Key="Lang_ProcessCheckout">COMPLETE &amp; PRINT</s:String>
+    <s:String x:Key="Lang_PrintA4">A4 INVOICE</s:String>
+    <s:String x:Key="Lang_SaveEstimate">ESTIMATE</s:String>
+    <s:String x:Key="Lang_SiteNotes">Contractor / Site / Notes (optional)</s:String>
+
+    <!-- Inventory & Purchases -->
+    <s:String x:Key="Lang_InventoryTitle">Inventory Management</s:String>
+    <s:String x:Key="Lang_AddProduct">Add Product</s:String>
+    <s:String x:Key="Lang_EditProduct">Edit Product</s:String>
+    <s:String x:Key="Lang_StockProcurement">Stock Procurement</s:String>
     <s:String x:Key="Lang_NewArrival">NEW PRODUCT ARRIVAL</s:String>
     <s:String x:Key="Lang_RestockExisting">RESTOCK EXISTING ITEM</s:String>
-    <s:String x:Key="Lang_SupplierName">SUPPLIER NAME</s:String>
-    <s:String x:Key="Lang_ProductSearch">PRODUCT SEARCH / NAME</s:String>
-    <s:String x:Key="Lang_UnitCost">UNIT COST (RS)</s:String>
-    <s:String x:Key="Lang_FutureSellingPrice">FUTURE SELLING PRICE (RS)</s:String>
-    <s:String x:Key="Lang_RecordRestock">RECORD INVENTORY RESTOCK</s:String>
-    <s:String x:Key="Lang_ItemName">ITEM NAME</s:String>
-    <s:String x:Key="Lang_TOTAL_AMOUNT">TOTAL AMOUNT</s:String>
-    <s:String x:Key="Lang_TotalSales">Total Sales</s:String>
-    <s:String x:Key="Lang_StockItems">Stock Items</s:String>
-    <s:String x:Key="Lang_PendingDues">Pending Dues</s:String>
-    <s:String x:Key="Lang_RecentTransactions">Recent Transactions</s:String>
-    <s:String x:Key="Lang_LowStock">Low Stock Alert</s:String>
-    <s:String x:Key="Lang_PerformanceOverview">Performance Overview</s:String>
-    <s:String x:Key="Lang_Last7Days">Selling last 7 days</s:String>
-    <s:String x:Key="Lang_SaleRevenue">TOTAL SALE REVENUE</s:String>
-    <s:String x:Key="Lang_ProfitWeek">PROFIT THIS WEEK</s:String>
-    <s:String x:Key="Lang_PurchaseWeek">TOTAL PURCHASE THIS WEEK</s:String>
-    <s:String x:Key="Lang_LowStockSub">LOW IN STOCK</s:String>
-    <s:String x:Key="Lang_ViewItems">View Items →</s:String>
-    <s:String x:Key="Lang_TotalAlerts">TOTAL ALERTS</s:String>
-    <s:String x:Key="Lang_Critical">CRITICAL (&lt;10)</s:String>
-    <s:String x:Key="Lang_LowestUnits">LOWEST UNITS</s:String>
-    <s:String x:Key="Lang_DismissedMessage">All alerts dismissed</s:String>
-    <s:String x:Key="Lang_DismissedSub">You've handled all critical inventory tasks!</s:String>
-    <s:String x:Key="Lang_ReopenAlerts">Reopen Alerts List</s:String>
-    <s:String x:Key="Lang_DONE">DONE</s:String>
-
-    <!-- Categories -->
-    <s:String x:Key="Lang_All">All</s:String>
-    <s:String x:Key="Lang_Hardware">Hardware</s:String>
-    <s:String x:Key="Lang_Supplies">Supplies</s:String>
-    <s:String x:Key="Lang_Staff">Staff</s:String>
-
-    <!-- POS -->
-    <s:String x:Key="Lang_CustomerSearch">SEARCH CUSTOMER</s:String>
-    <s:String x:Key="Lang_ProductSearch">Search Product...</s:String>
-    <s:String x:Key="Lang_CartList">Cart List</s:String>
-    <s:String x:Key="Lang_Subtotal">Subtotal</s:String>
-    <s:String x:Key="Lang_Discount">Discount</s:String>
-    <s:String x:Key="Lang_Total">Total</s:String>
-    <s:String x:Key="Lang_Paid">Paid</s:String>
-    <s:String x:Key="Lang_PrevDues">Previous Dues:</s:String>
-    <s:String x:Key="Lang_BillNow">Bill Now:</s:String>
-    <s:String x:Key="Lang_TotalWithOld">Total bill with old:</s:String>
-    <s:String x:Key="Lang_PayNow">Total Bill Pay Now:</s:String>
-    <s:String x:Key="Lang_RemainingKhata">Remaining bill in Khata:</s:String>
-    <s:String x:Key="Lang_ProcessCheckout">PROCESS CHECKOUT</s:String>
-    <s:String x:Key="Lang_StockCount">Stock: </s:String>
-
-    <!-- Product / Purchase -->
-    <s:String x:Key="Lang_Inventory">Inventory Management</s:String>
-    <s:String x:Key="Lang_AddProduct">Add New Product</s:String>
-    <s:String x:Key="Lang_ProductName">PRODUCT NAME</s:String>
-    <s:String x:Key="Lang_Category">CATEGORY</s:String>
-    <s:String x:Key="Lang_Stock">STOCK</s:String>
-    <s:String x:Key="Lang_Price">Price</s:String>
-    <s:String x:Key="Lang_CostPrice">COST PRICE</s:String>
-    <s:String x:Key="Lang_SellingPrice">SELLING PRICE</s:String>
-    <s:String x:Key="Lang_Supplier">Supplier</s:String>
-    <s:String x:Key="Lang_RecordPurchase">Record Purchase</s:String>
-    <s:String x:Key="Lang_TotalProduct">TOTAL PRODUCT</s:String>
-    <s:String x:Key="Lang_InventoryUnits">TOTAL INVENTORY UNITS</s:String>
-    <s:String x:Key="Lang_Actions">ACTIONS</s:String>
-    <s:String x:Key="Lang_Edit">Edit</s:String>
-    <s:String x:Key="Lang_Delete">Delete</s:String>
-    <s:String x:Key="Lang_EditProduct">Edit Product</s:String>
+    <s:String x:Key="Lang_RecordRestock">RECORD PURCHASE &amp; UPDATE STOCK</s:String>
     <s:String x:Key="Lang_SaveChanges">Save Changes</s:String>
     <s:String x:Key="Lang_Cancel">Cancel</s:String>
+    <s:String x:Key="Lang_Delete">Delete</s:String>
+    <s:String x:Key="Lang_Edit">Edit</s:String>
 
-    <!-- Customer -->
-    <s:String x:Key="Lang_CustomerDirectory">CUSTOMER DIRECTORY</s:String>
-    <s:String x:Key="Lang_NewCustomer">New Customer</s:String>
-    <s:String x:Key="Lang_TotalDues">TOTAL DUE</s:String>
-    <s:String x:Key="Lang_Payment">Receive Payment</s:String>
-    <s:String x:Key="Lang_Ledger">TRANSACTION ARCHIVES</s:String>
-    <s:String x:Key="Lang_Phone">PHONE</s:String>
-    <s:String x:Key="Lang_InitialBalance">INITIAL BALANCE</s:String>
-    <s:String x:Key="Lang_Activity">ACTIVITY</s:String>
-    <s:String x:Key="Lang_Debit">DEBIT</s:String>
-    <s:String x:Key="Lang_Credit">CREDIT</s:String>
-    <s:String x:Key="Lang_RefID">REF ID</s:String>
-    <s:String x:Key="Lang_Entries"> ENTRIES</s:String>
-    <s:String x:Key="Lang_Confirm">CONFIRM</s:String>
-    <s:String x:Key="Lang_Save">SAVE</s:String>
-    <s:String x:Key="Lang_Activity_Sale">Sale</s:String>
-    <s:String x:Key="Lang_Activity_Payment">Payment</s:String>
+    <!-- Customers -->
+    <s:String x:Key="Lang_CustomerDirectory">Customer Directory</s:String>
+    <s:String x:Key="Lang_NewCustomer">Add Customer</s:String>
+    <s:String x:Key="Lang_ReceivePayment">Receive Payment</s:String>
+    <s:String x:Key="Lang_PrintLedger">Print Khata</s:String>
+    <s:String x:Key="Lang_AccountLedger">Account Ledger</s:String>
 
     <!-- Records -->
-    <s:String x:Key="Lang_BusinessRecords">Business Records</s:String>
-    <s:String x:Key="Lang_AllRecords">All Records</s:String>
-    <s:String x:Key="Lang_Sales">Sales History</s:String>
-    <s:String x:Key="Lang_Purchases">Purchase History</s:String>
-    <s:String x:Key="Lang_MasterLedger">ACTIVITY MASTER LEDGER</s:String>
-    <s:String x:Key="Lang_DateTime">DATE &amp; TIME</s:String>
-    <s:String x:Key="Lang_Type">TYPE</s:String>
-    <s:String x:Key="Lang_Reference">REFERENCE</s:String>
-    <s:String x:Key="Lang_Entity">ENTITY</s:String>
-    <s:String x:Key="Lang_RecordDetails">RECORD DETAILS</s:String>
-    <s:String x:Key="Lang_Close">CLOSE</s:String>
-    <s:String x:Key="Lang_LogEnd">SYSTEM LOG END</s:String>
+    <s:String x:Key="Lang_MasterLedger">Master Transaction Ledger</s:String>
+    <s:String x:Key="Lang_AllRecords">All</s:String>
+    <s:String x:Key="Lang_SalesHistory">Sales</s:String>
+    <s:String x:Key="Lang_EstimatesHistory">Estimates</s:String>
+    <s:String x:Key="Lang_ReturnsHistory">Returns</s:String>
+    <s:String x:Key="Lang_PurchasesHistory">Purchases</s:String>
+    <s:String x:Key="Lang_PaymentsHistory">Payments</s:String>
+    <s:String x:Key="Lang_Close">Close</s:String>
+    <s:String x:Key="Lang_Done">Done</s:String>
 
-    <!-- Profile -->
-    <s:String x:Key="Lang_ProfileSettings">Profile Settings</s:String>
+    <!-- Settings / Profile -->
+    <s:String x:Key="Lang_ProfileSettings">Store &amp; App Settings</s:String>
     <s:String x:Key="Lang_Language">App Language</s:String>
-    <s:String x:Key="Lang_SelectLanguage">Select your preferred language</s:String>
+    <s:String x:Key="Lang_SelectLanguage">Switch between English and Urdu (with RTL layout)</s:String>
     <s:String x:Key="Lang_Theme">Display Theme</s:String>
+    <s:String x:Key="Lang_StoreBranding">Shop Branding &amp; Receipt Header</s:String>
+    <s:String x:Key="Lang_PrinterSettings">Printer &amp; Invoice Format</s:String>
+    <s:String x:Key="Lang_StaffPins">Staff &amp; Owner PINs</s:String>
+    <s:String x:Key="Lang_DatabaseBackup">Database Backup &amp; Restore</s:String>
 
-    <!-- Messages -->
-    <s:String x:Key="Msg_SaleSaved">Transaction processed successfully!</s:String>
-    <s:String x:Key="Msg_Error">Something went wrong. Please try again.</s:String>
-    <s:String x:Key="Msg_ProductSaved">Product saved successfully.</s:String>
-    <s:String x:Key="Msg_CustomerSaved">Customer recorded successfully.</s:String>
-    <s:String x:Key="Msg_PaymentProcessed">Payment received and ledger updated.</s:String>
-    <s:String x:Key="Msg_RestockSaved">Inventory updated successfully.</s:String>
 </ResourceDictionary>

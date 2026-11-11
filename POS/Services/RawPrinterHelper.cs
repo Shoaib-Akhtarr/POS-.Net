@@ -8,9 +8,9 @@ namespace POS.Services
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         public class DOCINFOA
         {
-            [MarshalAs(UnmanagedType.LPStr)] public string pDocName;
-            [MarshalAs(UnmanagedType.LPStr)] public string pOutputFile;
-            [MarshalAs(UnmanagedType.LPStr)] public string pDatatype;
+            [MarshalAs(UnmanagedType.LPStr)] public string pDocName = string.Empty;
+            [MarshalAs(UnmanagedType.LPStr)] public string pOutputFile = string.Empty;
+            [MarshalAs(UnmanagedType.LPStr)] public string pDatatype = string.Empty;
         }
 
         [DllImport("winspool.Drv", EntryPoint = "OpenPrinterA", SetLastError = true, CharSet = CharSet.Ansi, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
