@@ -269,7 +269,7 @@ namespace POS.ViewModels
 
                 string? chosenPath = dlg.ShowDialog() == true ? dlg.FileName : null;
                 string savedPath = await _backupService.ExportDatabaseBackupAsync(chosenPath);
-                SetStatus($"Database backed up to {savedPath}", isError: false);
+                SetStatus($"Database backed up to {savedPath} (Spreadsheets & auto-cleanup updated)", isError: false);
             }
             catch (Exception ex)
             {

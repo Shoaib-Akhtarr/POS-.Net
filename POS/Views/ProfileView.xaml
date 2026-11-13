@@ -296,7 +296,7 @@
 
                             <!-- Auto-Backup Folder (Google Drive / OneDrive / USB) -->
                             <TextBlock Text="Auto-Backup Folder" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,6"/>
-                            <TextBlock Text="A portable, verified backup is saved here once per day when the app closes. Copy it to a new computer and restore it from Settings." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                            <TextBlock Text="Auto-saves daily .kposbackup packages + latest Excel-ready CSV spreadsheets (Khata dues, stock, sales) to Google Drive / OneDrive. Backups older than 30 days are automatically cleaned up." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,8"/>
                             <Grid Margin="0,0,0,16">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>

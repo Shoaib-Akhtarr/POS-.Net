@@ -4,9 +4,11 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using POS.Models;
 
 namespace POS.Services
@@ -69,6 +71,15 @@ namespace POS.Services
                 }
 
                 File.Move(packagePath, fullTarget, overwrite: true);
+
+                // Export human-readable spreadsheets (.csv) and auto-prune backups older than 30 days
+                ExportSpreadsheets(targetDirectory);
+                PruneOldBackups(targetDirectory, retentionDays: 30);
+                if (!string.Equals(Path.GetFullPath(targetDirectory), Path.GetFullPath(BackupDir), StringComparison.OrdinalIgnoreCase))
+                {
+                    ExportSpreadsheets(BackupDir);
+                    PruneOldBackups(BackupDir, retentionDays: 30);
+                }
             }
             finally
             {
@@ -145,15 +156,42 @@ namespace POS.Services
             try
             {
                 string folder = GetAutoBackupFolder();
-                if (string.IsNullOrWhiteSpace(folder) || !Directory.Exists(folder))
-                    return;
-
-                string path = Path.Combine(folder, $"KarobarPOS_{DateTime.Now:yyyyMMdd}.kposbackup");
-                ExportPortableBackup(path);
+                if (!string.IsNullOrWhiteSpace(folder) && Directory.Exists(folder))
+                {
+                    string path = Path.Combine(folder, $"KarobarPOS_{DateTime.Now:yyyyMMdd}.kposbackup");
+                    ExportPortableBackup(path);
+                }
+                else
+                {
+                    ExportSpreadsheets(BackupDir);
+                    PruneOldBackups(BackupDir, retentionDays: 30);
+                }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[AutoBackup] Failed on exit: {ex.Message}");
+            }
+        }
+
+        public void RunPeriodicBackup()
+        {
+            try
+            {
+                string folder = GetAutoBackupFolder();
+                if (!string.IsNullOrWhiteSpace(folder) && Directory.Exists(folder))
+                {
+                    string path = Path.Combine(folder, $"KarobarPOS_{DateTime.Now:yyyyMMdd}.kposbackup");
+                    ExportPortableBackup(path);
+                }
+                else
+                {
+                    ExportSpreadsheets(BackupDir);
+                    PruneOldBackups(BackupDir, retentionDays: 30);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PeriodicBackup] Failed: {ex.Message}");
             }
         }
 
@@ -194,12 +232,20 @@ namespace POS.Services
             using var source = new SqliteConnection(new SqliteConnectionStringBuilder
             {
                 DataSource = sourcePath,
-                Mode = SqliteOpenMode.ReadOnly
+                Mode = SqliteOpenMode.ReadOnly,
+                Pooling = false
             }.ToString());
-            using var destination = new SqliteConnection($"Data Source={destinationPath}");
+            using var destination = new SqliteConnection(new SqliteConnectionStringBuilder
+            {
+                DataSource = destinationPath,
+                Pooling = false
+            }.ToString());
             source.Open();
             destination.Open();
             source.BackupDatabase(destination);
+            source.Close();
+            destination.Close();
+            SqliteConnection.ClearAllPools();
         }
 
         private static void DeleteSqliteSidecars(string databasePath)
@@ -246,7 +292,8 @@ namespace POS.Services
             using var connection = new SqliteConnection(new SqliteConnectionStringBuilder
             {
                 DataSource = path,
-                Mode = SqliteOpenMode.ReadOnly
+                Mode = SqliteOpenMode.ReadOnly,
+                Pooling = false
             }.ToString());
             connection.Open();
             using var command = connection.CreateCommand();
@@ -257,12 +304,208 @@ namespace POS.Services
             command.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name IN ('Products', 'Customers', 'Sales', 'SaleItems', 'StoreSettings');";
             if (Convert.ToInt32(command.ExecuteScalar()) != 5)
                 throw new InvalidDataException("This file does not contain a Karobar POS database.");
+
+            connection.Close();
+            SqliteConnection.ClearAllPools();
         }
 
         private static string HashFile(string path)
         {
-            using var stream = File.OpenRead(path);
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             return Convert.ToHexString(SHA256.HashData(stream));
+        }
+
+        private static string EscapeCsv(string? value)
+        {
+            if (string.IsNullOrEmpty(value)) return "";
+            bool needsQuotes = value.Contains(',') || value.Contains('"') || value.Contains('\n') || value.Contains('\r');
+            if (needsQuotes)
+            {
+                return $"\"{value.Replace("\"", "\"\"")}\"";
+            }
+            return value;
+        }
+
+        public static void ExportSpreadsheets(string targetDirectory)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(targetDirectory))
+                    return;
+
+                Directory.CreateDirectory(targetDirectory);
+                using var context = new AppDbContext();
+
+                // 1. Products Stock CSV
+                var products = context.Products
+                    .AsNoTracking()
+                    .Where(p => !p.IsDeleted)
+                    .OrderBy(p => p.Category)
+                    .ThenBy(p => p.Name)
+                    .ToList();
+
+                var productsSb = new StringBuilder();
+                productsSb.AppendLine("Barcode,Product Name,Category,Brand,Current Stock,Unit,Cost Price,Sale Price,Total Cost Value,Total Retail Value,Low Stock Alert");
+
+                foreach (var p in products)
+                {
+                    decimal costVal = Math.Round(p.Quantity * p.CostPrice, 2);
+                    decimal retailVal = Math.Round(p.Quantity * p.SellingPrice, 2);
+                    string lowAlert = p.Quantity <= p.LowStockThreshold ? "LOW" : "OK";
+
+                    productsSb.AppendLine(string.Join(",",
+                        EscapeCsv(p.Barcode),
+                        EscapeCsv(p.Name),
+                        EscapeCsv(p.Category),
+                        EscapeCsv(p.Brand),
+                        p.Quantity.ToString("0.##"),
+                        EscapeCsv(p.Unit),
+                        p.CostPrice.ToString("0.##"),
+                        p.SellingPrice.ToString("0.##"),
+                        costVal.ToString("0.##"),
+                        retailVal.ToString("0.##"),
+                        lowAlert
+                    ));
+                }
+
+                string productsFile = Path.Combine(targetDirectory, "Latest_Products_Stock.csv");
+                File.WriteAllText(productsFile, productsSb.ToString(), new UTF8Encoding(true));
+
+                // 2. Khata Dues & Customers CSV
+                var khataSb = new StringBuilder();
+                khataSb.AppendLine("Party Type,Party Name,Phone,Address,CNIC,Credit Limit,Current Balance (Receivable/Payable),Status");
+
+                var khataAccounts = context.KhataAccounts
+                    .AsNoTracking()
+                    .Where(a => a.IsActive)
+                    .OrderBy(a => a.PartyType)
+                    .ThenBy(a => a.Name)
+                    .ToList();
+
+                var existingCustomerIds = khataAccounts
+                    .Where(a => a.CustomerId.HasValue)
+                    .Select(a => a.CustomerId!.Value)
+                    .ToHashSet();
+
+                foreach (var acc in khataAccounts)
+                {
+                    decimal ledgerBalance = KhataService.GetBalance(context, acc.Id);
+                    string status = ledgerBalance > 0 ? "Receivable" : (ledgerBalance < 0 ? "Payable" : "Clear");
+
+                    khataSb.AppendLine(string.Join(",",
+                        EscapeCsv(acc.PartyType),
+                        EscapeCsv(acc.Name),
+                        EscapeCsv(acc.Phone),
+                        EscapeCsv(acc.Address),
+                        EscapeCsv(acc.CNIC),
+                        acc.CreditLimit.ToString("0.##"),
+                        ledgerBalance.ToString("0.##"),
+                        status
+                    ));
+                }
+
+                foreach (var c in context.Customers.AsNoTracking().Where(c => !existingCustomerIds.Contains(c.Id)).OrderBy(c => c.Name).ToList())
+                {
+                    string status = c.TotalDues > 0 ? "Receivable" : (c.TotalDues < 0 ? "Payable" : "Clear");
+                    khataSb.AppendLine(string.Join(",",
+                        "Customer",
+                        EscapeCsv(c.Name),
+                        EscapeCsv(c.Phone),
+                        EscapeCsv(c.Address),
+                        "",
+                        c.CreditLimit.ToString("0.##"),
+                        c.TotalDues.ToString("0.##"),
+                        status
+                    ));
+                }
+
+                string khataFile = Path.Combine(targetDirectory, "Latest_Khata_Dues.csv");
+                File.WriteAllText(khataFile, khataSb.ToString(), new UTF8Encoding(true));
+
+                // 3. Recent Sales Summary CSV
+                var cutoff = DateTime.Now.AddDays(-30);
+                var recentSales = context.Sales
+                    .AsNoTracking()
+                    .Include(s => s.SaleItems)
+                    .Where(s => s.CreatedAt >= cutoff)
+                    .OrderByDescending(s => s.CreatedAt)
+                    .Take(500)
+                    .ToList();
+
+                var salesSb = new StringBuilder();
+                salesSb.AppendLine("Receipt #,Date Time,Record Type,Customer Name,Items Count,Subtotal,Discount,Final Amount,Amount Paid,Balance Due,Payment Method,Cashier");
+
+                foreach (var s in recentSales)
+                {
+                    int itemCount = s.SaleItems?.Count ?? 0;
+                    decimal subtotal = s.TotalAmount + s.Discount;
+                    salesSb.AppendLine(string.Join(",",
+                        EscapeCsv(s.ReceiptNumber ?? s.Id.ToString()),
+                        s.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                        EscapeCsv(s.RecordType),
+                        EscapeCsv(s.CustomerName ?? "Walk-in"),
+                        itemCount,
+                        subtotal.ToString("0.##"),
+                        s.Discount.ToString("0.##"),
+                        s.TotalAmount.ToString("0.##"),
+                        s.AmountPaid.ToString("0.##"),
+                        s.BalanceDue.ToString("0.##"),
+                        EscapeCsv(s.PaymentMethod),
+                        EscapeCsv(s.CreatedBy)
+                    ));
+                }
+
+                string salesFile = Path.Combine(targetDirectory, "Latest_Sales_Summary.csv");
+                File.WriteAllText(salesFile, salesSb.ToString(), new UTF8Encoding(true));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[CSV Export] Failed: {ex.Message}");
+            }
+        }
+
+        public static void PruneOldBackups(string targetDirectory, int retentionDays = 30)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(targetDirectory) || !Directory.Exists(targetDirectory))
+                    return;
+
+                var dirInfo = new DirectoryInfo(targetDirectory);
+                var backupFiles = dirInfo.GetFiles("KarobarPOS_*.kposbackup")
+                    .Concat(dirInfo.GetFiles("KarobarPOS_*.db"))
+                    .OrderByDescending(f => f.LastWriteTime)
+                    .ToList();
+
+                // Failsafe: Always preserve at least the 5 newest backups regardless of age
+                const int minPreservedBackups = 5;
+                if (backupFiles.Count <= minPreservedBackups)
+                    return;
+
+                var threshold = DateTime.Now.AddDays(-retentionDays);
+
+                var eligibleForDeletion = backupFiles
+                    .Skip(minPreservedBackups)
+                    .Where(f => f.LastWriteTime < threshold)
+                    .ToList();
+
+                foreach (var file in eligibleForDeletion)
+                {
+                    try
+                    {
+                        file.Delete();
+                        System.Diagnostics.Debug.WriteLine($"[Prune] Deleted old backup: {file.Name}");
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[Prune] Could not delete {file.Name}: {ex.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Prune] Cleanup failed: {ex.Message}");
+            }
         }
 
         private async Task SaveToJsonAsync<T>(string filePath, T data)
