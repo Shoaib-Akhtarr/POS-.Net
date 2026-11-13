@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              mc:Ignorable="d"
              d:DesignHeight="800" d:DesignWidth="1050"
              Background="{DynamicResource BgCanvasBrush}">
@@ -89,22 +88,27 @@
                     </Border>
                 </StackPanel>
 
-                <lvc:CartesianChart Grid.Row="1" Series="{Binding SalesTrendSeries}" FlowDirection="LeftToRight">
-                    <lvc:CartesianChart.AxisX>
-                        <lvc:Axis Labels="{Binding TrendLabels}" Foreground="{DynamicResource TextMutedBrush}">
-                            <lvc:Axis.Separator>
-                                <lvc:Separator Step="1" IsEnabled="False"/>
-                            </lvc:Axis.Separator>
-                        </lvc:Axis>
-                    </lvc:CartesianChart.AxisX>
-                    <lvc:CartesianChart.AxisY>
-                        <lvc:Axis LabelFormatter="{Binding YFormatter}" Foreground="{DynamicResource TextMutedBrush}">
-                            <lvc:Axis.Separator>
-                                <lvc:Separator StrokeDashArray="3" Stroke="{DynamicResource BorderDefaultBrush}"/>
-                            </lvc:Axis.Separator>
-                        </lvc:Axis>
-                    </lvc:CartesianChart.AxisY>
-                </lvc:CartesianChart>
+                <ItemsControl Grid.Row="1" ItemsSource="{Binding SalesTrend}" FlowDirection="LeftToRight">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><UniformGrid Columns="7"/></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="5,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Text="{Binding Amount, StringFormat=PKR {0:N0}}" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                <Border Grid.Row="1" Background="{DynamicResource BgSubtleBrush}" CornerRadius="5" Height="116" VerticalAlignment="Bottom" Margin="0,8">
+                                    <Border Background="{DynamicResource PrimaryBrush}" Height="{Binding BarHeight}" Width="28" CornerRadius="5" VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Grid.Row="2" Text="{Binding Label}" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </Grid>
         </Border>
 

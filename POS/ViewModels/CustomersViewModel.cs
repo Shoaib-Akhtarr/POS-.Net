@@ -33,6 +33,7 @@ namespace POS.ViewModels
         [ObservableProperty] private string _newCustomerPhone = string.Empty;
         [ObservableProperty] private string _newCustomerAddress = string.Empty;
         [ObservableProperty] private decimal _newCustomerInitialDues;
+        [ObservableProperty] private decimal _newCustomerCreditLimit;
 
         [ObservableProperty] private decimal _paymentAmount;
         [ObservableProperty] private string _paymentMethod = "Cash";
@@ -132,6 +133,7 @@ namespace POS.ViewModels
             NewCustomerPhone = SelectedCustomer.Phone;
             NewCustomerAddress = SelectedCustomer.Address;
             NewCustomerInitialDues = SelectedCustomer.TotalDues;
+            NewCustomerCreditLimit = SelectedCustomer.CreditLimit;
             ModalError = string.Empty;
             IsAddModalOpen = true;
         }
@@ -154,6 +156,11 @@ namespace POS.ViewModels
                 ModalError = "Customer name is required.";
                 return;
             }
+            if (NewCustomerCreditLimit < 0m)
+            {
+                ModalError = "Credit limit cannot be negative.";
+                return;
+            }
 
             using var context = new AppDbContext();
             string cleanPhone = NewCustomerPhone.Trim();
@@ -173,6 +180,7 @@ namespace POS.ViewModels
                     dbCustomer.Name = NewCustomerName.Trim();
                     dbCustomer.Phone = cleanPhone;
                     dbCustomer.Address = NewCustomerAddress.Trim();
+                    dbCustomer.CreditLimit = NewCustomerCreditLimit;
                     dbCustomer.UpdatedAt = DateTime.Now;
                     await context.SaveChangesAsync();
                 }
@@ -195,6 +203,7 @@ namespace POS.ViewModels
                     Phone = cleanPhone,
                     Address = NewCustomerAddress.Trim(),
                     TotalDues = NewCustomerInitialDues,
+                    CreditLimit = NewCustomerCreditLimit,
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now
                 };
@@ -319,6 +328,7 @@ namespace POS.ViewModels
             NewCustomerPhone = string.Empty;
             NewCustomerAddress = string.Empty;
             NewCustomerInitialDues = 0m;
+            NewCustomerCreditLimit = 0m;
             PaymentAmount = 0m;
             PaymentNotes = string.Empty;
         }

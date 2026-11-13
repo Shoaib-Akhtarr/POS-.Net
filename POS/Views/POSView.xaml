@@ -434,6 +434,8 @@
                                 <TextBlock Text="{Binding RemainingKhata, StringFormat=Rs {0:N0}}" HorizontalAlignment="Right" Foreground="{Binding RemainingKhata, Converter={StaticResource DuesColorConv}}" FontSize="15" FontWeight="Black"/>
                             </Grid>
 
+                            <TextBlock Text="{Binding CreditLimitWarning}" Foreground="{DynamicResource DangerBrush}" FontSize="11" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,8" Visibility="{Binding CreditLimitWarning, Converter={StaticResource StrNotEmptyToVis}}"/>
+
                             <!-- Inline Status / Error Banner -->
                             <Border CornerRadius="8" Padding="10,7" Margin="0,0,0,8" Visibility="{Binding StatusMessage, Converter={StaticResource StrNotEmptyToVis}}">
                                 <Border.Style>

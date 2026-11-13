@@ -16,6 +16,7 @@ namespace POS.Models
         public bool UseBitmapThermalForUrdu { get; set; } = false;
         public string Language { get; set; } = "English"; // English or Urdu
         public string Theme { get; set; } = "Light"; // Light or Dark
+        public string AutoBackupFolder { get; set; } = string.Empty; // e.g. Google Drive / OneDrive / USB path
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
     }
 }

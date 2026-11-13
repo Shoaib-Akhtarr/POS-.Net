@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -42,6 +43,9 @@ namespace POS.ViewModels
 
         [ObservableProperty] private string _statusMessage = string.Empty;
         [ObservableProperty] private bool _isErrorStatus;
+
+        // Auto-backup folder (Google Drive / OneDrive / USB)
+        [ObservableProperty] private string _autoBackupFolder = string.Empty;
 
         public bool IsOwner => SessionService.IsOwner;
         public string CurrentUserName => SessionService.CurrentUserName;
@@ -86,6 +90,7 @@ namespace POS.ViewModels
             UseBitmapThermalForUrdu = settings.UseBitmapThermalForUrdu;
             CurrentLanguage = settings.Language;
             CurrentTheme = settings.Theme;
+            AutoBackupFolder = settings.AutoBackupFolder;
 
             var printers = PrintService.GetInstalledPrinters();
             if (!string.IsNullOrWhiteSpace(PrinterName) && !printers.Contains(PrinterName))
@@ -166,11 +171,29 @@ namespace POS.ViewModels
             settings.UseBitmapThermalForUrdu = UseBitmapThermalForUrdu;
             settings.Language = CurrentLanguage;
             settings.Theme = CurrentTheme;
+            settings.AutoBackupFolder = AutoBackupFolder.Trim();
             settings.UpdatedAt = DateTime.Now;
 
             context.SaveChanges();
             WeakReferenceMessenger.Default.Send(DataChangedMessage.SettingsUpdated);
             SetStatus("Store branding and printer settings saved.", isError: false);
+        }
+
+        [RelayCommand]
+        private void BrowseAutoBackupFolder()
+        {
+            // OpenFolderDialog is available in WPF on .NET 8+ (we are on net10.0-windows)
+            var dlg = new Microsoft.Win32.OpenFolderDialog
+            {
+                Title = "Select folder for automatic backups (e.g. Google Drive, OneDrive, USB)",
+                InitialDirectory = Directory.Exists(AutoBackupFolder) ? AutoBackupFolder : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                AutoBackupFolder = dlg.FolderName;
+                SetStatus($"Auto-backup folder set: {AutoBackupFolder}  —  Save settings to apply.", isError: false);
+            }
         }
 
         [RelayCommand]

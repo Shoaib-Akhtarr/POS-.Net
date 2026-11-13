@@ -25,4 +25,16 @@ namespace POS.Converters
             throw new NotImplementedException();
         }
     }
+
+    public class DuesLabelConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value != null && decimal.TryParse(value.ToString(), out decimal dues))
+                return dues > 0m ? "RECEIVABLE · MAME LENA HAI" : dues < 0m ? "CUSTOMER CREDIT · JAMA" : "BALANCE SETTLED";
+            return "KHATA BALANCE";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;
+    }
 }

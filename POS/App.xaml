@@ -20,6 +20,7 @@
             <converters:EqualityConverter x:Key="EqualityConverter" />
             <converters:EqualityMultiConverter x:Key="EqMultiConv" />
             <converters:DuesColorConverter x:Key="DuesColorConv" />
+            <converters:DuesLabelConverter x:Key="DuesLabelConv" />
             <converters:StockToBadgeBackgroundConverter x:Key="StockBgConv" />
             <converters:StockToBadgeForegroundConverter x:Key="StockFgConv" />
             <converters:StockToPillVisibilityConverter x:Key="StockPillVis" />

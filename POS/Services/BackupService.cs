@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
@@ -63,6 +64,51 @@ namespace POS.Services
 
             File.Copy(dbPath, target, overwrite: true);
             return Task.FromResult(target);
+        }
+
+        /// <summary>
+        /// Called on app exit. Silently copies the database to the owner-configured
+        /// auto-backup folder (e.g. Google Drive, OneDrive, or USB). Keeps ALL backups.
+        /// Does nothing if no folder is configured or the folder does not exist.
+        /// </summary>
+        public void RunAutoBackupOnExit()
+        {
+            try
+            {
+                string folder = GetAutoBackupFolder();
+                if (string.IsNullOrWhiteSpace(folder) || !Directory.Exists(folder))
+                    return;
+
+                SqliteConnection.ClearAllPools();
+                string dbPath = AppDbContext.GetDatabasePath();
+                if (!File.Exists(dbPath))
+                    return;
+
+                string fileName = $"KarobarPOS_{DateTime.Now:yyyyMMdd_HHmmss}.db";
+                string dest = Path.Combine(folder, fileName);
+                File.Copy(dbPath, dest, overwrite: false);
+            }
+            catch (Exception ex)
+            {
+                // Silent on exit — log to debug output only
+                System.Diagnostics.Debug.WriteLine($"[AutoBackup] Failed on exit: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Returns the auto-backup folder from StoreSettings, or empty if not set.
+        /// </summary>
+        public static string GetAutoBackupFolder()
+        {
+            try
+            {
+                using var ctx = new AppDbContext();
+                return ctx.StoreSettings.FirstOrDefault()?.AutoBackupFolder ?? string.Empty;
+            }
+            catch
+            {
+                return string.Empty;
+            }
         }
 
         public Task RestoreDatabaseBackupAsync(string sourcePath)

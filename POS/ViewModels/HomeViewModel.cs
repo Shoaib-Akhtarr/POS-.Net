@@ -2,18 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using LiveCharts;
-using LiveCharts.Wpf;
 using Microsoft.EntityFrameworkCore;
 using POS.Models;
 using POS.Services;
 
 namespace POS.ViewModels
 {
+    public sealed record SalesTrendPoint(string Label, decimal Amount, double BarHeight);
+
     public partial class HomeViewModel : ObservableObject, IRecipient<DataChangedMessage>
     {
         [ObservableProperty] private decimal _totalSalesRevenue;
@@ -30,15 +29,12 @@ namespace POS.ViewModels
         [ObservableProperty] private string _selectedPeriod = "Last 7 Days";
         public List<string> AvailablePeriods { get; } = new() { "Today", "Last 7 Days", "Last 30 Days", "All Time" };
 
-        [ObservableProperty] private SeriesCollection _salesTrendSeries = new();
-        [ObservableProperty] private string[] _trendLabels = Array.Empty<string>();
-        public Func<double, string> YFormatter { get; set; }
+        [ObservableProperty] private ObservableCollection<SalesTrendPoint> _salesTrend = new();
 
         public bool IsOwner => SessionService.IsOwner;
 
         public HomeViewModel()
         {
-            YFormatter = value => "Rs. " + value.ToString("N0");
             WeakReferenceMessenger.Default.Register(this);
             RefreshData();
         }
@@ -166,28 +162,18 @@ namespace POS.ViewModels
                 .Where(s => s.CreatedAt >= chartStart && s.RecordType == "Return")
                 .ToList();
 
-            TrendLabels = last7Days.Select(d => d.ToString("ddd dd")).ToArray();
-            var salesValues = new ChartValues<decimal>();
-
-            foreach (var day in last7Days)
+            var dailySales = last7Days.Select(day =>
             {
                 decimal daySale = recentSales.Where(s => s.CreatedAt.Date == day.Date).Sum(s => s.TotalAmount);
                 decimal dayRet = recentReturns.Where(s => s.CreatedAt.Date == day.Date).Sum(s => s.TotalAmount);
-                salesValues.Add(Math.Max(0m, daySale - dayRet));
-            }
-
-            SalesTrendSeries = new SeriesCollection
-            {
-                new LineSeries
-                {
-                    Title = "Net Sales",
-                    Values = salesValues,
-                    Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0D9488")),
-                    Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1A0D9488")),
-                    PointGeometrySize = 8,
-                    LineSmoothness = 0.35
-                }
-            };
+                return (Day: day, Amount: Math.Max(0m, daySale - dayRet));
+            }).ToList();
+            decimal maxDailySales = dailySales.Max(point => point.Amount);
+            SalesTrend = new ObservableCollection<SalesTrendPoint>(dailySales.Select(point =>
+                new SalesTrendPoint(
+                    point.Day.ToString("ddd dd"),
+                    point.Amount,
+                    maxDailySales > 0m ? (double)(point.Amount / maxDailySales * 112m) : 2d)));
         }
     }
 }

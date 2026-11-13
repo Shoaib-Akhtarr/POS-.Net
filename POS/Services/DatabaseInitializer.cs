@@ -56,6 +56,16 @@ namespace POS.Services
                         ["CreatedBy"] = "TEXT NOT NULL DEFAULT ''"
                     });
 
+                    EnsureColumns(conn, "StoreSettings", new Dictionary<string, string>
+                    {
+                        ["AutoBackupFolder"] = "TEXT NOT NULL DEFAULT ''"
+                    });
+
+                    EnsureColumns(conn, "Customers", new Dictionary<string, string>
+                    {
+                        ["CreditLimit"] = "TEXT NOT NULL DEFAULT '0'"
+                    });
+
                     EnsureColumns(conn, "Sales", new Dictionary<string, string>
                     {
                         ["RecordType"] = "TEXT NOT NULL DEFAULT 'Sale'",

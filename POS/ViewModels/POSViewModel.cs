@@ -112,6 +112,7 @@ namespace POS.ViewModels
         [ObservableProperty] private decimal _totalBillWithOld;
         [ObservableProperty] private decimal _remainingKhata;
         [ObservableProperty] private decimal _nextBalance;
+        [ObservableProperty] private string _creditLimitWarning = string.Empty;
         [ObservableProperty] private string _saleNotes = string.Empty;
         [ObservableProperty] private bool _isCustomAmountPaid;
 
@@ -648,6 +649,9 @@ namespace POS.ViewModels
             TotalBillWithOld = prevDues + TotalAmount;
             RemainingKhata = TotalBillWithOld - AmountPaid;
             NextBalance = RemainingKhata;
+            CreditLimitWarning = SelectedCustomer is { CreditLimit: > 0m } customer && NextBalance > customer.CreditLimit
+                ? $"Credit limit exceeded by PKR {NextBalance - customer.CreditLimit:N2}. Review before checkout."
+                : string.Empty;
             UpdateChangePreview();
         }
 

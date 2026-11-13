@@ -152,3 +152,4 @@ StyleCop.Cache
 # Not ignoring .gitignore itself, but this is a common snippet
 # Keep .gitignore itself tracked
 !.gitignore
+.idea/

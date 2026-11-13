@@ -13,5 +13,12 @@ namespace POS
             DatabaseInitializer.Initialize();
             ThemeService.ApplySavedPreferences();
         }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            // Silent auto-backup to the owner-configured folder (Google Drive / OneDrive / USB)
+            new BackupService().RunAutoBackupOnExit();
+            base.OnExit(e);
+        }
     }
 }

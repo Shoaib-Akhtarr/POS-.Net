@@ -293,6 +293,30 @@
                         <StackPanel>
                             <TextBlock Text="{DynamicResource Lang_DatabaseBackup}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,6"/>
                             <TextBlock Text="{Binding DatabasePath}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,14"/>
+
+                            <!-- Auto-Backup Folder (Google Drive / OneDrive / USB) -->
+                            <TextBlock Text="Auto-Backup Folder" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,6"/>
+                            <TextBlock Text="Saved automatically every time the app closes. Point to Google Drive, OneDrive, or a USB drive." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                            <Grid Margin="0,0,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding AutoBackupFolder, UpdateSourceTrigger=PropertyChanged}"
+                                         IsReadOnly="True" FontSize="11"
+                                         Foreground="{DynamicResource TextMutedBrush}"
+                                         Background="{DynamicResource SurfaceBrush}"
+                                         BorderBrush="{DynamicResource BorderBrush}"
+                                         Padding="8,6" VerticalContentAlignment="Center"
+                                         ToolTip="{Binding AutoBackupFolder}"/>
+                                <Button Grid.Column="2" Command="{Binding BrowseAutoBackupFolderCommand}"
+                                        Content="Browse"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Visibility="{Binding IsOwner, Converter={StaticResource BoolToVis}}"/>
+                            </Grid>
+
+                            <!-- Manual Backup / Restore -->
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>

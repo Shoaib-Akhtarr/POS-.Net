@@ -108,7 +108,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="TOTAL KHATA BALANCE" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                                <TextBlock Text="{Binding SelectedCustomer.TotalDues, Converter={StaticResource DuesLabelConv}}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
                                 <TextBlock Text="{Binding SelectedCustomer.TotalDues, Converter={StaticResource CurrencyConv}}" FontSize="28" FontWeight="Black" Foreground="{Binding SelectedCustomer.TotalDues, Converter={StaticResource DuesColorConv}}" Margin="0,4,0,0"/>
                             </StackPanel>
                             <Button Grid.Column="1" Command="{Binding OpenEditModalCommand}" Content="Edit Info" Style="{StaticResource SecondaryButtonStyle}" Padding="10,6" FontSize="11" VerticalAlignment="Top" Visibility="{Binding SelectedCustomer, Converter={StaticResource NullToVis}}"/>
@@ -191,8 +191,13 @@
                     <TextBox Text="{Binding NewCustomerAddress, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,12"/>
 
                     <StackPanel Visibility="{Binding IsEditMode, Converter={StaticResource InverseBoolToVis}}" Margin="0,0,0,14">
-                        <TextBlock Text="INITIAL OPENING DUES (Rs)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                        <TextBlock Text="OPENING RECEIVABLE (PKR)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                         <TextBox Text="{Binding NewCustomerInitialDues, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}"/>
+                    </StackPanel>
+
+                    <StackPanel Margin="0,0,0,14">
+                        <TextBlock Text="CREDIT LIMIT (PKR, 0 = UNLIMITED)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding NewCustomerCreditLimit, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}"/>
                     </StackPanel>
 
                     <TextBlock Text="{Binding ModalError}" Foreground="{DynamicResource DangerBrush}" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,12" Visibility="{Binding ModalError, Converter={StaticResource StrNotEmptyToVis}}"/>

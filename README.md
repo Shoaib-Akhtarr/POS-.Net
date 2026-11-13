@@ -1,4 +1,4 @@
-﻿# 🛒 POS-.Net — Aizaz Fareed Center & Al-Kuwait Electronics
+# 🛒 POS-.Net — Aizaz Fareed Center & Al-Kuwait Electronics
 
 ![POS Header](header.png)
 
