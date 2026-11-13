@@ -71,6 +71,10 @@ namespace POS.ViewModels
         [ObservableProperty] private ObservableCollection<InstallmentLineDraft> _draftItems = new();
         [ObservableProperty] private InstallmentContractRow? _selectedContract;
         [ObservableProperty] private Customer? _selectedCustomer;
+        [ObservableProperty] private bool _isNewCustomerPage;
+        [ObservableProperty] private bool _isNewCustomer;
+        [ObservableProperty] private string _newCustomerName = string.Empty;
+        [ObservableProperty] private decimal _newCustomerCreditLimit;
         [ObservableProperty] private Product? _selectedProduct;
         [ObservableProperty] private decimal _itemQuantity = 1m;
         [ObservableProperty] private decimal _itemUnitPrice;
@@ -107,7 +111,6 @@ namespace POS.ViewModels
         [ObservableProperty] private string _guarantor2Phone = string.Empty;
         [ObservableProperty] private string _guarantor2Address = string.Empty;
         [ObservableProperty] private string _guarantor2Relationship = string.Empty;
-        [ObservableProperty] private bool _isCreateModalOpen;
         [ObservableProperty] private bool _isPaymentModalOpen;
         [ObservableProperty] private string _paymentAmount = string.Empty;
         [ObservableProperty] private string _paymentMode = "Cash";
@@ -267,9 +270,13 @@ namespace POS.ViewModels
             + (schedule.LateFeeWaived ? 0m : Math.Max(0m, schedule.LateFee - schedule.LateFeePaid));
 
         [RelayCommand]
-        private void OpenCreateModal()
+        private void OpenNewCustomerPage()
         {
+            IsPaymentModalOpen = false;
             SelectedCustomer = null;
+            IsNewCustomer = true;
+            NewCustomerName = string.Empty;
+            NewCustomerCreditLimit = 0m;
             SelectedProduct = null;
             DraftItems.Clear();
             MarkupMode = "Percent";
@@ -287,7 +294,26 @@ namespace POS.ViewModels
             CnicFrontPath = CnicBackPath = AgreementPath = string.Empty;
             ClearGuarantors();
             ErrorMessage = string.Empty;
-            IsCreateModalOpen = true;
+            IsNewCustomerPage = true;
+        }
+
+        [RelayCommand]
+        private void UseExistingCustomer()
+        {
+            IsNewCustomer = false;
+            if (SelectedCustomer == null && Customers.Count > 0)
+                SelectedCustomer = Customers[0];
+        }
+
+        [RelayCommand]
+        private void StartNewCustomer()
+        {
+            IsNewCustomer = true;
+            SelectedCustomer = null;
+            NewCustomerName = string.Empty;
+            NewCustomerCreditLimit = 0m;
+            CustomerCNIC = CustomerFatherName = VerifiedPhone = ResidentialAddress = WorkAddress = string.Empty;
+            PhoneVerified = false;
         }
 
         [RelayCommand]
@@ -337,7 +363,9 @@ namespace POS.ViewModels
         private async Task CreateContract()
         {
             ErrorMessage = string.Empty;
-            if (SelectedCustomer == null) { ErrorMessage = "Select a customer account."; return; }
+            if (!IsNewCustomer && SelectedCustomer == null) { ErrorMessage = "Select an existing customer."; return; }
+            if (IsNewCustomer && string.IsNullOrWhiteSpace(NewCustomerName)) { ErrorMessage = "Enter the customer's full name."; return; }
+            if (IsNewCustomer && NewCustomerCreditLimit < 0m) { ErrorMessage = "Credit limit cannot be negative."; return; }
             if (DraftItems.Count == 0) { ErrorMessage = "Add at least one product to the contract."; return; }
             if (!TryNormalizeCnic(CustomerCNIC, out string customerCnic)) { ErrorMessage = "Customer CNIC must contain 13 digits."; return; }
             if (!PhoneVerified || string.IsNullOrWhiteSpace(VerifiedPhone)) { ErrorMessage = "Confirm the customer's phone number before signing the contract."; return; }
@@ -366,7 +394,28 @@ namespace POS.ViewModels
             {
                 using var context = new AppDbContext();
                 await using var transaction = await context.Database.BeginTransactionAsync();
-                var customer = await context.Customers.FirstAsync(c => c.Id == SelectedCustomer.Id);
+                Customer customer;
+                if (IsNewCustomer)
+                {
+                    bool duplicate = await context.Customers.AnyAsync(c => c.Name.ToLower() == NewCustomerName.Trim().ToLower()
+                        && c.Phone == VerifiedPhone.Trim());
+                    if (duplicate) throw new InvalidOperationException("A customer with this name and phone already exists. Choose the existing customer instead.");
+                    customer = new Customer
+                    {
+                        Name = NewCustomerName.Trim(),
+                        Phone = VerifiedPhone.Trim(),
+                        Address = ResidentialAddress.Trim(),
+                        CreditLimit = decimal.Round(NewCustomerCreditLimit, 2, MidpointRounding.AwayFromZero),
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now
+                    };
+                    context.Customers.Add(customer);
+                    await context.SaveChangesAsync();
+                }
+                else
+                {
+                    customer = await context.Customers.FirstAsync(c => c.Id == SelectedCustomer!.Id);
+                }
                 var products = new Dictionary<int, Product>();
                 foreach (var line in DraftItems)
                 {
@@ -486,7 +535,9 @@ namespace POS.ViewModels
                 await transaction.CommitAsync();
 
                 _printService.PrintA4Invoice(sale);
-                IsCreateModalOpen = false;
+                IsNewCustomerPage = false;
+                IsNewCustomer = false;
+                SelectedCustomer = customer;
                 WeakReferenceMessenger.Default.Send(DataChangedMessage.ProductUpdated);
                 WeakReferenceMessenger.Default.Send(DataChangedMessage.CustomerUpdated);
                 WeakReferenceMessenger.Default.Send(DataChangedMessage.TransactionUpdated);
@@ -586,7 +637,7 @@ namespace POS.ViewModels
         }
 
         [RelayCommand]
-        private void CloseModal() { IsCreateModalOpen = false; IsPaymentModalOpen = false; ErrorMessage = string.Empty; }
+        private void CloseModal() { IsPaymentModalOpen = false; IsNewCustomerPage = false; ErrorMessage = string.Empty; }
 
         private void ClearGuarantors()
         {

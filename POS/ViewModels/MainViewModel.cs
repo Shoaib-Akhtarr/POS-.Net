@@ -18,6 +18,8 @@ namespace POS.ViewModels
         [ObservableProperty] private string _currentUserName = "Counter Cashier";
         [ObservableProperty] private string _currentUserRole = "Cashier";
         [ObservableProperty] private bool _isOwner;
+        [ObservableProperty] private bool _isNewInstallmentCustomerPage;
+        [ObservableProperty] private bool _isInstallmentRecordsPage;
 
         // Staff Login / Switch PIN Overlay
         [ObservableProperty] private bool _isLoginModalOpen = true;
@@ -56,6 +58,11 @@ namespace POS.ViewModels
             _installmentsViewModel = new InstallmentsViewModel();
             _recordsViewModel = new RecordsViewModel();
             _profileViewModel = new ProfileViewModel();
+            _installmentsViewModel.PropertyChanged += (_, args) =>
+            {
+                if (args.PropertyName == nameof(InstallmentsViewModel.IsNewCustomerPage))
+                    UpdateInstallmentNavigation();
+            };
 
             _currentViewModel = _posViewModel;
 
@@ -136,66 +143,89 @@ namespace POS.ViewModels
             LoginPin = string.Empty;
             LoginError = string.Empty;
             IsLoginModalOpen = false;
-            CurrentViewModel = _posViewModel;
+            SetCurrentView(_posViewModel);
         }
 
         [RelayCommand]
         private void NavigateToHome()
         {
             _homeViewModel.RefreshData();
-            CurrentViewModel = _homeViewModel;
+            SetCurrentView(_homeViewModel);
         }
 
         [RelayCommand]
-        private void NavigateToPOS() => CurrentViewModel = _posViewModel;
+        private void NavigateToPOS() => SetCurrentView(_posViewModel);
 
         [RelayCommand]
         private void NavigateToProducts()
         {
             _productsViewModel.RefreshData();
-            CurrentViewModel = _productsViewModel;
+            SetCurrentView(_productsViewModel);
         }
 
         [RelayCommand]
         private void NavigateToPurchases()
         {
             _purchasesViewModel.RefreshData();
-            CurrentViewModel = _purchasesViewModel;
+            SetCurrentView(_purchasesViewModel);
         }
 
         [RelayCommand]
         private void NavigateToCustomers()
         {
             _customersViewModel.LoadCustomers();
-            CurrentViewModel = _customersViewModel;
+            SetCurrentView(_customersViewModel);
         }
 
         [RelayCommand]
         private void NavigateToKhata()
         {
             _khataViewModel.RefreshData();
-            CurrentViewModel = _khataViewModel;
+            SetCurrentView(_khataViewModel);
         }
 
         [RelayCommand]
         private void NavigateToInstallments()
         {
+            _installmentsViewModel.IsNewCustomerPage = false;
+            _installmentsViewModel.IsPaymentModalOpen = false;
             _installmentsViewModel.RefreshData();
-            CurrentViewModel = _installmentsViewModel;
+            SetCurrentView(_installmentsViewModel);
+        }
+
+        [RelayCommand]
+        private void NavigateToNewInstallmentCustomer()
+        {
+            _installmentsViewModel.RefreshData();
+            _installmentsViewModel.OpenNewCustomerPageCommand.Execute(null);
+            SetCurrentView(_installmentsViewModel);
         }
 
         [RelayCommand]
         private void NavigateToRecords()
         {
             _recordsViewModel.RefreshData();
-            CurrentViewModel = _recordsViewModel;
+            SetCurrentView(_recordsViewModel);
         }
 
         [RelayCommand]
         private void NavigateToProfile()
         {
             _profileViewModel.RefreshData();
-            CurrentViewModel = _profileViewModel;
+            SetCurrentView(_profileViewModel);
+        }
+
+        private void SetCurrentView(object viewModel)
+        {
+            CurrentViewModel = viewModel;
+            UpdateInstallmentNavigation();
+        }
+
+        private void UpdateInstallmentNavigation()
+        {
+            bool isInstallments = ReferenceEquals(CurrentViewModel, _installmentsViewModel);
+            IsNewInstallmentCustomerPage = isInstallments && _installmentsViewModel.IsNewCustomerPage;
+            IsInstallmentRecordsPage = isInstallments && !_installmentsViewModel.IsNewCustomerPage;
         }
     }
 }

@@ -257,20 +257,43 @@
                             </StackPanel>
                         </Button>
 
-                        <Button Command="{Binding NavigateToInstallmentsCommand}" ToolTip="Installments / Recovery">
+                        <Button Command="{Binding NavigateToNewInstallmentCustomerCommand}" ToolTip="Register new installment customer">
                             <Button.Style>
                                 <Style TargetType="Button" BasedOn="{StaticResource SidebarNavButton}">
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding CurrentViewModel.GetType().Name}" Value="InstallmentsViewModel">
+                                        <DataTrigger Binding="{Binding IsNewInstallmentCustomerPage}" Value="True">
                                             <Setter Property="Background" Value="{DynamicResource BgSidebarActiveBrush}"/>
                                             <Setter Property="Foreground" Value="White"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}" BorderThickness="3,0,0,0" BorderBrush="{DynamicResource PrimaryBrush}"><ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/></Border></ControlTemplate></Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource Icon_Customers}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"/>
+                                <TextBlock Text="New installment customer" Margin="14,0,0,0" VerticalAlignment="Center" Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Command="{Binding NavigateToInstallmentsCommand}" ToolTip="Installment records and collections">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource SidebarNavButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsInstallmentRecordsPage}" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource BgSidebarActiveBrush}"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}" BorderThickness="3,0,0,0" BorderBrush="{DynamicResource PrimaryBrush}"><ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/></Border></ControlTemplate></Setter.Value>
+                                            </Setter>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </Button.Style>
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource Icon_Records}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"/>
-                                <TextBlock Text="Installments" Margin="14,0,0,0" VerticalAlignment="Center" Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                                <TextBlock Text="Installment records" Margin="14,0,0,0" VerticalAlignment="Center" Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
                             </StackPanel>
                         </Button>
 
