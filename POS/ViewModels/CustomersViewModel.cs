@@ -38,7 +38,7 @@ namespace POS.ViewModels
         [ObservableProperty] private decimal _paymentAmount;
         [ObservableProperty] private string _paymentMethod = "Cash";
         [ObservableProperty] private string _paymentNotes = string.Empty;
-        public List<string> AvailablePaymentMethods { get; } = new() { "Cash", "Bank", "JazzCash", "EasyPaisa" };
+        public List<string> AvailablePaymentMethods { get; } = new() { "Cash", "Bank Transfer", "Raast", "JazzCash", "EasyPaisa" };
 
         private readonly BackupService _backupService;
         private readonly PrintService _printService;
@@ -163,6 +163,7 @@ namespace POS.ViewModels
             }
 
             using var context = new AppDbContext();
+            await using var transaction = await context.Database.BeginTransactionAsync();
             string cleanPhone = NewCustomerPhone.Trim();
 
             if (IsEditMode && SelectedCustomer != null)
@@ -182,7 +183,14 @@ namespace POS.ViewModels
                     dbCustomer.Address = NewCustomerAddress.Trim();
                     dbCustomer.CreditLimit = NewCustomerCreditLimit;
                     dbCustomer.UpdatedAt = DateTime.Now;
+                    var account = KhataService.GetCustomerAccount(context, dbCustomer);
+                    account.Name = dbCustomer.Name;
+                    account.Phone = dbCustomer.Phone;
+                    account.Address = dbCustomer.Address;
+                    account.CreditLimit = dbCustomer.CreditLimit;
+                    account.UpdatedAt = DateTime.Now;
                     await context.SaveChangesAsync();
+                    await transaction.CommitAsync();
                 }
 
                 int editedId = SelectedCustomer.Id;
@@ -210,6 +218,9 @@ namespace POS.ViewModels
 
                 context.Customers.Add(customer);
                 await context.SaveChangesAsync();
+                var account = KhataService.GetCustomerAccount(context, customer);
+                await context.SaveChangesAsync();
+                await transaction.CommitAsync();
 
                 LoadCustomers();
                 SelectedCustomer = Customers.FirstOrDefault(c => c.Id == customer.Id);
@@ -306,10 +317,12 @@ namespace POS.ViewModels
                 CreatedBy = SessionService.CurrentUserName,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
-                ReceiptNumber = $"PAY-{DateTime.Now:yyyyMMddHHmmss}"
+                ReceiptNumber = $"PAY-{DateTime.Now:yyyyMMddHHmmss}-{Guid.NewGuid():N}"[..28]
             };
 
             context.Sales.Add(paymentRecord);
+            var account = KhataService.GetCustomerAccount(context, dbCustomer);
+            KhataService.Post(context, account, "Khata payment received", PaymentMethod, 0m, PaymentAmount, "CustomerPayment", paymentRecord.ReceiptNumber ?? Guid.NewGuid().ToString("N"));
             await context.SaveChangesAsync();
 
             LoadCustomers();

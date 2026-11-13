@@ -103,7 +103,7 @@ namespace POS.ViewModels
         [ObservableProperty] private bool _isCustomerDropdownOpen;
 
         [ObservableProperty] private string _paymentMethod = "Cash";
-        public List<string> AvailablePaymentMethods { get; } = new() { "Cash", "Credit", "Bank", "JazzCash", "EasyPaisa" };
+        public List<string> AvailablePaymentMethods { get; } = new() { "Cash", "Credit", "Bank", "Raast", "JazzCash", "EasyPaisa" };
 
         [ObservableProperty] private decimal _discountAmount;
         [ObservableProperty] private decimal _amountPaid;
@@ -800,6 +800,21 @@ namespace POS.ViewModels
                 }
 
                 context.Sales.Add(sale);
+                await context.SaveChangesAsync();
+                if (!isEstimate && SelectedCustomer != null)
+                {
+                    decimal ledgerDelta = finalBalanceDue - prevDues;
+                    if (ledgerDelta != 0m)
+                    {
+                        var customer = await context.Customers.FindAsync(SelectedCustomer.Id);
+                        if (customer != null)
+                        {
+                            var account = KhataService.GetCustomerAccount(context, customer);
+                            KhataService.Post(context, account, $"Sale · {sale.ReceiptNumber}", PaymentMethod,
+                                Math.Max(0m, ledgerDelta), Math.Max(0m, -ledgerDelta), "Sale", sale.Id.ToString(), sale.CreatedAt);
+                        }
+                    }
+                }
                 await context.SaveChangesAsync();
                 await transaction.CommitAsync();
 

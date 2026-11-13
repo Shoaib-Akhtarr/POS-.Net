@@ -87,6 +87,9 @@ namespace POS.ViewModels
 
             var salesList = periodTransactions.Where(s => s.RecordType == "Sale").ToList();
             var returnsList = periodTransactions.Where(s => s.RecordType == "Return").ToList();
+            var installmentTerms = context.InstallmentContracts.AsNoTracking()
+                .Where(contract => salesList.Select(sale => sale.Id).Contains(contract.SaleId))
+                .ToDictionary(contract => contract.SaleId, contract => contract.MarkupAmount + contract.ProcessingFee);
 
             decimal grossSales = salesList.Sum(s => s.TotalAmount);
             decimal grossReturns = returnsList.Sum(s => s.TotalAmount);
@@ -106,7 +109,7 @@ namespace POS.ViewModels
                         : (item.ProductId.HasValue && productCosts.TryGetValue(item.ProductId.Value, out decimal c) ? c : 0m);
                     itemsProfit += item.Price - (cost * item.Quantity);
                 }
-                netProfit += itemsProfit - sale.Discount;
+                netProfit += itemsProfit - sale.Discount + installmentTerms.GetValueOrDefault(sale.Id);
             }
 
             foreach (var ret in returnsList)

@@ -12,6 +12,8 @@ using POS.Models;
 
 namespace POS.Services
 {
+    public sealed record DailyCashBookLine(DateTime Date, string Voucher, string Party, string Description, string Mode, decimal Inflow, decimal Outflow);
+
     public class PrintService
     {
         public static List<string> GetInstalledPrinters()
@@ -143,6 +145,121 @@ namespace POS.Services
             catch (Exception ex)
             {
                 return (false, $"Ledger Print Error: {ex.Message}");
+            }
+        }
+
+        public (bool success, string message) PrintPartyLedger(KhataAccount account, IEnumerable<(KhataEntry Entry, decimal RunningBalance)> history)
+        {
+            var settings = ThemeService.GetSettings();
+            try
+            {
+                var document = new FlowDocument
+                {
+                    FontFamily = new FontFamily("Segoe UI"),
+                    FontSize = 10,
+                    Foreground = Brushes.Black
+                };
+                document.Blocks.Add(new Paragraph(new Run(settings.ShopName))
+                {
+                    FontSize = 20,
+                    FontWeight = FontWeights.Bold,
+                    TextAlignment = TextAlignment.Center,
+                    Margin = new Thickness(0, 0, 0, 4)
+                });
+                document.Blocks.Add(new Paragraph(new Run($"Party account statement · {account.PartyType}"))
+                {
+                    FontSize = 14,
+                    FontWeight = FontWeights.Bold,
+                    Margin = new Thickness(0, 10, 0, 2)
+                });
+                document.Blocks.Add(new Paragraph(new Run($"{account.Name} · {account.Phone} · Printed {DateTime.Now:dd MMM yyyy HH:mm}"))
+                {
+                    Margin = new Thickness(0, 0, 0, 10)
+                });
+
+                var table = new Table { CellSpacing = 0 };
+                foreach (double width in new[] { 68d, 105d, 208d, 75d, 75d, 85d })
+                    table.Columns.Add(new TableColumn { Width = new GridLength(width) });
+                var header = new TableRow { Background = new SolidColorBrush(Color.FromRgb(226, 232, 240)), FontWeight = FontWeights.Bold };
+                foreach (string label in new[] { "Date", "Voucher", "Description", "Debit", "Credit", "Balance" })
+                    header.Cells.Add(new TableCell(new Paragraph(new Run(label)) { Margin = new Thickness(4, 3, 4, 3) }));
+                var rows = new TableRowGroup();
+                rows.Rows.Add(header);
+
+                foreach (var row in history)
+                {
+                    var tableRow = new TableRow();
+                    string[] values =
+                    {
+                        row.Entry.CreatedAt.ToString("dd MMM yy"),
+                        row.Entry.VoucherNumber,
+                        row.Entry.Description,
+                        row.Entry.Debit == 0m ? "—" : row.Entry.Debit.ToString("N2"),
+                        row.Entry.Credit == 0m ? "—" : row.Entry.Credit.ToString("N2"),
+                        row.RunningBalance.ToString("N2")
+                    };
+                    foreach (string value in values)
+                        tableRow.Cells.Add(new TableCell(new Paragraph(new Run(value)) { Margin = new Thickness(4, 3, 4, 3) }));
+                    rows.Rows.Add(tableRow);
+                }
+
+                table.RowGroups.Add(rows);
+                document.Blocks.Add(table);
+                document.Blocks.Add(new Paragraph(new Run($"Closing balance: PKR {history.LastOrDefault().RunningBalance:N2}"))
+                {
+                    FontSize = 13,
+                    FontWeight = FontWeights.Bold,
+                    TextAlignment = TextAlignment.Right,
+                    Margin = new Thickness(0, 10, 0, 0)
+                });
+                return PrintFlowDocument(document, $"Khata Statement - {account.Name}");
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Statement print error: {ex.Message}");
+            }
+        }
+
+        public (bool success, string message) PrintDailyCashBook(DateTime day, IEnumerable<DailyCashBookLine> history)
+        {
+            try
+            {
+                var document = new FlowDocument
+                {
+                    FontFamily = new FontFamily("Segoe UI"),
+                    FontSize = 10,
+                    Foreground = Brushes.Black
+                };
+                document.Blocks.Add(new Paragraph(new Run($"Daily Cash Book · {day:dd MMM yyyy}"))
+                {
+                    FontSize = 18,
+                    FontWeight = FontWeights.Bold,
+                    TextAlignment = TextAlignment.Center
+                });
+                var table = new Table { CellSpacing = 0 };
+                foreach (double width in new[] { 70d, 105d, 140d, 190d, 80d, 80d })
+                    table.Columns.Add(new TableColumn { Width = new GridLength(width) });
+                var rows = new TableRowGroup();
+                var header = new TableRow { Background = new SolidColorBrush(Color.FromRgb(226, 232, 240)), FontWeight = FontWeights.Bold };
+                foreach (string label in new[] { "Time", "Voucher", "Party", "Description", "Inflow", "Outflow" })
+                    header.Cells.Add(new TableCell(new Paragraph(new Run(label)) { Margin = new Thickness(4, 3, 4, 3) }));
+                rows.Rows.Add(header);
+                foreach (var row in history)
+                {
+                    string[] values = { row.Date.ToString("HH:mm"), row.Voucher, row.Party, $"{row.Description} · {row.Mode}",
+                        row.Inflow == 0m ? "—" : row.Inflow.ToString("N2"), row.Outflow == 0m ? "—" : row.Outflow.ToString("N2") };
+                    var tableRow = new TableRow();
+                    foreach (string value in values)
+                        tableRow.Cells.Add(new TableCell(new Paragraph(new Run(value)) { Margin = new Thickness(4, 3, 4, 3) }));
+                    rows.Rows.Add(tableRow);
+                }
+                table.RowGroups.Add(rows);
+                document.Blocks.Add(table);
+                return PrintFlowDocument(document, $"Roznamcha - {day:yyyyMMdd}");
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Cash book print error: {ex.Message}");
             }
         }
 

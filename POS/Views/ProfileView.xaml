@@ -296,7 +296,7 @@
 
                             <!-- Auto-Backup Folder (Google Drive / OneDrive / USB) -->
                             <TextBlock Text="Auto-Backup Folder" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,6"/>
-                            <TextBlock Text="Saved automatically every time the app closes. Point to Google Drive, OneDrive, or a USB drive." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                            <TextBlock Text="A portable, verified backup is saved here once per day when the app closes. Copy it to a new computer and restore it from Settings." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,8"/>
                             <Grid Margin="0,0,0,16">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -323,7 +323,7 @@
                                     <ColumnDefinition Width="10"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Button Grid.Column="0" Command="{Binding BackupDatabaseCommand}" Content="Backup Database (.db)" Style="{StaticResource PrimaryButtonStyle}"/>
+                                <Button Grid.Column="0" Command="{Binding BackupDatabaseCommand}" Content="Create portable backup" Style="{StaticResource PrimaryButtonStyle}"/>
                                 <Button Grid.Column="2" Command="{Binding RestoreDatabaseCommand}" Content="Restore Backup" Style="{StaticResource DangerButtonStyle}" Visibility="{Binding IsOwner, Converter={StaticResource BoolToVis}}"/>
                             </Grid>
                         </StackPanel>

@@ -20,18 +20,22 @@ A desktop Point of Sale (POS), inventory, and **Khata (credit ledger)** manageme
 - **Estimates (*Kacha Bill*) & Sale Returns (`RecordsView`)**
   - Save and print itemized **Estimates** without deducting stock or updating Khata, and convert them to a finalized **Sale** in one click.
   - Process partial or full **Sale Returns** that restore stock quantities and credit customer Khata balances while preventing duplicate over-returns.
-- **Customer & Contractor Khata Ledger (`CustomersView`)**
-  - Track customer/contractor balances, record full or partial payments (`Cash`, `Bank`, `JazzCash`, `EasyPaisa`), inspect itemized receipts, and print **Khata Ledger Statements**.
+- **Party Khata and Collections (`CustomersView`, `KhataView`)**
+  - Customer, supplier, and recovery-agent ledgers with opening balances, credit limits, running statements, cashbook, and receipts across Cash, Bank, Raast, JazzCash, and EasyPaisa.
+  - Record post-dated cheques as pending; clear or bounce them with an audit trail. Cleared customer cheques post to Khata.
+- **Installment Contracts (`InstallmentsView`)**
+  - Create itemized customer contracts with markup, processing fee, down payment, monthly/weekly/custom schedule, grace period, late fees, optional guarantors, and attached KYC documents.
+  - Take partial or full payments against oldest dues, print receipts, review due/overdue schedules, and record installment-linked cheques.
 - **Dual Printing & Configurable Branding (`PrintService` + `ProfileView`)**
   - **80mm Thermal ESC/POS** receipt printing (with optional WPF bitmap raster mode for Urdu script) and **A4/A5 Invoice** printing via Windows `PrintDialog` (supports *Microsoft Print to PDF*).
   - Editable shop name, subtitle, address, phone numbers, receipt footer, and default printer in **Settings**.
 - **Dashboard & Inventory Control (`HomeView`, `ProductsView`, `PurchasesView`)**
-  - Period filters (`Today`, `Last 7 Days`, `Last 30 Days`, `All Time`), 7-day net sales chart (`LiveCharts.Wpf`), net profit calculation using sale-time `UnitCost` snapshots, and low-stock alert modals.
+  - Period filters (`Today`, `Last 7 Days`, `Last 30 Days`, `All Time`), 7-day net sales chart, net profit calculation using sale-time `UnitCost` snapshots and installment markup, and low-stock alert modals.
   - Full inventory add/edit/soft-delete and supplier restocking audit log.
 - **Unified Themes, Bilingual UI & Data Safety**
   - Live **Light / Dark** Slate+Emerald theme switching.
   - Live **English / Urdu (`RightToLeft`)** language switching.
-  - Automatic SQLite schema migration and one-click `.db` **Backup & Restore** (stored under `%LocalAppData%\KarobarPOS\`), plus automatic JSON sale/inventory archives.
+  - Automatic SQLite schema migration and portable `.kposbackup` **Backup & Restore**. Packages include the full SQLite database and attached customer documents. Restore on a new computer from Settings; optional daily automatic backups target a chosen folder. Legacy `.db` restore remains supported.
 
 ---
 
@@ -54,7 +58,7 @@ Sign-in is managed via PBKDF2-hashed PINs in [`SessionService`](POS/Services/Ses
 - **Language:** C# (.NET 10)
 - **UI Framework:** WPF (`net10.0-windows`, MVVM via `CommunityToolkit.Mvvm`)
 - **Database:** SQLite with Entity Framework Core 10
-- **Charts:** `LiveCharts.Wpf`
+- **Charts:** Native WPF 7-day sales chart
 - **Architecture:** Single-project WPF MVVM (`POS.slnx` / `POS/POS.csproj`)
 
 ---
@@ -79,7 +83,7 @@ Sign-in is managed via PBKDF2-hashed PINs in [`SessionService`](POS/Services/Ses
 3. On startup, select a staff profile and enter your PIN (or click **Quick Start as Counter Cashier**).
 4. Configure your printer (`XP-80` or installed printer) and store details under **Settings**.
 
-> **Database Location:** Active data is stored in `%LocalAppData%\KarobarPOS\pos.db`. If a legacy `pos.db` exists next to the executable, it is automatically imported and schema-upgraded on first launch.
+> **Database Location:** Active data is stored in `%LocalAppData%\KarobarPOS\pos.db`. If a legacy `pos.db` exists next to the executable, it is automatically imported and schema-upgraded on first launch. Create a `.kposbackup` from **Settings → Data Safety**, copy it to the new computer, then choose **Restore backup** and select the file.
 
 ### Building / Developing on Linux (Fedora / Ubuntu)
 `POS/POS.csproj` enables `<EnableWindowsTargeting>true</EnableWindowsTargeting>` so you can edit and compile-check C# and XAML directly on Linux with `.NET 10 SDK` installed:

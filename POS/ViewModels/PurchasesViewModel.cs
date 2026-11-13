@@ -133,6 +133,7 @@ namespace POS.ViewModels
             }
 
             using var context = new AppDbContext();
+            using var transaction = context.Database.BeginTransaction();
             Product? targetProduct;
 
             if (IsNewProduct)
@@ -212,6 +213,14 @@ namespace POS.ViewModels
 
             context.Purchases.Add(purchase);
             context.SaveChanges();
+            if (!string.IsNullOrWhiteSpace(purchase.SupplierName))
+            {
+                var supplierAccount = KhataService.GetOrCreatePartyAccount(context, "Supplier", purchase.SupplierName);
+                KhataService.Post(context, supplierAccount, $"Purchase · {purchase.ProductName}", "Purchase credit", 0m, purchase.TotalCost,
+                    "SupplierPurchase", purchase.Id.ToString(), purchase.PurchaseDate);
+                context.SaveChanges();
+            }
+            transaction.Commit();
 
             string recordedName = targetProduct.Name;
             decimal recordedQty = Quantity;

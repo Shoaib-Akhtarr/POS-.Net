@@ -240,6 +240,40 @@
                             </StackPanel>
                         </Button>
 
+                        <Button Command="{Binding NavigateToKhataCommand}" ToolTip="Party Khata">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource SidebarNavButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentViewModel.GetType().Name}" Value="KhataViewModel">
+                                            <Setter Property="Background" Value="{DynamicResource BgSidebarActiveBrush}"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource Icon_Customers}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"/>
+                                <TextBlock Text="Party Khata" Margin="14,0,0,0" VerticalAlignment="Center" Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Command="{Binding NavigateToInstallmentsCommand}" ToolTip="Installments / Recovery">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource SidebarNavButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentViewModel.GetType().Name}" Value="InstallmentsViewModel">
+                                            <Setter Property="Background" Value="{DynamicResource BgSidebarActiveBrush}"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource Icon_Records}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"/>
+                                <TextBlock Text="Installments" Margin="14,0,0,0" VerticalAlignment="Center" Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                            </StackPanel>
+                        </Button>
+
                         <!-- Records -->
                         <Button Command="{Binding NavigateToRecordsCommand}" ToolTip="Records">
                             <Button.Style>
@@ -341,6 +375,12 @@
                 </DataTemplate>
                 <DataTemplate DataType="{x:Type vm:CustomersViewModel}">
                     <views:CustomersView/>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type vm:KhataViewModel}">
+                    <views:KhataView/>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type vm:InstallmentsViewModel}">
+                    <views:InstallmentsView/>
                 </DataTemplate>
                 <DataTemplate DataType="{x:Type vm:RecordsViewModel}">
                     <views:RecordsView/>

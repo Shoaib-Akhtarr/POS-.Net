@@ -261,8 +261,10 @@ namespace POS.ViewModels
             {
                 var dlg = new SaveFileDialog
                 {
-                    FileName = $"KarobarPOS_Backup_{DateTime.Now:yyyyMMdd_HHmm}.db",
-                    Filter = "SQLite Database (*.db)|*.db"
+                    FileName = $"KarobarPOS_Backup_{DateTime.Now:yyyyMMdd_HHmm}.kposbackup",
+                    DefaultExt = ".kposbackup",
+                    AddExtension = true,
+                    Filter = "Karobar POS portable backup (*.kposbackup)|*.kposbackup"
                 };
 
                 string? chosenPath = dlg.ShowDialog() == true ? dlg.FileName : null;
@@ -283,9 +285,16 @@ namespace POS.ViewModels
             {
                 var dlg = new OpenFileDialog
                 {
-                    Filter = "SQLite Database (*.db)|*.db"
+                    Filter = "Karobar POS backups (*.kposbackup;*.db)|*.kposbackup;*.db|Portable backup (*.kposbackup)|*.kposbackup|Legacy SQLite database (*.db)|*.db"
                 };
                 if (dlg.ShowDialog() != true) return;
+
+                var answer = System.Windows.MessageBox.Show(
+                    "Restoring replaces the current POS data with the selected backup. A safety backup of this computer's current data will be created first. Continue?",
+                    "Restore POS data",
+                    System.Windows.MessageBoxButton.YesNo,
+                    System.Windows.MessageBoxImage.Warning);
+                if (answer != System.Windows.MessageBoxResult.Yes) return;
 
                 await _backupService.RestoreDatabaseBackupAsync(dlg.FileName);
                 RefreshData();
@@ -293,7 +302,7 @@ namespace POS.ViewModels
                 WeakReferenceMessenger.Default.Send(DataChangedMessage.CustomerUpdated);
                 WeakReferenceMessenger.Default.Send(DataChangedMessage.TransactionUpdated);
                 WeakReferenceMessenger.Default.Send(DataChangedMessage.SettingsUpdated);
-                SetStatus("Database restored successfully.", isError: false);
+                SetStatus("Backup restored successfully. The app is now using the restored data.", isError: false);
             }
             catch (Exception ex)
             {

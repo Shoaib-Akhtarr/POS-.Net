@@ -446,6 +446,16 @@ namespace POS.ViewModels
 
                 context.Sales.Add(returnSale);
                 await context.SaveChangesAsync();
+                if (originalSale.CustomerId.HasValue && totalReturn > 0m)
+                {
+                    var customer = await context.Customers.FindAsync(originalSale.CustomerId.Value);
+                    if (customer != null)
+                    {
+                        var account = KhataService.GetCustomerAccount(context, customer);
+                        KhataService.Post(context, account, $"Sale return · {returnSale.ReceiptNumber}", "Return", 0m, totalReturn, "SaleReturn", returnSale.Id.ToString(), returnSale.CreatedAt);
+                    }
+                }
+                await context.SaveChangesAsync();
                 await tx.CommitAsync();
 
                 _printService.PrintReceipt(returnSale);

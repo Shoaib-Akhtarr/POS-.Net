@@ -32,6 +32,8 @@ namespace POS.ViewModels
         private readonly ProductsViewModel _productsViewModel = null!;
         private readonly PurchasesViewModel _purchasesViewModel = null!;
         private readonly CustomersViewModel _customersViewModel = null!;
+        private readonly KhataViewModel _khataViewModel = null!;
+        private readonly InstallmentsViewModel _installmentsViewModel = null!;
         private readonly RecordsViewModel _recordsViewModel = null!;
         private readonly ProfileViewModel _profileViewModel = null!;
 
@@ -50,6 +52,8 @@ namespace POS.ViewModels
             _productsViewModel = new ProductsViewModel();
             _purchasesViewModel = new PurchasesViewModel();
             _customersViewModel = new CustomersViewModel();
+            _khataViewModel = new KhataViewModel();
+            _installmentsViewModel = new InstallmentsViewModel();
             _recordsViewModel = new RecordsViewModel();
             _profileViewModel = new ProfileViewModel();
 
@@ -164,6 +168,20 @@ namespace POS.ViewModels
         {
             _customersViewModel.LoadCustomers();
             CurrentViewModel = _customersViewModel;
+        }
+
+        [RelayCommand]
+        private void NavigateToKhata()
+        {
+            _khataViewModel.RefreshData();
+            CurrentViewModel = _khataViewModel;
+        }
+
+        [RelayCommand]
+        private void NavigateToInstallments()
+        {
+            _installmentsViewModel.RefreshData();
+            CurrentViewModel = _installmentsViewModel;
         }
 
         [RelayCommand]
