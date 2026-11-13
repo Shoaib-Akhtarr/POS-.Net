@@ -26,6 +26,17 @@ namespace POS.Models
         public int? OriginalSaleId { get; set; }
         public string CreatedBy { get; set; } = string.Empty;
 
+        // FBR / Fiscal Tax Compliance Fields
+        public string? FbrInvoiceNumber { get; set; }
+        public string FbrStatus { get; set; } = "NotIntegrated"; // NotIntegrated, Synced, PendingOffline, Failed, Exempt
+        public decimal FbrTaxRate { get; set; } = 0m;
+        public decimal FbrTaxAmount { get; set; } = 0m;
+        public string? FbrQrCodeData { get; set; }
+        public DateTime? FbrSyncTimestamp { get; set; }
+        public string? FbrErrorMessage { get; set; }
+        public string? BuyerCnic { get; set; }
+        public string? BuyerNtn { get; set; }
+
         public ICollection<SaleItem> SaleItems { get; set; } = new List<SaleItem>();
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;

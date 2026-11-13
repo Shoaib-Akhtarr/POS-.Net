@@ -16,6 +16,9 @@ namespace POS.Models
         public string Unit { get; set; } = "pcs";
         public string? SerialNumber { get; set; }
         public string? WarrantyPeriod { get; set; }
+        public decimal TaxRate { get; set; } = 0m;
+        public decimal TaxAmount { get; set; } = 0m;
+        public string? PctCode { get; set; } // Pakistan Customs Tariff / HS Code
 
         public int? ProductId { get; set; }
         public Product? Product { get; set; }

@@ -233,7 +233,34 @@
                     </Grid.RowDefinitions>
 
                     <Grid Grid.Row="0" Margin="0,0,0,12">
-                        <TextBlock Text="{DynamicResource Lang_OrderCart}" FontSize="16" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="{DynamicResource Lang_OrderCart}" FontSize="16" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <!-- FBR Active Indicator Pill -->
+                            <Border CornerRadius="10" Padding="8,2" VerticalAlignment="Center" Visibility="{Binding IsFbrTaxEnabled, Converter={StaticResource BoolToVis}}">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="{DynamicResource WarningSoftBrush}"/>
+                                        <Style.Triggers>
+                                             <DataTrigger Binding="{Binding IsFbrLive}" Value="True">
+                                                 <Setter Property="Background" Value="{DynamicResource SuccessSoftBrush}"/>
+                                             </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <TextBlock Text="{Binding FbrBadgeLabel}" FontSize="10" FontWeight="Bold">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{DynamicResource WarningBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsFbrLive}" Value="True">
+                                                    <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Border>
+                        </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button Command="{Binding HoldCurrentCartCommand}" Content="{DynamicResource Lang_HoldBill}" Style="{StaticResource GhostButtonStyle}" Padding="10,5" FontSize="11"/>
                             <Button Command="{Binding ClearCartCommand}" Content="{DynamicResource Lang_ClearCart}" Style="{StaticResource GhostButtonStyle}" Foreground="{DynamicResource DangerBrush}" Padding="10,5" FontSize="11"/>
@@ -366,6 +393,17 @@
                                 </Border>
                             </Grid>
 
+                            <!-- Buyer CNIC & NTN for FBR Invoicing -->
+                            <Grid Margin="0,0,0,8" Visibility="{Binding IsFbrTaxEnabled, Converter={StaticResource BoolToVis}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="6"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding BuyerCnic, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Padding="8,5" FontSize="11" conv:PlaceholderHelper.Placeholder="Buyer CNIC (Optional)"/>
+                                <TextBox Grid.Column="2" Text="{Binding BuyerNtn, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Padding="8,5" FontSize="11" conv:PlaceholderHelper.Placeholder="Buyer NTN (Optional)"/>
+                            </Grid>
+
                             <!-- Payment Method & Site/Contractor Notes -->
                             <Grid Margin="0,0,0,8">
                                 <Grid.ColumnDefinitions>
@@ -378,6 +416,16 @@
                             </Grid>
 
                             <!-- Financial Breakdown -->
+                            <Grid Margin="0,2,0,4" Visibility="{Binding IsFbrTaxEnabled, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Text="Excl. Tax Value" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
+                                <TextBlock Text="{Binding TotalExclTax, StringFormat=Rs {0:N0}}" HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
+                            </Grid>
+
+                            <Grid Margin="0,2,0,4" Visibility="{Binding IsFbrTaxEnabled, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Text="{Binding FbrTaxRate, StringFormat='GST ({0:0.#}%)'}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
+                                <TextBlock Text="{Binding FbrTaxAmount, StringFormat=Rs {0:N0}}" HorizontalAlignment="Right" Foreground="{DynamicResource PrimaryBrush}" FontWeight="SemiBold" FontSize="11"/>
+                            </Grid>
+
                             <Grid Margin="0,2,0,4">
                                 <TextBlock Text="{DynamicResource Lang_PrevDues}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"/>
                                 <TextBlock Text="{Binding SelectedCustomer.TotalDues, StringFormat=Rs {0:N0}}" HorizontalAlignment="Right" Foreground="{DynamicResource DangerBrush}" FontWeight="Bold" FontSize="12"/>

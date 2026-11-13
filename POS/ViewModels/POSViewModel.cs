@@ -116,6 +116,19 @@ namespace POS.ViewModels
         [ObservableProperty] private string _saleNotes = string.Empty;
         [ObservableProperty] private bool _isCustomAmountPaid;
 
+        // FBR Fiscal Status & Tax Preview
+        [ObservableProperty] private bool _isFbrTaxEnabled;
+        [ObservableProperty] private string _fbrEnvironment = "Sandbox";
+        [ObservableProperty] private decimal _fbrTaxRate = 18.0m;
+        [ObservableProperty] private decimal _fbrTaxAmount;
+        [ObservableProperty] private decimal _totalExclTax;
+        [ObservableProperty] private string _buyerCnic = string.Empty;
+        [ObservableProperty] private string _buyerNtn = string.Empty;
+
+        public bool IsFbrLive => IsFbrTaxEnabled && string.Equals(FbrEnvironment, "Live", StringComparison.OrdinalIgnoreCase);
+        public bool IsFbrSandbox => IsFbrTaxEnabled && !IsFbrLive;
+        public string FbrBadgeLabel => IsFbrLive ? $"● FBR Live ({FbrTaxRate:0.#}%)" : $"● FBR Sandbox ({FbrTaxRate:0.#}%)";
+
         [ObservableProperty] private string _statusMessage = string.Empty;
         [ObservableProperty] private bool _isErrorStatus;
 
@@ -143,6 +156,7 @@ namespace POS.ViewModels
 
         private readonly PrintService _printService;
         private readonly BackupService _backupService;
+        private readonly FbrTaxService _fbrTaxService;
 
         public bool IsOwner => SessionService.IsOwner;
         public bool HasHeldCarts => HeldCarts.Count > 0;
@@ -152,9 +166,11 @@ namespace POS.ViewModels
         {
             _printService = new PrintService();
             _backupService = new BackupService();
+            _fbrTaxService = new FbrTaxService();
 
             LoadProductsFromDb();
             LoadCustomersFromDb();
+            LoadFbrSettings();
             WeakReferenceMessenger.Default.Register(this);
 
             Task.Run(async () =>
@@ -202,12 +218,16 @@ namespace POS.ViewModels
             if (value != null)
             {
                 CustomerName = value.Name;
+                BuyerCnic = value.Cnic;
+                BuyerNtn = value.Ntn;
                 if (PaymentMethod == "Cash" && AmountPaid == 0m) PaymentMethod = "Credit";
                 IsCustomerDropdownOpen = false;
             }
             else
             {
                 CustomerName = "Walk-in Customer";
+                BuyerCnic = string.Empty;
+                BuyerNtn = string.Empty;
                 if (PaymentMethod == "Credit") PaymentMethod = "Cash";
             }
             UpdateBalancePreview();
@@ -225,6 +245,10 @@ namespace POS.ViewModels
             else if (message.Value == "Customer")
             {
                 App.Current?.Dispatcher.Invoke(LoadCustomersFromDb);
+            }
+            else if (message.Value == "Settings")
+            {
+                App.Current?.Dispatcher.Invoke(LoadFbrSettings);
             }
             else if (message.Value == "Session")
             {
@@ -631,10 +655,33 @@ namespace POS.ViewModels
             OnPropertyChanged(nameof(HeldCartCount));
         }
 
+        private void LoadFbrSettings()
+        {
+            var s = ThemeService.GetSettings();
+            IsFbrTaxEnabled = s.IsFbrTaxEnabled;
+            FbrEnvironment = s.FbrEnvironment;
+            FbrTaxRate = s.FbrDefaultTaxRate > 0 ? s.FbrDefaultTaxRate : 18.0m;
+            OnPropertyChanged(nameof(IsFbrLive));
+            OnPropertyChanged(nameof(IsFbrSandbox));
+            OnPropertyChanged(nameof(FbrBadgeLabel));
+            UpdateTotal();
+        }
+
         private void UpdateTotal()
         {
             SubtotalAmount = CartItems.Sum(c => c.LineTotal);
             TotalAmount = Math.Max(0m, SubtotalAmount - DiscountAmount);
+
+            if (IsFbrTaxEnabled)
+            {
+                FbrTaxAmount = Math.Round(TotalAmount * (FbrTaxRate / (100m + FbrTaxRate)), 2);
+                TotalExclTax = Math.Max(0m, TotalAmount - FbrTaxAmount);
+            }
+            else
+            {
+                FbrTaxAmount = 0m;
+                TotalExclTax = TotalAmount;
+            }
 
             if (!IsCustomAmountPaid)
             {
@@ -799,6 +846,15 @@ namespace POS.ViewModels
                     }
                 }
 
+                // Process FBR Fiscal Tax Integration if enabled
+                var storeSettings = ThemeService.GetSettings();
+                if (!isEstimate && storeSettings.IsFbrTaxEnabled)
+                {
+                    sale.BuyerCnic = !string.IsNullOrWhiteSpace(BuyerCnic) ? BuyerCnic.Trim() : SelectedCustomer?.Cnic;
+                    sale.BuyerNtn = !string.IsNullOrWhiteSpace(BuyerNtn) ? BuyerNtn.Trim() : SelectedCustomer?.Ntn;
+                    await _fbrTaxService.ProcessSaleFiscalizationAsync(sale, storeSettings);
+                }
+
                 context.Sales.Add(sale);
                 await context.SaveChangesAsync();
                 if (!isEstimate && SelectedCustomer != null)
@@ -848,7 +904,10 @@ namespace POS.ViewModels
                     WeakReferenceMessenger.Default.Send(DataChangedMessage.CustomerUpdated);
                 }
 
-                SetStatus(isEstimate ? $"Estimate #{sale.ReceiptNumber} saved." : $"Sale #{sale.ReceiptNumber} completed.", isError: false);
+                string fbrNote = !isEstimate && !string.IsNullOrWhiteSpace(sale.FbrInvoiceNumber)
+                    ? $" · FBR: {sale.FbrInvoiceNumber} ({sale.FbrStatus})"
+                    : string.Empty;
+                SetStatus(isEstimate ? $"Estimate #{sale.ReceiptNumber} saved." : $"Sale #{sale.ReceiptNumber} completed{fbrNote}.", isError: false);
             }
             catch (Exception ex)
             {

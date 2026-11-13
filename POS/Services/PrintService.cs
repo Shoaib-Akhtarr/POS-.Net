@@ -392,6 +392,13 @@ namespace POS.Services
                 bytes.AddRange(Encoding.ASCII.GetBytes($"Bill Discount:   Rs {sale.Discount:N0}\n"));
             }
 
+            if (sale.FbrTaxAmount > 0)
+            {
+                decimal exclTax = Math.Max(0m, sale.TotalAmount - sale.FbrTaxAmount);
+                bytes.AddRange(Encoding.ASCII.GetBytes($"Excl. Tax Total: Rs {exclTax:N0}\n"));
+                bytes.AddRange(Encoding.ASCII.GetBytes($"GST ({sale.FbrTaxRate:0.#}%):        Rs {sale.FbrTaxAmount:N0}\n"));
+            }
+
             if (sale.RecordType != "Payment")
             {
                 bytes.AddRange(Encoding.ASCII.GetBytes($"Bill Total:      Rs {sale.TotalAmount:N0}\n"));
@@ -419,6 +426,23 @@ namespace POS.Services
             if (sale.CustomerId != null)
             {
                 bytes.AddRange(Encoding.ASCII.GetBytes($"Remaining Dues:  Rs {sale.BalanceDue:N0}\n"));
+            }
+
+            // FBR Fiscal Verification Section for ASCII Thermal
+            if (!string.IsNullOrWhiteSpace(sale.FbrInvoiceNumber) || settings.IsFbrTaxEnabled)
+            {
+                bytes.AddRange(new byte[] { 0x1B, 0x61, 0x01 }); // Center
+                bytes.AddRange(Encoding.ASCII.GetBytes("------------------------------------------\n"));
+                bytes.AddRange(new byte[] { 0x1B, 0x45, 0x01 });
+                bytes.AddRange(Encoding.ASCII.GetBytes("FBR VERIFIED FISCAL INVOICE\n"));
+                bytes.AddRange(new byte[] { 0x1B, 0x45, 0x00 });
+                bytes.AddRange(Encoding.ASCII.GetBytes($"POS ID: {ToSafeAscii(settings.FbrPosId)} | STRN: {ToSafeAscii(settings.FbrStrn)}\n"));
+                if (!string.IsNullOrWhiteSpace(sale.FbrInvoiceNumber))
+                {
+                    bytes.AddRange(Encoding.ASCII.GetBytes($"FBR Inv #: {ToSafeAscii(sale.FbrInvoiceNumber)}\n"));
+                    bytes.AddRange(Encoding.ASCII.GetBytes($"Status: {ToSafeAscii(sale.FbrStatus.ToUpperInvariant())}\n"));
+                }
+                bytes.AddRange(Encoding.ASCII.GetBytes(">> Verify via FBR Tax Asaan App <<\n"));
             }
 
             bytes.AddRange(Encoding.ASCII.GetBytes("\n"));
@@ -465,11 +489,30 @@ namespace POS.Services
 
             lines.Add(("------------------------------------------------", 14, false, TextAlignment.Center));
             if (sale.Discount > 0) lines.Add(($"Discount: Rs {sale.Discount:N0}", 16, false, TextAlignment.Right));
+            if (sale.FbrTaxAmount > 0)
+            {
+                decimal exclTax = Math.Max(0m, sale.TotalAmount - sale.FbrTaxAmount);
+                lines.Add(($"Total Excl. Tax: Rs {exclTax:N0}", 15, false, TextAlignment.Right));
+                lines.Add(($"GST ({sale.FbrTaxRate:0.#}%): Rs {sale.FbrTaxAmount:N0}", 15, false, TextAlignment.Right));
+            }
             if (sale.RecordType != "Payment") lines.Add(($"Bill Total: Rs {sale.TotalAmount:N0}", 18, true, TextAlignment.Right));
             if (sale.CustomerId != null) lines.Add(($"Previous Dues: Rs {sale.PreviousDues:N0}", 16, false, TextAlignment.Right));
             lines.Add(($"Paid ({sale.PaymentMethod}): Rs {sale.AmountPaid:N0}", 18, true, TextAlignment.Right));
             if (sale.ChangeReturned > 0) lines.Add(($"Change: Rs {sale.ChangeReturned:N0}", 16, false, TextAlignment.Right));
             if (sale.CustomerId != null) lines.Add(($"Remaining Dues: Rs {sale.BalanceDue:N0}", 18, true, TextAlignment.Right));
+
+            if (!string.IsNullOrWhiteSpace(sale.FbrInvoiceNumber) || settings.IsFbrTaxEnabled)
+            {
+                lines.Add(("------------------------------------------------", 14, false, TextAlignment.Center));
+                lines.Add(("FBR POS VERIFIED FISCAL INVOICE", 15, true, TextAlignment.Center));
+                lines.Add(($"POS ID: {settings.FbrPosId}   STRN: {settings.FbrStrn}", 13, false, TextAlignment.Center));
+                if (!string.IsNullOrWhiteSpace(sale.FbrInvoiceNumber))
+                {
+                    lines.Add(($"FBR Inv #: {sale.FbrInvoiceNumber}", 14, true, TextAlignment.Center));
+                    lines.Add(($"Fiscal Status: {sale.FbrStatus.ToUpperInvariant()}", 13, false, TextAlignment.Center));
+                }
+            }
+
             lines.Add(("", 12, false, TextAlignment.Center));
             lines.Add((settings.ReceiptFooter, 15, true, TextAlignment.Center));
 
@@ -496,6 +539,12 @@ namespace POS.Services
                 totalHeight += ft.Height + 6;
             }
 
+            var qrBmp = FbrTaxService.GenerateQrBitmap(sale.FbrQrCodeData, 3);
+            if (qrBmp != null)
+            {
+                totalHeight += 165; // Extra space for QR code and verification label
+            }
+
             int pixelHeight = Math.Max(64, (int)Math.Ceiling(totalHeight + 24));
             var dv = new DrawingVisual();
             using (var dc = dv.RenderOpen())
@@ -506,6 +555,29 @@ namespace POS.Services
                 {
                     dc.DrawText(ft, new Point(12, y));
                     y += ft.Height + 6;
+                }
+
+                if (qrBmp != null)
+                {
+                    double qrSize = 130;
+                    double qrX = (width - qrSize) / 2.0;
+                    dc.DrawImage(qrBmp, new Rect(qrX, y + 4, qrSize, qrSize));
+                    y += qrSize + 8;
+
+                    var verifyFt = new FormattedText(
+                        "Verify via FBR Tax Asaan Mobile App",
+                        CultureInfo.CurrentCulture,
+                        FlowDirection.LeftToRight,
+                        new Typeface(family, FontStyles.Italic, FontWeights.SemiBold, FontStretches.Normal),
+                        13,
+                        Brushes.Black,
+                        1.0)
+                    {
+                        MaxTextWidth = width - 24,
+                        TextAlignment = TextAlignment.Center
+                    };
+                    dc.DrawText(verifyFt, new Point(12, y));
+                    y += verifyFt.Height + 8;
                 }
             }
 
@@ -598,6 +670,19 @@ namespace POS.Services
                 meta.Inlines.Add(new Run($"   |   Staff: {sale.CreatedBy}"));
             doc.Blocks.Add(meta);
 
+            if (!string.IsNullOrWhiteSpace(sale.FbrInvoiceNumber) || settings.IsFbrTaxEnabled)
+            {
+                var fbrBanner = new Paragraph { Margin = new Thickness(0, 0, 0, 10), Background = new SolidColorBrush(Color.FromRgb(240, 253, 244)), Padding = new Thickness(10, 6, 10, 6) };
+                fbrBanner.Inlines.Add(new Run("FBR TIER-1 FISCALIZED INVOICE   ") { FontWeight = FontWeights.Bold, Foreground = new SolidColorBrush(Color.FromRgb(16, 185, 129)), FontSize = 12 });
+                fbrBanner.Inlines.Add(new Run($"POS ID: {settings.FbrPosId}   |   STRN: {settings.FbrStrn}   |   NTN: {settings.FbrNtn}"));
+                if (!string.IsNullOrWhiteSpace(sale.FbrInvoiceNumber))
+                {
+                    fbrBanner.Inlines.Add(new LineBreak());
+                    fbrBanner.Inlines.Add(new Run($"FBR Invoice #: {sale.FbrInvoiceNumber}   |   Fiscal Status: {sale.FbrStatus}") { FontWeight = FontWeights.SemiBold });
+                }
+                doc.Blocks.Add(fbrBanner);
+            }
+
             if (sale.SaleItems.Any())
             {
                 var table = new Table { CellSpacing = 0, BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)), BorderThickness = new Thickness(1) };
@@ -640,6 +725,14 @@ namespace POS.Services
                 summary.Inlines.Add(new Run($"Bill Discount: Rs {sale.Discount:N0}"));
                 summary.Inlines.Add(new LineBreak());
             }
+            if (sale.FbrTaxAmount > 0)
+            {
+                decimal exclTax = Math.Max(0m, sale.TotalAmount - sale.FbrTaxAmount);
+                summary.Inlines.Add(new Run($"Total Value (Excl. Tax): Rs {exclTax:N0}"));
+                summary.Inlines.Add(new LineBreak());
+                summary.Inlines.Add(new Run($"Sales Tax / GST ({sale.FbrTaxRate:0.#}%): Rs {sale.FbrTaxAmount:N0}"));
+                summary.Inlines.Add(new LineBreak());
+            }
             if (sale.RecordType != "Payment")
             {
                 summary.Inlines.Add(new Run($"Bill Total: Rs {sale.TotalAmount:N0}") { FontSize = 14, FontWeight = FontWeights.Bold });
@@ -666,6 +759,24 @@ namespace POS.Services
             var footer = new Paragraph { TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 24, 0, 0), Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139)) };
             footer.Inlines.Add(new Run(settings.ReceiptFooter));
             doc.Blocks.Add(footer);
+
+            if (!string.IsNullOrWhiteSpace(sale.FbrQrCodeData))
+            {
+                var qrBmp = FbrTaxService.GenerateQrBitmap(sale.FbrQrCodeData, 4);
+                if (qrBmp != null)
+                {
+                    var img = new Image { Source = qrBmp, Width = 110, Height = 110, HorizontalAlignment = HorizontalAlignment.Center };
+                    doc.Blocks.Add(new BlockUIContainer(img) { Margin = new Thickness(0, 14, 0, 4) });
+                    doc.Blocks.Add(new Paragraph(new Run("Scan QR code via the FBR Tax Asaan mobile app for official fiscal verification"))
+                    {
+                        FontSize = 9,
+                        FontStyle = FontStyles.Italic,
+                        TextAlignment = TextAlignment.Center,
+                        Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139)),
+                        Margin = new Thickness(0, 0, 0, 8)
+                    });
+                }
+            }
 
             return doc;
         }

@@ -26,6 +26,12 @@ A desktop Point of Sale (POS), inventory, and **Khata (credit ledger)** manageme
 - **Installment Contracts (`InstallmentsView`)**
   - Create itemized customer contracts with markup, processing fee, down payment, monthly/weekly/custom schedule, grace period, late fees, optional guarantors, and attached KYC documents.
   - Take partial or full payments against oldest dues, print receipts, review due/overdue schedules, and record installment-linked cheques.
+- **FBR Tier-1 Fiscal Tax System & Electronic Invoicing (`FbrTaxService` + `ProfileView`)**
+  - Real-time digital tax reporting to the **Federal Board of Revenue (FBR / PRAL)** with verified invoice numbers and scannable **2D QR Codes** generated using `QRCoder`.
+  - **Live / Sandbox Environment Toggle**: Switch seamlessly between **Sandbox (Testing)** mode with safe local simulation and **Live (Production)** mode connected directly to `gw.fbr.gov.pk`.
+  - **Zero-Delay Offline Resilience**: If internet drops or the FBR gateway times out, sales complete instantly without counter delay, queueing invoices in SQLite (`PendingOffline`) with one-click and automated background synchronization.
+  - **Tax Breakdowns**: Configurable default GST (e.g. 18.0%), line-item tariff codes (`PCTCode`), and automatic calculation of sales tax values and net totals on thermal and A4 receipts.
+  - **FBR Diagnostics in Settings**: Test connection tool, terminal POSID, STRN/NTN tracking, bearer token security, and real-time pending offline count.
 - **Dual Printing & Configurable Branding (`PrintService` + `ProfileView`)**
   - **80mm Thermal ESC/POS** receipt printing (with optional WPF bitmap raster mode for Urdu script) and **A4/A5 Invoice** printing via Windows `PrintDialog` (supports *Microsoft Print to PDF*).
   - Editable shop name, subtitle, address, phone numbers, receipt footer, and default printer in **Settings**.

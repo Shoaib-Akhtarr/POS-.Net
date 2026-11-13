@@ -52,6 +52,15 @@ namespace POS.ViewModels
         public bool IsEstimate => Type == "ESTIMATE";
         public bool IsReturnableSale => Type == "SALE";
         public bool IsSaleType => OriginalObject is Sale;
+
+        // FBR Fiscal Information
+        public string? FbrInvoiceNumber { get; set; }
+        public string FbrStatus { get; set; } = "NotIntegrated";
+        public decimal FbrTaxAmount { get; set; }
+        public bool HasFbr => !string.IsNullOrWhiteSpace(FbrInvoiceNumber) || FbrStatus == "PendingOffline" || (FbrStatus != null && FbrStatus.StartsWith("Synced"));
+        public bool IsFbrPending => FbrStatus == "PendingOffline";
+        public bool IsFbrSynced => FbrStatus != null && FbrStatus.StartsWith("Synced", StringComparison.OrdinalIgnoreCase);
+        public string FbrBadgeText => IsFbrPending ? "FBR OFFLINE" : (IsFbrSynced ? (FbrStatus.Contains("Sandbox") ? "FBR SANDBOX" : "FBR SYNCED") : "");
     }
 
     public partial class RecordsViewModel : ObservableObject, IRecipient<DataChangedMessage>
@@ -127,7 +136,10 @@ namespace POS.ViewModels
                         Amount = displayAmount,
                         Date = s.CreatedAt,
                         Details = details,
-                        OriginalObject = s
+                        OriginalObject = s,
+                        FbrInvoiceNumber = s.FbrInvoiceNumber,
+                        FbrStatus = s.FbrStatus,
+                        FbrTaxAmount = s.FbrTaxAmount
                     };
                 });
 
@@ -474,6 +486,43 @@ namespace POS.ViewModels
             {
                 await tx.RollbackAsync();
                 ActionError = $"Return failed: {ex.Message}";
+            }
+        }
+
+        [RelayCommand]
+        private async Task SyncSingleFbrRecord(UnifiedRecord? record)
+        {
+            if (record?.OriginalObject is not Sale sale) return;
+            try
+            {
+                var settings = ThemeService.GetSettings();
+                var fbrService = new FbrTaxService();
+                var result = await fbrService.ProcessSaleFiscalizationAsync(sale, settings);
+                if (result.Success)
+                {
+                    using var context = new AppDbContext();
+                    var dbSale = await context.Sales.FindAsync(sale.Id);
+                    if (dbSale != null)
+                    {
+                        dbSale.FbrInvoiceNumber = sale.FbrInvoiceNumber;
+                        dbSale.FbrStatus = sale.FbrStatus;
+                        dbSale.FbrSyncTimestamp = sale.FbrSyncTimestamp;
+                        dbSale.FbrQrCodeData = sale.FbrQrCodeData;
+                        dbSale.FbrErrorMessage = sale.FbrErrorMessage;
+                        dbSale.FbrTaxRate = sale.FbrTaxRate;
+                        dbSale.FbrTaxAmount = sale.FbrTaxAmount;
+                        await context.SaveChangesAsync();
+                    }
+                    RefreshData();
+                }
+                else
+                {
+                    ActionError = $"FBR sync notice: {result.Message}";
+                }
+            }
+            catch (Exception ex)
+            {
+                ActionError = $"FBR sync error: {ex.Message}";
             }
         }
     }

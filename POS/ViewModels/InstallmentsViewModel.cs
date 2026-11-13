@@ -151,7 +151,7 @@ namespace POS.ViewModels
             ResidentialAddress = value.Address;
             using var context = new AppDbContext();
             var account = context.KhataAccounts.FirstOrDefault(a => a.CustomerId == value.Id);
-            CustomerCNIC = account?.CNIC ?? string.Empty;
+            CustomerCNIC = !string.IsNullOrWhiteSpace(value.Cnic) ? value.Cnic : (account?.CNIC ?? string.Empty);
             CustomerFatherName = account?.FatherOrHusbandName ?? string.Empty;
             WorkAddress = account?.WorkAddress ?? string.Empty;
             PhoneVerified = false;
@@ -520,6 +520,7 @@ namespace POS.ViewModels
                 account.UpdatedAt = DateTime.Now;
                 customer.Phone = VerifiedPhone.Trim();
                 customer.Address = ResidentialAddress.Trim();
+                customer.Cnic = customerCnic;
                 customer.TotalDues = openingDues + TotalPayable - DownPayment;
                 customer.UpdatedAt = DateTime.Now;
                 if (TotalPayable > 0m)

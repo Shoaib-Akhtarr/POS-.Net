@@ -47,6 +47,21 @@ namespace POS.ViewModels
         // Auto-backup folder (Google Drive / OneDrive / USB)
         [ObservableProperty] private string _autoBackupFolder = string.Empty;
 
+        // FBR / PRA Fiscal Tax Integration Settings
+        [ObservableProperty] private bool _isFbrTaxEnabled;
+        [ObservableProperty] private string _fbrEnvironment = "Sandbox"; // Sandbox or Live
+        [ObservableProperty] private string _fbrPosId = "102345";
+        [ObservableProperty] private string _fbrBearerToken = string.Empty;
+        [ObservableProperty] private string _fbrNtn = string.Empty;
+        [ObservableProperty] private string _fbrStrn = string.Empty;
+        [ObservableProperty] private decimal _fbrDefaultTaxRate = 18.0m;
+        [ObservableProperty] private bool _fbrAutoSync = true;
+        [ObservableProperty] private bool _fbrOfflineModeAllowed = true;
+        [ObservableProperty] private int _pendingOfflineFbrCount;
+        [ObservableProperty] private string _fbrTestResult = string.Empty;
+        [ObservableProperty] private bool _isFbrTesting;
+        [ObservableProperty] private bool _isFbrSyncing;
+
         public bool IsOwner => SessionService.IsOwner;
         public string CurrentUserName => SessionService.CurrentUserName;
         public string CurrentUserRole => SessionService.CurrentUser?.Role ?? "Cashier";
@@ -54,11 +69,13 @@ namespace POS.ViewModels
 
         private readonly PrintService _printService;
         private readonly BackupService _backupService;
+        private readonly FbrTaxService _fbrTaxService;
 
         public ProfileViewModel()
         {
             _printService = new PrintService();
             _backupService = new BackupService();
+            _fbrTaxService = new FbrTaxService();
             RefreshData();
             WeakReferenceMessenger.Default.Register(this);
         }
@@ -91,6 +108,18 @@ namespace POS.ViewModels
             CurrentLanguage = settings.Language;
             CurrentTheme = settings.Theme;
             AutoBackupFolder = settings.AutoBackupFolder;
+
+            // Load FBR Settings
+            IsFbrTaxEnabled = settings.IsFbrTaxEnabled;
+            FbrEnvironment = string.IsNullOrWhiteSpace(settings.FbrEnvironment) ? "Sandbox" : settings.FbrEnvironment;
+            FbrPosId = string.IsNullOrWhiteSpace(settings.FbrPosId) ? "102345" : settings.FbrPosId;
+            FbrBearerToken = settings.FbrBearerToken;
+            FbrNtn = settings.FbrNtn;
+            FbrStrn = settings.FbrStrn;
+            FbrDefaultTaxRate = settings.FbrDefaultTaxRate > 0 ? settings.FbrDefaultTaxRate : 18.0m;
+            FbrAutoSync = settings.FbrAutoSync;
+            FbrOfflineModeAllowed = settings.FbrOfflineModeAllowed;
+            PendingOfflineFbrCount = FbrTaxService.GetPendingOfflineCount();
 
             var printers = PrintService.GetInstalledPrinters();
             if (!string.IsNullOrWhiteSpace(PrinterName) && !printers.Contains(PrinterName))
@@ -172,11 +201,84 @@ namespace POS.ViewModels
             settings.Language = CurrentLanguage;
             settings.Theme = CurrentTheme;
             settings.AutoBackupFolder = AutoBackupFolder.Trim();
+
+            // Save FBR Settings
+            settings.IsFbrTaxEnabled = IsFbrTaxEnabled;
+            settings.FbrEnvironment = string.IsNullOrWhiteSpace(FbrEnvironment) ? "Sandbox" : FbrEnvironment.Trim();
+            settings.FbrPosId = string.IsNullOrWhiteSpace(FbrPosId) ? "102345" : FbrPosId.Trim();
+            settings.FbrBearerToken = FbrBearerToken.Trim();
+            settings.FbrNtn = FbrNtn.Trim();
+            settings.FbrStrn = FbrStrn.Trim();
+            settings.FbrDefaultTaxRate = FbrDefaultTaxRate > 0 ? FbrDefaultTaxRate : 18.0m;
+            settings.FbrAutoSync = FbrAutoSync;
+            settings.FbrOfflineModeAllowed = FbrOfflineModeAllowed;
             settings.UpdatedAt = DateTime.Now;
 
             context.SaveChanges();
             WeakReferenceMessenger.Default.Send(DataChangedMessage.SettingsUpdated);
-            SetStatus("Store branding and printer settings saved.", isError: false);
+            SetStatus("Store branding, printer & FBR tax settings saved successfully.", isError: false);
+        }
+
+        [RelayCommand]
+        private void SetFbrEnvironment(string env)
+        {
+            FbrEnvironment = env;
+            SaveStoreSettings();
+            SetStatus($"FBR Tax mode set to {env}.", isError: false);
+        }
+
+        [RelayCommand]
+        private async Task TestFbrConnection()
+        {
+            IsFbrTesting = true;
+            FbrTestResult = "Connecting to FBR Gateway...";
+            try
+            {
+                var testSettings = new StoreSettings
+                {
+                    IsFbrTaxEnabled = IsFbrTaxEnabled,
+                    FbrEnvironment = FbrEnvironment,
+                    FbrPosId = FbrPosId,
+                    FbrBearerToken = FbrBearerToken,
+                    FbrNtn = FbrNtn,
+                    FbrStrn = FbrStrn,
+                    FbrDefaultTaxRate = FbrDefaultTaxRate
+                };
+
+                var (success, message) = await _fbrTaxService.TestConnectionAsync(testSettings);
+                FbrTestResult = message;
+                SetStatus(message, isError: !success);
+            }
+            catch (Exception ex)
+            {
+                FbrTestResult = $"Test error: {ex.Message}";
+                SetStatus(FbrTestResult, isError: true);
+            }
+            finally
+            {
+                IsFbrTesting = false;
+            }
+        }
+
+        [RelayCommand]
+        private async Task SyncPendingFbrInvoices()
+        {
+            IsFbrSyncing = true;
+            try
+            {
+                var settings = ThemeService.GetSettings();
+                var (synced, failed, message) = await _fbrTaxService.SyncPendingInvoicesAsync(settings);
+                PendingOfflineFbrCount = FbrTaxService.GetPendingOfflineCount();
+                SetStatus(message, isError: failed > 0);
+            }
+            catch (Exception ex)
+            {
+                SetStatus($"Sync failed: {ex.Message}", isError: true);
+            }
+            finally
+            {
+                IsFbrSyncing = false;
+            }
         }
 
         [RelayCommand]

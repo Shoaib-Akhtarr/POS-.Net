@@ -17,6 +17,18 @@ namespace POS.Models
         public string Language { get; set; } = "English"; // English or Urdu
         public string Theme { get; set; } = "Light"; // Light or Dark
         public string AutoBackupFolder { get; set; } = string.Empty; // e.g. Google Drive / OneDrive / USB path
+
+        // FBR / PRA Fiscal Tax Integration Settings
+        public bool IsFbrTaxEnabled { get; set; } = false;
+        public string FbrEnvironment { get; set; } = "Sandbox"; // "Sandbox" or "Live"
+        public string FbrPosId { get; set; } = "102345";
+        public string FbrBearerToken { get; set; } = string.Empty;
+        public string FbrNtn { get; set; } = string.Empty;
+        public string FbrStrn { get; set; } = string.Empty;
+        public decimal FbrDefaultTaxRate { get; set; } = 18.0m;
+        public bool FbrAutoSync { get; set; } = true;
+        public bool FbrOfflineModeAllowed { get; set; } = true;
+
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
     }
 }

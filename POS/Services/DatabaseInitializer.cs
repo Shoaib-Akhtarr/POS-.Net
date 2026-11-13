@@ -47,7 +47,10 @@ namespace POS.Services
                         ["Discount"] = "TEXT NOT NULL DEFAULT '0'",
                         ["Unit"] = "TEXT NOT NULL DEFAULT 'pcs'",
                         ["SerialNumber"] = "TEXT NULL",
-                        ["WarrantyPeriod"] = "TEXT NULL"
+                        ["WarrantyPeriod"] = "TEXT NULL",
+                        ["TaxRate"] = "TEXT NOT NULL DEFAULT '0'",
+                        ["TaxAmount"] = "TEXT NOT NULL DEFAULT '0'",
+                        ["PctCode"] = "TEXT NULL"
                     });
 
                     EnsureColumns(conn, "Purchases", new Dictionary<string, string>
@@ -58,12 +61,23 @@ namespace POS.Services
 
                     EnsureColumns(conn, "StoreSettings", new Dictionary<string, string>
                     {
-                        ["AutoBackupFolder"] = "TEXT NOT NULL DEFAULT ''"
+                        ["AutoBackupFolder"] = "TEXT NOT NULL DEFAULT ''",
+                        ["IsFbrTaxEnabled"] = "INTEGER NOT NULL DEFAULT 0",
+                        ["FbrEnvironment"] = "TEXT NOT NULL DEFAULT 'Sandbox'",
+                        ["FbrPosId"] = "TEXT NOT NULL DEFAULT '102345'",
+                        ["FbrBearerToken"] = "TEXT NOT NULL DEFAULT ''",
+                        ["FbrNtn"] = "TEXT NOT NULL DEFAULT ''",
+                        ["FbrStrn"] = "TEXT NOT NULL DEFAULT ''",
+                        ["FbrDefaultTaxRate"] = "TEXT NOT NULL DEFAULT '18.0'",
+                        ["FbrAutoSync"] = "INTEGER NOT NULL DEFAULT 1",
+                        ["FbrOfflineModeAllowed"] = "INTEGER NOT NULL DEFAULT 1"
                     });
 
                     EnsureColumns(conn, "Customers", new Dictionary<string, string>
                     {
-                        ["CreditLimit"] = "TEXT NOT NULL DEFAULT '0'"
+                        ["CreditLimit"] = "TEXT NOT NULL DEFAULT '0'",
+                        ["Cnic"] = "TEXT NOT NULL DEFAULT ''",
+                        ["Ntn"] = "TEXT NOT NULL DEFAULT ''"
                     });
 
                     EnsureColumns(conn, "Sales", new Dictionary<string, string>
@@ -73,7 +87,16 @@ namespace POS.Services
                         ["OriginalSaleId"] = "INTEGER NULL",
                         ["CreatedBy"] = "TEXT NOT NULL DEFAULT ''",
                         ["CashTendered"] = "TEXT NOT NULL DEFAULT '0'",
-                        ["ChangeReturned"] = "TEXT NOT NULL DEFAULT '0'"
+                        ["ChangeReturned"] = "TEXT NOT NULL DEFAULT '0'",
+                        ["FbrInvoiceNumber"] = "TEXT NULL",
+                        ["FbrStatus"] = "TEXT NOT NULL DEFAULT 'NotIntegrated'",
+                        ["FbrTaxRate"] = "TEXT NOT NULL DEFAULT '0'",
+                        ["FbrTaxAmount"] = "TEXT NOT NULL DEFAULT '0'",
+                        ["FbrQrCodeData"] = "TEXT NULL",
+                        ["FbrSyncTimestamp"] = "TEXT NULL",
+                        ["FbrErrorMessage"] = "TEXT NULL",
+                        ["BuyerCnic"] = "TEXT NULL",
+                        ["BuyerNtn"] = "TEXT NULL"
                     });
 
                     ExecuteNonQuery(conn, @"

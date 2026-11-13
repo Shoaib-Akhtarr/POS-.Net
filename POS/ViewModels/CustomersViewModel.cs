@@ -32,6 +32,8 @@ namespace POS.ViewModels
         [ObservableProperty] private string _newCustomerName = string.Empty;
         [ObservableProperty] private string _newCustomerPhone = string.Empty;
         [ObservableProperty] private string _newCustomerAddress = string.Empty;
+        [ObservableProperty] private string _newCustomerCnic = string.Empty;
+        [ObservableProperty] private string _newCustomerNtn = string.Empty;
         [ObservableProperty] private decimal _newCustomerInitialDues;
         [ObservableProperty] private decimal _newCustomerCreditLimit;
 
@@ -93,7 +95,9 @@ namespace POS.ViewModels
                 var filtered = Customers.Where(c =>
                     c.Name.ToLowerInvariant().Contains(lower) ||
                     c.Phone.Contains(lower) ||
-                    c.Address.ToLowerInvariant().Contains(lower)).ToList();
+                    c.Address.ToLowerInvariant().Contains(lower) ||
+                    (!string.IsNullOrEmpty(c.Cnic) && c.Cnic.Contains(lower)) ||
+                    (!string.IsNullOrEmpty(c.Ntn) && c.Ntn.ToLowerInvariant().Contains(lower))).ToList();
                 FilteredCustomers = new ObservableCollection<Customer>(filtered);
             }
         }
@@ -132,6 +136,8 @@ namespace POS.ViewModels
             NewCustomerName = SelectedCustomer.Name;
             NewCustomerPhone = SelectedCustomer.Phone;
             NewCustomerAddress = SelectedCustomer.Address;
+            NewCustomerCnic = SelectedCustomer.Cnic;
+            NewCustomerNtn = SelectedCustomer.Ntn;
             NewCustomerInitialDues = SelectedCustomer.TotalDues;
             NewCustomerCreditLimit = SelectedCustomer.CreditLimit;
             ModalError = string.Empty;
@@ -181,6 +187,8 @@ namespace POS.ViewModels
                     dbCustomer.Name = NewCustomerName.Trim();
                     dbCustomer.Phone = cleanPhone;
                     dbCustomer.Address = NewCustomerAddress.Trim();
+                    dbCustomer.Cnic = NewCustomerCnic.Trim();
+                    dbCustomer.Ntn = NewCustomerNtn.Trim();
                     dbCustomer.CreditLimit = NewCustomerCreditLimit;
                     dbCustomer.UpdatedAt = DateTime.Now;
                     var account = KhataService.GetCustomerAccount(context, dbCustomer);
@@ -210,6 +218,8 @@ namespace POS.ViewModels
                     Name = NewCustomerName.Trim(),
                     Phone = cleanPhone,
                     Address = NewCustomerAddress.Trim(),
+                    Cnic = NewCustomerCnic.Trim(),
+                    Ntn = NewCustomerNtn.Trim(),
                     TotalDues = NewCustomerInitialDues,
                     CreditLimit = NewCustomerCreditLimit,
                     CreatedAt = DateTime.Now,
@@ -340,6 +350,8 @@ namespace POS.ViewModels
             NewCustomerName = string.Empty;
             NewCustomerPhone = string.Empty;
             NewCustomerAddress = string.Empty;
+            NewCustomerCnic = string.Empty;
+            NewCustomerNtn = string.Empty;
             NewCustomerInitialDues = 0m;
             NewCustomerCreditLimit = 0m;
             PaymentAmount = 0m;

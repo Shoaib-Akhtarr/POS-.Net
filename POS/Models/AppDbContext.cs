@@ -98,6 +98,12 @@ namespace POS.Models
             modelBuilder.Entity<InstallmentPaymentAllocation>().Property(a => a.Amount).HasPrecision(18, 2);
             modelBuilder.Entity<InstallmentPaymentAllocation>().Property(a => a.PrincipalAmount).HasPrecision(18, 2);
             modelBuilder.Entity<InstallmentPaymentAllocation>().Property(a => a.LateFeeAmount).HasPrecision(18, 2);
+
+            modelBuilder.Entity<StoreSettings>().Property(s => s.FbrDefaultTaxRate).HasPrecision(18, 2);
+            modelBuilder.Entity<Sale>().Property(s => s.FbrTaxRate).HasPrecision(18, 2);
+            modelBuilder.Entity<Sale>().Property(s => s.FbrTaxAmount).HasPrecision(18, 2);
+            modelBuilder.Entity<SaleItem>().Property(i => i.TaxRate).HasPrecision(18, 2);
+            modelBuilder.Entity<SaleItem>().Property(i => i.TaxAmount).HasPrecision(18, 2);
         }
     }
 }

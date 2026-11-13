@@ -114,6 +114,14 @@
                             <Button Grid.Column="1" Command="{Binding OpenEditModalCommand}" Content="Edit Info" Style="{StaticResource SecondaryButtonStyle}" Padding="10,6" FontSize="11" VerticalAlignment="Top" Visibility="{Binding SelectedCustomer, Converter={StaticResource NullToVis}}"/>
                         </Grid>
 
+                        <!-- Customer details tags -->
+                        <WrapPanel Margin="0,8,0,0" Visibility="{Binding SelectedCustomer, Converter={StaticResource NullToVis}}">
+                            <TextBlock Text="{Binding SelectedCustomer.Phone, StringFormat='📞 {0}'}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,14,0" Visibility="{Binding SelectedCustomer.Phone, Converter={StaticResource StrNotEmptyToVis}}"/>
+                            <TextBlock Text="{Binding SelectedCustomer.Cnic, StringFormat='🪪 CNIC: {0}'}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,14,0" Visibility="{Binding SelectedCustomer.Cnic, Converter={StaticResource StrNotEmptyToVis}}"/>
+                            <TextBlock Text="{Binding SelectedCustomer.Ntn, StringFormat='🏢 NTN: {0}'}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,14,0" Visibility="{Binding SelectedCustomer.Ntn, Converter={StaticResource StrNotEmptyToVis}}"/>
+                            <TextBlock Text="{Binding SelectedCustomer.Address, StringFormat='📍 {0}'}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Visibility="{Binding SelectedCustomer.Address, Converter={StaticResource StrNotEmptyToVis}}"/>
+                        </WrapPanel>
+
                         <Grid Margin="0,14,0,0" Visibility="{Binding SelectedCustomer, Converter={StaticResource NullToVis}}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -189,6 +197,22 @@
 
                     <TextBlock Text="ADDRESS / SITE" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                     <TextBox Text="{Binding NewCustomerAddress, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,12"/>
+
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="8"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="CNIC (XXXXX-XXXXXXX-X)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding NewCustomerCnic, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="35202-1234567-1"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="NTN (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding NewCustomerNtn, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="1234567-8"/>
+                        </StackPanel>
+                    </Grid>
 
                     <StackPanel Visibility="{Binding IsEditMode, Converter={StaticResource InverseBoolToVis}}" Margin="0,0,0,14">
                         <TextBlock Text="OPENING RECEIVABLE (PKR)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>

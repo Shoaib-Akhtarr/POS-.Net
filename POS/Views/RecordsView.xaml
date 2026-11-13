@@ -147,6 +147,24 @@
                         </DataGridTemplateColumn>
                         <DataGridTextColumn Header="REFERENCE" Binding="{Binding RefId}" Width="165"/>
                         <DataGridTextColumn Header="CUSTOMER / SUPPLIER" Binding="{Binding Name}" Width="*"/>
+                        <DataGridTemplateColumn Header="FBR FISCAL" Width="125">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Border Padding="6,2" CornerRadius="4" Background="{DynamicResource SuccessSoftBrush}"
+                                                Visibility="{Binding IsFbrSynced, Converter={StaticResource BoolToVis}}"
+                                                ToolTip="{Binding FbrInvoiceNumber, StringFormat='FBR Inv: {0}'}">
+                                            <TextBlock Text="{Binding FbrBadgeText}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}"/>
+                                        </Border>
+                                        <Border Padding="6,2" CornerRadius="4" Background="{DynamicResource WarningSoftBrush}"
+                                                Visibility="{Binding IsFbrPending, Converter={StaticResource BoolToVis}}"
+                                                ToolTip="Saved locally · Pending sync to FBR">
+                                            <TextBlock Text="PENDING SYNC" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource WarningBrush}"/>
+                                        </Border>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                         <DataGridTextColumn Header="STAFF" Binding="{Binding CreatedBy}" Width="110"/>
                         <DataGridTextColumn Header="AMOUNT" Binding="{Binding Amount, Converter={StaticResource CurrencyConv}}" Width="130">
                             <DataGridTextColumn.ElementStyle>
@@ -188,9 +206,18 @@
                                 <TextBlock Text="Customer / Supplier" Foreground="{DynamicResource TextSecondaryBrush}"/>
                                 <TextBlock Text="{Binding SelectedRecord.Name}" HorizontalAlignment="Right" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
                             </Grid>
-                            <Grid Visibility="{Binding SelectedRecord.Notes, Converter={StaticResource StrNotEmptyToVis}}">
+                            <Grid Visibility="{Binding SelectedRecord.Notes, Converter={StaticResource StrNotEmptyToVis}}" Margin="0,0,0,6">
                                 <TextBlock Text="Site / Notes" Foreground="{DynamicResource TextSecondaryBrush}"/>
                                 <TextBlock Text="{Binding SelectedRecord.Notes}" HorizontalAlignment="Right" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            </Grid>
+                            <Grid Visibility="{Binding SelectedRecord.HasFbr, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Text="FBR Fiscal Invoice" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <TextBlock Text="{Binding SelectedRecord.FbrInvoiceNumber}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,8,0"/>
+                                    <Button Command="{Binding SyncSingleFbrRecordCommand}" CommandParameter="{Binding SelectedRecord}"
+                                            Content="Sync to FBR" Visibility="{Binding SelectedRecord.IsFbrPending, Converter={StaticResource BoolToVis}}"
+                                            Style="{StaticResource SecondaryButtonStyle}" Padding="6,2" FontSize="10"/>
+                                </StackPanel>
                             </Grid>
                         </StackPanel>
                     </Border>
