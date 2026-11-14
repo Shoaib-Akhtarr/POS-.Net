@@ -76,6 +76,8 @@ namespace POS.Services
                     EnsureColumns(conn, "Customers", new Dictionary<string, string>
                     {
                         ["CreditLimit"] = "TEXT NOT NULL DEFAULT '0'",
+                        ["FatherOrHusbandName"] = "TEXT NOT NULL DEFAULT ''",
+                        ["WorkAddress"] = "TEXT NOT NULL DEFAULT ''",
                         ["Cnic"] = "TEXT NOT NULL DEFAULT ''",
                         ["Ntn"] = "TEXT NOT NULL DEFAULT ''"
                     });

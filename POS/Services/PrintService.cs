@@ -14,6 +14,24 @@ namespace POS.Services
 {
     public sealed record DailyCashBookLine(DateTime Date, string Voucher, string Party, string Description, string Mode, decimal Inflow, decimal Outflow);
 
+    public sealed record DailyZReportSummary(
+        DateTime Date,
+        string CashierName,
+        int TotalInvoicesCount,
+        decimal CashSales,
+        decimal CardSales,
+        decimal BankSales,
+        decimal CreditSales,
+        decimal TotalSalesRevenue,
+        decimal KhataCashIn,
+        decimal InstallmentRecoveries,
+        decimal TotalCashInflow,
+        decimal CashOutExpenses,
+        decimal ExpectedDrawerCash,
+        decimal ActualDrawerCash,
+        decimal Variance,
+        int FbrOfflinePendingCount);
+
     public class PrintService
     {
         public static List<string> GetInstalledPrinters()
@@ -260,6 +278,65 @@ namespace POS.Services
             catch (Exception ex)
             {
                 return (false, $"Cash book print error: {ex.Message}");
+            }
+        }
+
+        public (bool success, string message) PrintInstallmentAgreement(
+            InstallmentContract contract,
+            Customer customer,
+            IReadOnlyList<InstallmentGuarantor> guarantors,
+            IReadOnlyList<SaleItem> items,
+            StoreSettings? settings = null)
+        {
+            settings ??= ThemeService.GetSettings();
+            try
+            {
+                var doc = BuildInstallmentAgreementDocument(contract, customer, guarantors, items, settings);
+                return PrintFlowDocument(doc, $"Kisht Nama - {contract.ContractNumber}");
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Agreement Print Error: {ex.Message}");
+            }
+        }
+
+        public (bool success, string message) PrintInstallmentPassbook(
+            InstallmentContract contract,
+            Customer customer,
+            IReadOnlyList<InstallmentSchedule> schedules,
+            StoreSettings? settings = null)
+        {
+            settings ??= ThemeService.GetSettings();
+            try
+            {
+                var doc = BuildInstallmentPassbookDocument(contract, customer, schedules, settings);
+                return PrintFlowDocument(doc, $"Qist Passbook - {contract.ContractNumber}");
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Passbook Print Error: {ex.Message}");
+            }
+        }
+
+        public (bool success, string message) PrintDailyZReport(
+            DateTime date,
+            DailyZReportSummary summary,
+            StoreSettings? settings = null)
+        {
+            settings ??= ThemeService.GetSettings();
+            try
+            {
+                if (settings.PreferredPrintFormat == "Thermal80mm")
+                {
+                    return PrintThermalZReport(summary, settings);
+                }
+
+                var doc = BuildDailyZReportDocument(date, summary, settings);
+                return PrintFlowDocument(doc, $"Z-Report {date:yyyyMMdd}");
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Z-Report Print Error: {ex.Message}");
             }
         }
 
@@ -838,6 +915,430 @@ namespace POS.Services
             table.RowGroups.Add(rg);
             doc.Blocks.Add(table);
             return doc;
+        }
+
+        private FlowDocument BuildInstallmentAgreementDocument(
+            InstallmentContract contract,
+            Customer customer,
+            IReadOnlyList<InstallmentGuarantor> guarantors,
+            IReadOnlyList<SaleItem> items,
+            StoreSettings settings)
+        {
+            var doc = new FlowDocument
+            {
+                FontFamily = new FontFamily("Segoe UI"),
+                FontSize = 10,
+                Foreground = Brushes.Black,
+                PagePadding = new Thickness(36)
+            };
+
+            // Shop Header
+            var header = new Paragraph { TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 0, 0, 8) };
+            header.Inlines.Add(new Run(settings.ShopName) { FontSize = 18, FontWeight = FontWeights.Bold });
+            header.Inlines.Add(new LineBreak());
+            if (!string.IsNullOrWhiteSpace(settings.Subtitle))
+            {
+                header.Inlines.Add(new Run(settings.Subtitle) { FontSize = 10, Foreground = Brushes.DimGray });
+                header.Inlines.Add(new LineBreak());
+            }
+            header.Inlines.Add(new Run($"{settings.Address}   |   Tel: {settings.Phone1} / {settings.Phone2}") { FontSize = 9 });
+            doc.Blocks.Add(header);
+
+            // Document Title
+            var titleBox = new Paragraph
+            {
+                TextAlignment = TextAlignment.Center,
+                Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)),
+                Margin = new Thickness(0, 4, 0, 10),
+                Padding = new Thickness(6)
+            };
+            titleBox.Inlines.Add(new Run("اقرار نامہ و بیعانہ اقساط  (INSTALLMENT FINANCING AGREEMENT)") { FontSize = 13, FontWeight = FontWeights.Bold });
+            titleBox.Inlines.Add(new LineBreak());
+            titleBox.Inlines.Add(new Run($"Contract #: {contract.ContractNumber}   |   Booking Date: {contract.CreatedAt:dd-MMM-yyyy}   |   Officer: {contract.RecoveryOfficer ?? "Office"}") { FontSize = 9, FontWeight = FontWeights.SemiBold });
+            doc.Blocks.Add(titleBox);
+
+            // Section 1: Customer Details
+            var custPara = new Paragraph { Margin = new Thickness(0, 4, 0, 6) };
+            custPara.Inlines.Add(new Run("1. خریدار کے کوائف (BUYER PARTICULARS):") { FontWeight = FontWeights.Bold, FontSize = 10.5 });
+            custPara.Inlines.Add(new LineBreak());
+            custPara.Inlines.Add(new Run($"Name: {customer.Name}     Father/Husband Name: {(string.IsNullOrWhiteSpace(customer.FatherOrHusbandName) ? "—" : customer.FatherOrHusbandName)}") { FontWeight = FontWeights.SemiBold });
+            custPara.Inlines.Add(new LineBreak());
+            custPara.Inlines.Add(new Run($"CNIC #: {(string.IsNullOrWhiteSpace(customer.Cnic) ? "—" : customer.Cnic)}     Mobile: {customer.Phone}"));
+            custPara.Inlines.Add(new LineBreak());
+            custPara.Inlines.Add(new Run($"Home Address: {(string.IsNullOrWhiteSpace(customer.Address) ? "—" : customer.Address)}"));
+            if (!string.IsNullOrWhiteSpace(customer.WorkAddress))
+            {
+                custPara.Inlines.Add(new LineBreak());
+                custPara.Inlines.Add(new Run($"Workplace / Business: {customer.WorkAddress}"));
+            }
+            doc.Blocks.Add(custPara);
+
+            // Section 2: Guarantors
+            var guarPara = new Paragraph { Margin = new Thickness(0, 4, 0, 6) };
+            guarPara.Inlines.Add(new Run("2. ضامنین کے کوائف (GUARANTORS PARTICULARS):") { FontWeight = FontWeights.Bold, FontSize = 10.5 });
+            guarPara.Inlines.Add(new LineBreak());
+
+            if (guarantors.Any())
+            {
+                for (int i = 0; i < guarantors.Count; i++)
+                {
+                    var g = guarantors[i];
+                    guarPara.Inlines.Add(new Run($"Guarantor #{i + 1} ({g.Relationship}): {g.FullName}  |  CNIC: {g.CNIC}  |  Phone: {g.Phone}") { FontWeight = FontWeights.SemiBold });
+                    guarPara.Inlines.Add(new LineBreak());
+                    guarPara.Inlines.Add(new Run($"   Address: {g.Address}"));
+                    if (i < guarantors.Count - 1) guarPara.Inlines.Add(new LineBreak());
+                }
+            }
+            else
+            {
+                guarPara.Inlines.Add(new Run("No secondary guarantors recorded. Primary buyer under direct security."));
+            }
+            doc.Blocks.Add(guarPara);
+
+            // Section 3: Financed Items Table
+            var itemSection = new Paragraph { Margin = new Thickness(0, 4, 0, 4) };
+            itemSection.Inlines.Add(new Run("3. سامان کی تفصیل (FINANCED ASSET / GOODS):") { FontWeight = FontWeights.Bold, FontSize = 10.5 });
+            doc.Blocks.Add(itemSection);
+
+            var itemTable = new Table { CellSpacing = 0, BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)), BorderThickness = new Thickness(1) };
+            itemTable.Columns.Add(new TableColumn { Width = new GridLength(3, GridUnitType.Star) });
+            itemTable.Columns.Add(new TableColumn { Width = new GridLength(2, GridUnitType.Star) });
+            itemTable.Columns.Add(new TableColumn { Width = new GridLength(1, GridUnitType.Star) });
+            itemTable.Columns.Add(new TableColumn { Width = new GridLength(1.5, GridUnitType.Star) });
+
+            var itemGroup = new TableRowGroup();
+            var itemHdr = new TableRow { Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)) };
+            itemHdr.Cells.Add(CreateCell("Product Name", FontWeights.Bold, TextAlignment.Left));
+            itemHdr.Cells.Add(CreateCell("Serial / IMEI / Warranty", FontWeights.Bold, TextAlignment.Left));
+            itemHdr.Cells.Add(CreateCell("Qty", FontWeights.Bold, TextAlignment.Right));
+            itemHdr.Cells.Add(CreateCell("Cash Price (Rs)", FontWeights.Bold, TextAlignment.Right));
+            itemGroup.Rows.Add(itemHdr);
+
+            if (items.Any())
+            {
+                foreach (var it in items)
+                {
+                    var r = new TableRow();
+                    r.Cells.Add(CreateCell(it.Name, FontWeights.Normal, TextAlignment.Left));
+                    string serial = !string.IsNullOrWhiteSpace(it.SerialNumber) ? $"S/N: {it.SerialNumber}" : "-";
+                    if (!string.IsNullOrWhiteSpace(it.WarrantyPeriod)) serial += $" ({it.WarrantyPeriod})";
+                    r.Cells.Add(CreateCell(serial, FontWeights.Normal, TextAlignment.Left));
+                    r.Cells.Add(CreateCell($"{FormatQty(it.Quantity)} {it.Unit}", FontWeights.Normal, TextAlignment.Right));
+                    r.Cells.Add(CreateCell($"Rs {it.Price:N0}", FontWeights.SemiBold, TextAlignment.Right));
+                    itemGroup.Rows.Add(r);
+                }
+            }
+            else
+            {
+                var r = new TableRow();
+                r.Cells.Add(CreateCell("Installment Contract Asset", FontWeights.Normal, TextAlignment.Left));
+                r.Cells.Add(CreateCell("General Contract", FontWeights.Normal, TextAlignment.Left));
+                r.Cells.Add(CreateCell("1 pkg", FontWeights.Normal, TextAlignment.Right));
+                r.Cells.Add(CreateCell($"Rs {contract.CashPrice:N0}", FontWeights.SemiBold, TextAlignment.Right));
+                itemGroup.Rows.Add(r);
+            }
+            itemTable.RowGroups.Add(itemGroup);
+            doc.Blocks.Add(itemTable);
+
+            // Section 4: Financial Matrix Table
+            var finSection = new Paragraph { Margin = new Thickness(0, 8, 0, 4) };
+            finSection.Inlines.Add(new Run("4. مالیاتی تفصیل و شیڈول (FINANCING MATRIX & TERMS):") { FontWeight = FontWeights.Bold, FontSize = 10.5 });
+            doc.Blocks.Add(finSection);
+
+            var finTable = new Table { CellSpacing = 0, BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)), BorderThickness = new Thickness(1) };
+            finTable.Columns.Add(new TableColumn { Width = new GridLength(1.5, GridUnitType.Star) });
+            finTable.Columns.Add(new TableColumn { Width = new GridLength(1.5, GridUnitType.Star) });
+            finTable.Columns.Add(new TableColumn { Width = new GridLength(1.5, GridUnitType.Star) });
+            finTable.Columns.Add(new TableColumn { Width = new GridLength(1.5, GridUnitType.Star) });
+
+            var finGroup = new TableRowGroup();
+            var finRow1 = new TableRow();
+            finRow1.Cells.Add(CreateCell("Cash Price (نقد قیمت):", FontWeights.Bold, TextAlignment.Left));
+            finRow1.Cells.Add(CreateCell($"Rs {contract.CashPrice:N0}", FontWeights.SemiBold, TextAlignment.Right));
+            finRow1.Cells.Add(CreateCell("Down Payment / Advance (پیشگی):", FontWeights.Bold, TextAlignment.Left));
+            finRow1.Cells.Add(CreateCell($"Rs {contract.DownPayment:N0}", FontWeights.SemiBold, TextAlignment.Right));
+            finGroup.Rows.Add(finRow1);
+
+            var finRow2 = new TableRow();
+            finRow2.Cells.Add(CreateCell("Financed Principal (بقایا زر نقد):", FontWeights.Bold, TextAlignment.Left));
+            finRow2.Cells.Add(CreateCell($"Rs {Math.Max(0m, contract.CashPrice - contract.DownPayment):N0}", FontWeights.SemiBold, TextAlignment.Right));
+            finRow2.Cells.Add(CreateCell("Markup / Profit (منافع):", FontWeights.Bold, TextAlignment.Left));
+            finRow2.Cells.Add(CreateCell($"Rs {contract.MarkupAmount:N0}", FontWeights.SemiBold, TextAlignment.Right));
+            finGroup.Rows.Add(finRow2);
+
+            var finRow3 = new TableRow();
+            finRow3.Cells.Add(CreateCell("Processing / File Fee (فیس):", FontWeights.Bold, TextAlignment.Left));
+            finRow3.Cells.Add(CreateCell($"Rs {contract.ProcessingFee:N0}", FontWeights.SemiBold, TextAlignment.Right));
+            finRow3.Cells.Add(CreateCell("Total Contract Payable (کل رقم):", FontWeights.Bold, TextAlignment.Left));
+            finRow3.Cells.Add(CreateCell($"Rs {contract.TotalPayable:N0}", FontWeights.Bold, TextAlignment.Right));
+            finGroup.Rows.Add(finRow3);
+
+            decimal monthlyQist = contract.InstallmentsCount > 0
+                ? decimal.Round((contract.TotalPayable - contract.DownPayment) / contract.InstallmentsCount, 2, MidpointRounding.AwayFromZero)
+                : 0m;
+
+            var finRow4 = new TableRow { Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)) };
+            finRow4.Cells.Add(CreateCell($"Installment Amount ({contract.Frequency}):", FontWeights.Bold, TextAlignment.Left));
+            finRow4.Cells.Add(CreateCell($"Rs {monthlyQist:N0}", FontWeights.Bold, TextAlignment.Right));
+            finRow4.Cells.Add(CreateCell("Tenure / Grace / Late Fee:", FontWeights.Bold, TextAlignment.Left));
+            finRow4.Cells.Add(CreateCell($"{contract.InstallmentsCount} Installments · {contract.GraceDays}d Grace · Rs {contract.LateFeePerInstallment:N0} Fee", FontWeights.SemiBold, TextAlignment.Right));
+            finGroup.Rows.Add(finRow4);
+
+            finTable.RowGroups.Add(finGroup);
+            doc.Blocks.Add(finTable);
+
+            // Section 5: Legal Undertaking
+            var terms = new Paragraph { Margin = new Thickness(0, 10, 0, 16), LineHeight = 16 };
+            terms.Inlines.Add(new Run("5. شرائط و ضوابط اقرار نامہ (TERMS & CONDITIONS):") { FontWeight = FontWeights.Bold, FontSize = 10.5 });
+            terms.Inlines.Add(new LineBreak());
+            terms.Inlines.Add(new Run("1. خریدار اقرار کرتا ہے کہ وہ ماہانہ قسط مقررہ تاریخ پر دکان ہذا میں بلا تاخیر ادا کرنے کا پابند ہوگا۔\n"));
+            terms.Inlines.Add(new Run("2. مقررہ تاریخ اور رعایت شدہ ایام (Grace Days) کے بعد قسط موصول نہ ہونے کی صورت میں معاہدہ کے مطابق روزانہ/ماہانہ جرمانہ وصول کیا جائے گا۔\n"));
+            terms.Inlines.Add(new Run("3. تمام اقساط کی مکمل ادائیگی تک مذکورہ سامان کی قانونی ملکیت کمپنی/دکان ہذا کے پاس رہے گی۔ خریدار کو سامان فروخت، رہن یا تبدیل کرنے کا حق نہ ہوگا۔\n"));
+            terms.Inlines.Add(new Run("4. نادہندگی یا قسط ادا نہ کرنے کی صورت میں کمپنی سامان واپس لینے اور ضامنین سے رقم وصول کرنے کا مکمل قانونی اختیار رکھتی ہے۔"));
+            doc.Blocks.Add(terms);
+
+            // Section 6: Formal Signatures & Thumb Impressions
+            var sigTable = new Table { CellSpacing = 8, Margin = new Thickness(0, 10, 0, 0) };
+            sigTable.Columns.Add(new TableColumn { Width = new GridLength(1, GridUnitType.Star) });
+            sigTable.Columns.Add(new TableColumn { Width = new GridLength(1, GridUnitType.Star) });
+            sigTable.Columns.Add(new TableColumn { Width = new GridLength(1, GridUnitType.Star) });
+            sigTable.Columns.Add(new TableColumn { Width = new GridLength(1, GridUnitType.Star) });
+
+            var sigGroup = new TableRowGroup();
+            var sigRow = new TableRow();
+
+            foreach (var label in new[]
+            {
+                "دستخط و انگوٹھا خریدار\nBuyer Signature & Thumb",
+                "دستخط و انگوٹھا ضامن اول\nGuarantor 1 Sign & Thumb",
+                "دستخط و انگوٹھا ضامن دوم\nGuarantor 2 Sign & Thumb",
+                "مہر و دستخط برائے دکان\nStore Officer Stamp"
+            })
+            {
+                var p = new Paragraph { TextAlignment = TextAlignment.Center, Margin = new Thickness(4) };
+                p.Inlines.Add(new Run("\n\n\n______________________\n"));
+                p.Inlines.Add(new Run(label) { FontSize = 8.5, FontWeight = FontWeights.SemiBold });
+                var cell = new TableCell(p)
+                {
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)),
+                    BorderThickness = new Thickness(1),
+                    Background = new SolidColorBrush(Color.FromRgb(248, 250, 252))
+                };
+                sigRow.Cells.Add(cell);
+            }
+            sigGroup.Rows.Add(sigRow);
+            sigTable.RowGroups.Add(sigGroup);
+            doc.Blocks.Add(sigTable);
+
+            return doc;
+        }
+
+        private FlowDocument BuildInstallmentPassbookDocument(
+            InstallmentContract contract,
+            Customer customer,
+            IReadOnlyList<InstallmentSchedule> schedules,
+            StoreSettings settings)
+        {
+            var doc = new FlowDocument
+            {
+                FontFamily = new FontFamily("Segoe UI"),
+                FontSize = 9.5,
+                Foreground = Brushes.Black,
+                PagePadding = new Thickness(36)
+            };
+
+            // Shop Header
+            var header = new Paragraph { TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 0, 0, 6) };
+            header.Inlines.Add(new Run(settings.ShopName) { FontSize = 18, FontWeight = FontWeights.Bold });
+            header.Inlines.Add(new LineBreak());
+            header.Inlines.Add(new Run($"قسط بک / شیڈول کارڈ  (INSTALLMENT PASSBOOK)  ·  {settings.Phone1}") { FontSize = 10, FontWeight = FontWeights.SemiBold });
+            doc.Blocks.Add(header);
+
+            // Card Header Box
+            var cardBox = new Paragraph
+            {
+                Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)),
+                Padding = new Thickness(8),
+                Margin = new Thickness(0, 0, 0, 10)
+            };
+            cardBox.Inlines.Add(new Run($"Customer: {customer.Name}  |  CNIC: {customer.Cnic ?? "—"}  |  Mobile: {customer.Phone}") { FontWeight = FontWeights.Bold });
+            cardBox.Inlines.Add(new LineBreak());
+            cardBox.Inlines.Add(new Run($"Contract #: {contract.ContractNumber}   |   Total Payable: Rs {contract.TotalPayable:N0}   |   Advance: Rs {contract.DownPayment:N0}   |   Tenure: {contract.InstallmentsCount} Qistein"));
+            doc.Blocks.Add(cardBox);
+
+            // Schedule Table
+            var table = new Table { CellSpacing = 0, BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)), BorderThickness = new Thickness(1) };
+            table.Columns.Add(new TableColumn { Width = new GridLength(45d) }); // Qist #
+            table.Columns.Add(new TableColumn { Width = new GridLength(85d) }); // Due Date
+            table.Columns.Add(new TableColumn { Width = new GridLength(85d) }); // Due Amount
+            table.Columns.Add(new TableColumn { Width = new GridLength(85d) }); // Paid Date
+            table.Columns.Add(new TableColumn { Width = new GridLength(85d) }); // Paid Amount
+            table.Columns.Add(new TableColumn { Width = new GridLength(90d) }); // Status
+            table.Columns.Add(new TableColumn { Width = new GridLength(110d) }); // Sign / Stamp
+
+            var rg = new TableRowGroup();
+            var hdr = new TableRow { Background = new SolidColorBrush(Color.FromRgb(226, 232, 240)), FontWeight = FontWeights.Bold };
+            foreach (var h in new[] { "Qist #", "Due Date", "Due (Rs)", "Paid Date", "Paid (Rs)", "Status", "Sign / Stamp" })
+            {
+                hdr.Cells.Add(CreateCell(h, FontWeights.Bold, h is "Due (Rs)" or "Paid (Rs)" ? TextAlignment.Right : TextAlignment.Center));
+            }
+            rg.Rows.Add(hdr);
+
+            decimal totalPaid = 0m;
+            foreach (var s in schedules.OrderBy(item => item.Sequence))
+            {
+                totalPaid += s.AmountPaid;
+                var row = new TableRow();
+                if (s.Status == "Paid") row.Background = new SolidColorBrush(Color.FromRgb(240, 253, 244)); // Emerald tint
+                else if (s.Status == "Overdue") row.Background = new SolidColorBrush(Color.FromRgb(254, 242, 242)); // Rose tint
+
+                row.Cells.Add(CreateCell($"#{s.Sequence}", FontWeights.Bold, TextAlignment.Center));
+                row.Cells.Add(CreateCell(s.DueDate.ToString("dd MMM yyyy"), FontWeights.Normal, TextAlignment.Center));
+                row.Cells.Add(CreateCell($"Rs {s.AmountDue:N0}", FontWeights.SemiBold, TextAlignment.Right));
+                row.Cells.Add(CreateCell(s.AmountPaid > 0 ? DateTime.Now.ToString("dd/MM/yy") : "—", FontWeights.Normal, TextAlignment.Center));
+                row.Cells.Add(CreateCell(s.AmountPaid > 0 ? $"Rs {s.AmountPaid:N0}" : "—", FontWeights.SemiBold, TextAlignment.Right));
+                row.Cells.Add(CreateCell(s.Status.ToUpperInvariant(), FontWeights.Bold, TextAlignment.Center));
+                row.Cells.Add(CreateCell("_______________", FontWeights.Normal, TextAlignment.Center));
+                rg.Rows.Add(row);
+            }
+            table.RowGroups.Add(rg);
+            doc.Blocks.Add(table);
+
+            // Summary
+            var summary = new Paragraph { TextAlignment = TextAlignment.Right, Margin = new Thickness(0, 10, 0, 0) };
+            summary.Inlines.Add(new Run($"Total Financed: Rs {contract.TotalPayable:N0}   |   Total Paid: Rs {contract.DownPayment + totalPaid:N0}   |   Remaining: Rs {Math.Max(0m, contract.TotalPayable - (contract.DownPayment + totalPaid)):N0}") { FontSize = 11, FontWeight = FontWeights.Bold });
+            doc.Blocks.Add(summary);
+
+            return doc;
+        }
+
+        private FlowDocument BuildDailyZReportDocument(
+            DateTime date,
+            DailyZReportSummary summary,
+            StoreSettings settings)
+        {
+            var doc = new FlowDocument
+            {
+                FontFamily = new FontFamily("Segoe UI"),
+                FontSize = 10,
+                Foreground = Brushes.Black,
+                PagePadding = new Thickness(40)
+            };
+
+            var header = new Paragraph { TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 0, 0, 10) };
+            header.Inlines.Add(new Run(settings.ShopName) { FontSize = 18, FontWeight = FontWeights.Bold });
+            header.Inlines.Add(new LineBreak());
+            header.Inlines.Add(new Run("DAILY CASH REGISTER CLOSING REPORT (روزنامچہ اختتام)") { FontSize = 12, FontWeight = FontWeights.Bold });
+            header.Inlines.Add(new LineBreak());
+            header.Inlines.Add(new Run($"Date: {date:dd MMMM yyyy}   |   Generated: {DateTime.Now:HH:mm:ss}   |   Cashier: {summary.CashierName}") { FontSize = 9, Foreground = Brushes.DimGray });
+            doc.Blocks.Add(header);
+
+            var table = new Table { CellSpacing = 0, BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)), BorderThickness = new Thickness(1) };
+            table.Columns.Add(new TableColumn { Width = new GridLength(2.5, GridUnitType.Star) });
+            table.Columns.Add(new TableColumn { Width = new GridLength(1.5, GridUnitType.Star) });
+
+            var rg = new TableRowGroup();
+
+            void AddSection(string title)
+            {
+                var r = new TableRow { Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)) };
+                r.Cells.Add(new TableCell(new Paragraph(new Run(title)) { FontWeight = FontWeights.Bold, Margin = new Thickness(8, 5, 8, 5) }) { ColumnSpan = 2 });
+                rg.Rows.Add(r);
+            }
+
+            void AddRow(string label, decimal amount, bool isBold = false)
+            {
+                var r = new TableRow();
+                r.Cells.Add(CreateCell(label, isBold ? FontWeights.Bold : FontWeights.Normal, TextAlignment.Left));
+                r.Cells.Add(CreateCell($"Rs {amount:N0}", isBold ? FontWeights.Bold : FontWeights.Normal, TextAlignment.Right));
+                rg.Rows.Add(r);
+            }
+
+            AddSection("1. SALES & BILLING REVENUE");
+            AddRow("Total Invoices Count", summary.TotalInvoicesCount, false);
+            AddRow("Cash Sales", summary.CashSales);
+            AddRow("Card / Bank / Raast Sales", summary.CardSales + summary.BankSales);
+            AddRow("Credit (Udhaar) Sales", summary.CreditSales);
+            AddRow("Total Net Sales Revenue", summary.TotalSalesRevenue, true);
+
+            AddSection("2. CASH DRAWER INFLOWS");
+            AddRow("Cash Sales Tendered", summary.CashSales);
+            AddRow("Khata Cash In (Customer Wasooli)", summary.KhataCashIn);
+            AddRow("Installment Qist Recoveries & Advance", summary.InstallmentRecoveries);
+            AddRow("Total Cash Inflow", summary.TotalCashInflow, true);
+
+            AddSection("3. CASH DRAWER OUTFLOWS / EXPENSES");
+            AddRow("Supplier Payments & Shop Expenses", summary.CashOutExpenses, true);
+
+            AddSection("4. DRAWER RECONCILIATION & CLOSING");
+            AddRow("Expected Drawer Cash Balance", summary.ExpectedDrawerCash, true);
+            AddRow("Actual Physical Cash Counted", summary.ActualDrawerCash, true);
+
+            var diffRow = new TableRow { Background = summary.Variance == 0 ? new SolidColorBrush(Color.FromRgb(240, 253, 244)) : new SolidColorBrush(Color.FromRgb(254, 242, 242)) };
+            diffRow.Cells.Add(CreateCell("Drawer Variance (Over / Short)", FontWeights.Bold, TextAlignment.Left));
+            diffRow.Cells.Add(CreateCell($"Rs {summary.Variance:+#,##0;-#,##0;0}", FontWeights.Bold, TextAlignment.Right));
+            rg.Rows.Add(diffRow);
+
+            AddSection("5. FISCAL INTEGRATION STATUS");
+            AddRow("FBR Offline Invoices Pending Sync", summary.FbrOfflinePendingCount, summary.FbrOfflinePendingCount > 0);
+
+            table.RowGroups.Add(rg);
+            doc.Blocks.Add(table);
+
+            var sigs = new Paragraph { Margin = new Thickness(0, 24, 0, 0), TextAlignment = TextAlignment.Center };
+            sigs.Inlines.Add(new Run("Cashier Signature: _______________________          Owner / Manager Verification: _______________________") { FontWeight = FontWeights.SemiBold });
+            doc.Blocks.Add(sigs);
+
+            return doc;
+        }
+
+        private (bool success, string message) PrintThermalZReport(DailyZReportSummary s, StoreSettings settings)
+        {
+            if (!OperatingSystem.IsWindows()) return (false, "Windows required for thermal spooler.");
+            try
+            {
+                var sb = new StringBuilder();
+                sb.AppendLine("\x1B\x40"); // ESC @ Init
+                sb.AppendLine("\x1B\x61\x01"); // Center
+                sb.AppendLine(settings.ShopName);
+                sb.AppendLine("DAILY CLOSING (Z-REPORT)");
+                sb.AppendLine($"Date: {s.Date:dd-MMM-yyyy}  Time: {DateTime.Now:HH:mm}");
+                sb.AppendLine($"Cashier: {s.CashierName}");
+                sb.AppendLine("--------------------------------");
+                sb.AppendLine("\x1B\x61\x00"); // Left align
+                sb.AppendLine($"Invoices Count : {s.TotalInvoicesCount}");
+                sb.AppendLine($"Cash Sales     : Rs {s.CashSales,12:N0}");
+                sb.AppendLine($"Card/Bank Sales: Rs {s.CardSales + s.BankSales,12:N0}");
+                sb.AppendLine($"Credit Sales   : Rs {s.CreditSales,12:N0}");
+                sb.AppendLine($"Net Revenue    : Rs {s.TotalSalesRevenue,12:N0}");
+                sb.AppendLine("--------------------------------");
+                sb.AppendLine("CASH DRAWER COLLECTIONS:");
+                sb.AppendLine($"Sales Cash     : Rs {s.CashSales,12:N0}");
+                sb.AppendLine($"Khata Wasooli  : Rs {s.KhataCashIn,12:N0}");
+                sb.AppendLine($"Qist Recoveries: Rs {s.InstallmentRecoveries,12:N0}");
+                sb.AppendLine($"Total Cash In  : Rs {s.TotalCashInflow,12:N0}");
+                sb.AppendLine($"Cash Outflows  : Rs {s.CashOutExpenses,12:N0}");
+                sb.AppendLine("--------------------------------");
+                sb.AppendLine($"Expected Drawer: Rs {s.ExpectedDrawerCash,12:N0}");
+                sb.AppendLine($"Actual Counted : Rs {s.ActualDrawerCash,12:N0}");
+                sb.AppendLine($"Variance (Diff): Rs {s.Variance,12:+#,##0;-#,##0;0}");
+                sb.AppendLine("--------------------------------");
+                if (s.FbrOfflinePendingCount > 0)
+                {
+                    sb.AppendLine($"FBR Offline Queued: {s.FbrOfflinePendingCount} INVOICES");
+                }
+                sb.AppendLine("\n\nCashier Sign: __________________\n");
+                sb.AppendLine("\x1D\x56\x00"); // Cut
+
+                string printerName = string.IsNullOrWhiteSpace(settings.PrinterName) ? "XP-80" : settings.PrinterName;
+                byte[] bytes = Encoding.ASCII.GetBytes(sb.ToString());
+                RawPrinterHelper.SendBytesToPrinter(printerName, bytes);
+                return (true, "Daily Z-Report printed to thermal.");
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Thermal Z-Report error: {ex.Message}");
+            }
         }
 
         private static TableCell CreateCell(string text, FontWeight weight, TextAlignment align)

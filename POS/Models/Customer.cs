@@ -8,6 +8,8 @@ namespace POS.Models
         public string Name { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
+        public string FatherOrHusbandName { get; set; } = string.Empty;
+        public string WorkAddress { get; set; } = string.Empty;
         public string Cnic { get; set; } = string.Empty;
         public string Ntn { get; set; } = string.Empty;
         public decimal TotalDues { get; set; }

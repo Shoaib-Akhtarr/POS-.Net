@@ -12,6 +12,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Header & Date Period Chips -->
@@ -180,6 +181,63 @@
                     </ControlTemplate>
                 </Button.Template>
             </Button>
+        </Grid>
+
+        <!-- Financial Intelligence & Khata / Installments / FBR Row -->
+        <Grid Grid.Row="3" Margin="0,14,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Khata Receivables (Maine Lena Hai) -->
+            <Border Grid.Column="0" Style="{StaticResource SurfaceCardStyle}" Margin="0,0,10,0" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="KHATA RECEIVABLES (LE NA HAI)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                    <TextBlock Text="{Binding KhataTotalReceivable, StringFormat=Rs {0:N0}}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource SuccessBrush}" Margin="0,6,0,0"/>
+                    <TextBlock Text="● Maine Lena Hai" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource SuccessBrush}" Margin="0,3,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Khata Payables (Maine Dena Hai) -->
+            <Border Grid.Column="1" Style="{StaticResource SurfaceCardStyle}" Margin="6,0,6,0" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="KHATA PAYABLES (DE NA HAI)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                    <TextBlock Text="{Binding KhataTotalPayable, StringFormat=Rs {0:N0}}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource DangerBrush}" Margin="0,6,0,0"/>
+                    <TextBlock Text="● Maine Dena Hai" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource DangerBrush}" Margin="0,3,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Active Qist Portfolio -->
+            <Border Grid.Column="2" Style="{StaticResource SurfaceCardStyle}" Margin="6,0,6,0" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="ACTIVE QIST PORTFOLIO" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                    <TextBlock Text="{Binding ActiveInstallmentPortfolio, StringFormat=Rs {0:N0}}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryBrush}" Margin="0,6,0,0"/>
+                    <TextBlock Text="Total financed capital" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Overdue Qist Alert -->
+            <Border Grid.Column="3" Style="{StaticResource SurfaceCardStyle}" Margin="6,0,6,0" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="OVERDUE QIST (WAJIB-UL-ADA)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                    <TextBlock Text="{Binding OverdueInstallmentAmount, StringFormat=Rs {0:N0}}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource WarningBrush}" Margin="0,6,0,0"/>
+                    <TextBlock Text="{Binding OverdueInstallmentCount, StringFormat='⚠ {0} Defaulters past due'}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WarningBrush}" Margin="0,3,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- FBR Fiscal Status -->
+            <Border Grid.Column="4" Style="{StaticResource SurfaceCardStyle}" Margin="10,0,0,0" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="FBR FISCAL SYNC QUEUE" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                    <TextBlock Text="{Binding FbrOfflinePendingCount, StringFormat='{}{0} Pending'}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,6,0,0"/>
+                    <TextBlock Text="All invoices synchronized" FontSize="10" Foreground="{DynamicResource SuccessBrush}" Margin="0,3,0,0" Visibility="{Binding HasFbrOfflinePending, Converter={StaticResource InverseBoolToVis}}"/>
+                    <TextBlock Text="⚠ Offline queue waiting" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WarningBrush}" Margin="0,3,0,0" Visibility="{Binding HasFbrOfflinePending, Converter={StaticResource BoolToVis}}"/>
+                </StackPanel>
+            </Border>
         </Grid>
 
         <!-- Low Stock Modal Overlay -->

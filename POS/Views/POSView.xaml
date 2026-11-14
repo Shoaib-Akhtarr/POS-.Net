@@ -464,7 +464,7 @@
                             </Border>
 
                             <!-- Cash Tendered & Change Return (Cash Mode) -->
-                            <Grid Margin="0,0,0,6" Visibility="{Binding PaymentMethod, Converter={StaticResource EqToVis}, ConverterParameter=Cash}">
+                            <Grid Margin="0,0,0,4" Visibility="{Binding PaymentMethod, Converter={StaticResource EqToVis}, ConverterParameter=Cash}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="8"/>
@@ -472,10 +472,19 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBox Grid.Column="0" Text="{Binding CashTendered, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Padding="10,5" FontSize="12" conv:PlaceholderHelper.Placeholder="{DynamicResource Lang_CashTendered}"/>
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <TextBlock Text="Change: " FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"/>
-                                    <TextBlock Text="{Binding ChangeReturned, StringFormat=Rs {0:N0}}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}"/>
+                                    <TextBlock Text="Baqaya: " FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <TextBlock Text="{Binding ChangeReturned, StringFormat=Rs {0:N0}}" FontSize="14" FontWeight="Black" Foreground="{DynamicResource SuccessBrush}"/>
                                 </StackPanel>
                             </Grid>
+
+                            <!-- Quick Cash Tender Denomination Chips -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6" Visibility="{Binding PaymentMethod, Converter={StaticResource EqToVis}, ConverterParameter=Cash}">
+                                <Button Command="{Binding SetExactTenderCommand}" Content="Exact" Style="{StaticResource GhostButtonStyle}" Padding="6,2" FontSize="10" Margin="0,0,4,0"/>
+                                <Button Command="{Binding AddTenderAmountCommand}" CommandParameter="500" Content="+500" Style="{StaticResource GhostButtonStyle}" Padding="6,2" FontSize="10" Margin="0,0,4,0"/>
+                                <Button Command="{Binding AddTenderAmountCommand}" CommandParameter="1000" Content="+1,000" Style="{StaticResource GhostButtonStyle}" Padding="6,2" FontSize="10" Margin="0,0,4,0"/>
+                                <Button Command="{Binding AddTenderAmountCommand}" CommandParameter="5000" Content="+5,000" Style="{StaticResource GhostButtonStyle}" Padding="6,2" FontSize="10" Margin="0,0,4,0"/>
+                                <Button Command="{Binding ClearTenderCommand}" Content="Clear" Style="{StaticResource GhostButtonStyle}" Padding="6,2" FontSize="10"/>
+                            </StackPanel>
 
                             <Grid Margin="0,0,0,8" Visibility="{Binding SelectedCustomer, Converter={StaticResource NullToVis}}">
                                 <TextBlock Text="{DynamicResource Lang_RemainingKhata}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" FontWeight="Bold"/>

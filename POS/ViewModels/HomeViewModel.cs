@@ -26,6 +26,15 @@ namespace POS.ViewModels
         [ObservableProperty] private int _criticalAlertCount;
         [ObservableProperty] private string _lowestUnitInfo = "None";
 
+        // Financial Intelligence Metrics
+        [ObservableProperty] private decimal _khataTotalReceivable;
+        [ObservableProperty] private decimal _khataTotalPayable;
+        [ObservableProperty] private decimal _activeInstallmentPortfolio;
+        [ObservableProperty] private int _overdueInstallmentCount;
+        [ObservableProperty] private decimal _overdueInstallmentAmount;
+        [ObservableProperty] private int _fbrOfflinePendingCount;
+        public bool HasFbrOfflinePending => FbrOfflinePendingCount > 0;
+
         [ObservableProperty] private string _selectedPeriod = "Last 7 Days";
         public List<string> AvailablePeriods { get; } = new() { "Today", "Last 7 Days", "Last 30 Days", "All Time" };
 
@@ -135,6 +144,40 @@ namespace POS.ViewModels
                 .ToList()
                 .Where(c => c.TotalDues > 0m)
                 .Sum(c => c.TotalDues);
+
+            // Khata party balances (Receivables vs Payables)
+            var accounts = context.KhataAccounts.AsNoTracking().ToList();
+            var entries = context.KhataEntries.AsNoTracking().ToList();
+            var balances = entries.GroupBy(e => e.AccountId)
+                .ToDictionary(g => g.Key, g => g.Sum(e => e.Debit - e.Credit));
+
+            decimal receivable = 0m;
+            decimal payable = 0m;
+            foreach (var account in accounts)
+            {
+                decimal bal = balances.GetValueOrDefault(account.Id, 0m);
+                if (bal > 0) receivable += bal;
+                else if (bal < 0) payable += Math.Abs(bal);
+            }
+            KhataTotalReceivable = receivable;
+            KhataTotalPayable = payable;
+
+            // Active Installments Portfolio (Capital in market)
+            var activeContracts = context.InstallmentContracts.AsNoTracking()
+                .Where(c => c.Status == "Active")
+                .ToList();
+            ActiveInstallmentPortfolio = activeContracts.Sum(c => Math.Max(0m, c.TotalPayable - c.DownPayment));
+
+            // Overdue Installments
+            var overdueSchedules = context.InstallmentSchedules.AsNoTracking()
+                .Where(s => s.Status == "Overdue")
+                .ToList();
+            OverdueInstallmentCount = overdueSchedules.Count;
+            OverdueInstallmentAmount = overdueSchedules.Sum(s => Math.Max(0m, s.AmountDue - s.AmountPaid) + (s.LateFeeWaived ? 0m : Math.Max(0m, s.LateFee - s.LateFeePaid)));
+
+            // FBR Offline Queue
+            FbrOfflinePendingCount = context.Sales.AsNoTracking().Count(s => s.FbrStatus == "PendingOffline");
+            OnPropertyChanged(nameof(HasFbrOfflinePending));
 
             // Low Stock (< threshold)
             var activeProducts = context.Products.Where(p => !p.IsDeleted).ToList();

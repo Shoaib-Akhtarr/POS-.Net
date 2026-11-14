@@ -80,6 +80,14 @@ namespace POS.ViewModels
         [ObservableProperty] private decimal _returnRefundTotal;
         [ObservableProperty] private string _returnNotes = string.Empty;
 
+        // Daily Cash Closing / Z-Report Modal
+        [ObservableProperty] private bool _isZReportModalOpen;
+        [ObservableProperty] private DateTime _zReportDate = DateTime.Today;
+        [ObservableProperty] private DailyZReportSummary? _zReportData;
+        [ObservableProperty] private decimal _countedDrawerCash;
+        [ObservableProperty] private decimal _drawerVariance;
+        [ObservableProperty] private string _zReportStatus = string.Empty;
+
         public List<string> AvailableDateRanges { get; } = new() { "All", "Today", "7 Days", "30 Days" };
 
         private readonly PrintService _printService;
@@ -524,6 +532,105 @@ namespace POS.ViewModels
             {
                 ActionError = $"FBR sync error: {ex.Message}";
             }
+        }
+
+        partial void OnCountedDrawerCashChanged(decimal value)
+        {
+            if (ZReportData != null)
+            {
+                DrawerVariance = value - ZReportData.ExpectedDrawerCash;
+                ZReportData = ZReportData with { ActualDrawerCash = value, Variance = DrawerVariance };
+            }
+        }
+
+        partial void OnZReportDateChanged(DateTime value)
+        {
+            CalculateZReport();
+        }
+
+        [RelayCommand]
+        public void OpenZReportModal()
+        {
+            ZReportDate = DateTime.Today;
+            CountedDrawerCash = 0m;
+            CalculateZReport();
+            IsZReportModalOpen = true;
+        }
+
+        [RelayCommand]
+        public void CloseZReportModal()
+        {
+            IsZReportModalOpen = false;
+        }
+
+        [RelayCommand]
+        public void CalculateZReport()
+        {
+            using var context = new AppDbContext();
+            var dayStart = ZReportDate.Date;
+            var dayEnd = dayStart.AddDays(1);
+
+            var sales = context.Sales.Include(s => s.SaleItems)
+                .Where(s => s.CreatedAt >= dayStart && s.CreatedAt < dayEnd && s.RecordType != "Estimate")
+                .ToList();
+
+            int totalInvoices = sales.Count(s => s.RecordType == "Sale");
+            decimal cashSales = sales.Where(s => s.RecordType == "Sale" && (string.Equals(s.PaymentMethod, "Cash", StringComparison.OrdinalIgnoreCase) || (s.AmountPaid > 0 && !string.Equals(s.PaymentMethod, "Credit", StringComparison.OrdinalIgnoreCase)))).Sum(s => s.AmountPaid);
+            decimal cardSales = sales.Where(s => s.RecordType == "Sale" && string.Equals(s.PaymentMethod, "Card", StringComparison.OrdinalIgnoreCase)).Sum(s => s.AmountPaid);
+            decimal bankSales = sales.Where(s => s.RecordType == "Sale" && (string.Equals(s.PaymentMethod, "Bank", StringComparison.OrdinalIgnoreCase) || string.Equals(s.PaymentMethod, "Raast", StringComparison.OrdinalIgnoreCase))).Sum(s => s.AmountPaid);
+            decimal creditSales = sales.Where(s => s.RecordType == "Sale" && (s.TotalAmount - s.AmountPaid) > 0).Sum(s => s.TotalAmount - s.AmountPaid);
+            decimal totalSalesRev = sales.Where(s => s.RecordType == "Sale").Sum(s => s.TotalAmount);
+
+            var khataEntries = context.KhataEntries
+                .Where(e => e.CreatedAt >= dayStart && e.CreatedAt < dayEnd)
+                .ToList();
+            decimal khataCashIn = khataEntries.Where(e => e.Credit > 0 && (e.SourceType == "CashIn" || e.PaymentMode == "Cash")).Sum(e => e.Credit);
+
+            var instPayments = context.InstallmentPayments
+                .Where(p => p.CreatedAt >= dayStart && p.CreatedAt < dayEnd && !p.IsReversed)
+                .ToList();
+            decimal instCash = instPayments.Where(p => string.Equals(p.PaymentMode, "Cash", StringComparison.OrdinalIgnoreCase)).Sum(p => p.Amount);
+
+            decimal khataCashOut = khataEntries.Where(e => e.Debit > 0 && (e.SourceType == "CashOut" || e.PaymentMode == "Cash")).Sum(e => e.Debit);
+            decimal returnRefunds = sales.Where(s => s.RecordType == "Return").Sum(s => s.AmountPaid);
+            decimal cashOutTotal = khataCashOut + returnRefunds;
+
+            decimal totalCashInflow = cashSales + khataCashIn + instCash;
+            decimal expectedDrawer = Math.Max(0m, totalCashInflow - cashOutTotal);
+            decimal variance = CountedDrawerCash - expectedDrawer;
+
+            int offlineFbr = context.Sales.Count(s => s.FbrStatus == "PendingOffline");
+
+            ZReportData = new DailyZReportSummary(
+                Date: ZReportDate,
+                CashierName: SessionService.CurrentUserName,
+                TotalInvoicesCount: totalInvoices,
+                CashSales: cashSales,
+                CardSales: cardSales,
+                BankSales: bankSales,
+                CreditSales: creditSales,
+                TotalSalesRevenue: totalSalesRev,
+                KhataCashIn: khataCashIn,
+                InstallmentRecoveries: instCash,
+                TotalCashInflow: totalCashInflow,
+                CashOutExpenses: cashOutTotal,
+                ExpectedDrawerCash: expectedDrawer,
+                ActualDrawerCash: CountedDrawerCash,
+                Variance: variance,
+                FbrOfflinePendingCount: offlineFbr);
+
+            DrawerVariance = variance;
+        }
+
+        [RelayCommand]
+        public void PrintZReport()
+        {
+            if (ZReportData == null) CalculateZReport();
+            if (ZReportData == null) return;
+
+            var settings = ThemeService.GetSettings();
+            var result = _printService.PrintDailyZReport(ZReportDate, ZReportData, settings);
+            ZReportStatus = result.message;
         }
     }
 }

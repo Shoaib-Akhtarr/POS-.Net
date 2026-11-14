@@ -587,6 +587,53 @@ namespace POS.ViewModels
         }
 
         [RelayCommand]
+        private void PrintContractAgreement()
+        {
+            if (SelectedContract == null)
+            {
+                SetStatus("Select a contract first to print its agreement.", true);
+                return;
+            }
+
+            using var context = new AppDbContext();
+            var contract = context.InstallmentContracts.FirstOrDefault(c => c.Id == SelectedContract.Contract.Id);
+            if (contract == null) return;
+            var customer = context.Customers.FirstOrDefault(c => c.Id == contract.CustomerId);
+            if (customer == null) return;
+            var guarantors = context.InstallmentGuarantors.Where(g => g.ContractId == contract.Id).ToList();
+            var saleItems = context.SaleItems.Where(i => i.SaleId == contract.SaleId).ToList();
+
+            var result = _printService.PrintInstallmentAgreement(contract, customer, guarantors, saleItems);
+            if (!result.success && !string.IsNullOrWhiteSpace(result.message))
+            {
+                SetStatus(result.message, true);
+            }
+        }
+
+        [RelayCommand]
+        private void PrintContractPassbook()
+        {
+            if (SelectedContract == null)
+            {
+                SetStatus("Select a contract first to print its passbook.", true);
+                return;
+            }
+
+            using var context = new AppDbContext();
+            var contract = context.InstallmentContracts.FirstOrDefault(c => c.Id == SelectedContract.Contract.Id);
+            if (contract == null) return;
+            var customer = context.Customers.FirstOrDefault(c => c.Id == contract.CustomerId);
+            if (customer == null) return;
+            var schedules = context.InstallmentSchedules.Where(s => s.ContractId == contract.Id).OrderBy(s => s.Sequence).ToList();
+
+            var result = _printService.PrintInstallmentPassbook(contract, customer, schedules);
+            if (!result.success && !string.IsNullOrWhiteSpace(result.message))
+            {
+                SetStatus(result.message, true);
+            }
+        }
+
+        [RelayCommand]
         private void SelectScheduleForWaiver(InstallmentScheduleRow? schedule) => SelectedScheduleForWaiver = schedule;
 
         [RelayCommand]

@@ -483,6 +483,27 @@ namespace POS.ViewModels
             UpdateBalancePreview();
         }
 
+        [RelayCommand]
+        private void SetExactTender()
+        {
+            CashTendered = AmountPaid;
+        }
+
+        [RelayCommand]
+        private void AddTenderAmount(string amountStr)
+        {
+            if (decimal.TryParse(amountStr, out decimal addVal))
+            {
+                CashTendered += addVal;
+            }
+        }
+
+        [RelayCommand]
+        private void ClearTender()
+        {
+            CashTendered = 0m;
+        }
+
         // Item Detail / Serial / Warranty / Negotiated Price Modal
         [RelayCommand]
         private void OpenItemEditModal(CartLineItem? item)
