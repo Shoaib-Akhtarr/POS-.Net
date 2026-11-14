@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Karobar POS
+GenericName=Point of Sale & Inventory
+Comment=Modern Point of Sale, Inventory & FBR Tier-1 Invoicing System
+Exec=bash -c "$(dirname %k)/run-on-fedora.sh"
+Icon=karobar-pos
+Terminal=false
+Categories=Office;Finance;
+Keywords=POS;Inventory;Accounting;Sales;
+StartupNotify=true

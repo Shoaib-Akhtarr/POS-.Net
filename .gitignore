@@ -32,6 +32,9 @@ bld/
 [Oo]bj/
 [Pp]ublish/
 publish/
+publish-*/
+dist/
+*.zip
 [Ll]og/
 [Ll]ogs/
 

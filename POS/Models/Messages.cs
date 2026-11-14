@@ -13,4 +13,9 @@ namespace POS.Models
         public static DataChangedMessage SettingsUpdated => new DataChangedMessage("Settings");
         public static DataChangedMessage SessionChanged => new DataChangedMessage("Session");
     }
+
+    public class NavigationRequestMessage : ValueChangedMessage<string>
+    {
+        public NavigationRequestMessage(string destination) : base(destination) { }
+    }
 }

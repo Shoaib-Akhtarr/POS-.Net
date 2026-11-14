@@ -12,6 +12,7 @@ using POS.Services;
 namespace POS.ViewModels
 {
     public sealed record SalesTrendPoint(string Label, decimal Amount, double BarHeight);
+    public sealed record TopProductItem(string Name, string Category, string? ImagePath, int SalesCount, decimal Revenue, double ProgressPercent);
 
     public partial class HomeViewModel : ObservableObject, IRecipient<DataChangedMessage>
     {
@@ -19,6 +20,9 @@ namespace POS.ViewModels
         [ObservableProperty] private decimal _weeklyProfit;
         [ObservableProperty] private decimal _weeklyPurchasesSum;
         [ObservableProperty] private decimal _totalPendingDues;
+        [ObservableProperty] private int _totalOrdersCount;
+        [ObservableProperty] private string _currentUserName = "Admin";
+        [ObservableProperty] private ObservableCollection<TopProductItem> _topSellingProducts = new();
         [ObservableProperty] private int _lowInStockCount;
         [ObservableProperty] private ObservableCollection<Product> _lowStockProducts = new();
         [ObservableProperty] private bool _isLowStockModalOpen;
@@ -66,6 +70,21 @@ namespace POS.ViewModels
         private void ChangePeriod(string period) => SelectedPeriod = period;
 
         [RelayCommand]
+        private void QuickNewSale() => WeakReferenceMessenger.Default.Send(new NavigationRequestMessage("POS"));
+
+        [RelayCommand]
+        private void QuickStockIn() => WeakReferenceMessenger.Default.Send(new NavigationRequestMessage("Purchases"));
+
+        [RelayCommand]
+        private void QuickKhata() => WeakReferenceMessenger.Default.Send(new NavigationRequestMessage("Khata"));
+
+        [RelayCommand]
+        private void QuickInstallments() => WeakReferenceMessenger.Default.Send(new NavigationRequestMessage("Installments"));
+
+        [RelayCommand]
+        private void QuickProducts() => WeakReferenceMessenger.Default.Send(new NavigationRequestMessage("Products"));
+
+        [RelayCommand]
         private void ToggleLowStockModal()
         {
             IsLowStockModalOpen = !IsLowStockModalOpen;
@@ -103,6 +122,8 @@ namespace POS.ViewModels
             decimal grossSales = salesList.Sum(s => s.TotalAmount);
             decimal grossReturns = returnsList.Sum(s => s.TotalAmount);
             TotalSalesRevenue = Math.Max(0m, grossSales - grossReturns);
+            TotalOrdersCount = salesList.Count;
+            CurrentUserName = SessionService.CurrentUserName;
 
             // Load product cost dictionary once to avoid N+1 queries
             var productCosts = context.Products.ToDictionary(p => p.Id, p => p.CostPrice);
@@ -220,6 +241,34 @@ namespace POS.ViewModels
                     point.Day.ToString("ddd dd"),
                     point.Amount,
                     maxDailySales > 0m ? (double)(point.Amount / maxDailySales * 112m) : 2d)));
+
+            // Top Selling Products with Revenue & Progress
+            var topItems = context.Products
+                .Where(p => !p.IsDeleted && p.SalesCount > 0)
+                .OrderByDescending(p => p.SalesCount)
+                .Take(5)
+                .ToList();
+
+            if (topItems.Count == 0)
+            {
+                // Fallback to active catalog items if sales count is zero yet
+                topItems = context.Products
+                    .Where(p => !p.IsDeleted)
+                    .OrderByDescending(p => p.SellingPrice)
+                    .Take(5)
+                    .ToList();
+            }
+
+            int maxSalesCount = topItems.Count > 0 ? Math.Max(1, topItems.Max(p => p.SalesCount)) : 1;
+            TopSellingProducts = new ObservableCollection<TopProductItem>(topItems.Select(p =>
+                new TopProductItem(
+                    p.Name,
+                    p.Category,
+                    p.ImagePath,
+                    p.SalesCount,
+                    p.SalesCount > 0 ? p.SalesCount * p.SellingPrice : p.SellingPrice,
+                    Math.Min(100.0, Math.Max(15.0, (double)p.SalesCount / maxSalesCount * 100.0))
+                )));
         }
     }
 }

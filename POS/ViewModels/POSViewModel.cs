@@ -15,6 +15,8 @@ namespace POS.ViewModels
     {
         public int ProductId { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+        public string? ImagePath { get; set; }
         public string Unit { get; set; } = "pcs";
         public string PackUnitName { get; set; } = string.Empty;
         public decimal UnitsPerPack { get; set; } = 1m;
@@ -390,6 +392,8 @@ namespace POS.ViewModels
             {
                 ProductId = product.Id,
                 Name = product.Name,
+                Category = product.Category,
+                ImagePath = product.ImagePath,
                 Unit = string.IsNullOrWhiteSpace(product.Unit) ? "pcs" : product.Unit,
                 PackUnitName = product.PackUnitName,
                 UnitsPerPack = product.UnitsPerPack > 0m ? product.UnitsPerPack : 1m,
@@ -617,6 +621,8 @@ namespace POS.ViewModels
                 {
                     ProductId = i.ProductId,
                     Name = i.Name,
+                    Category = i.Category,
+                    ImagePath = i.ImagePath,
                     Unit = i.Unit,
                     PackUnitName = i.PackUnitName,
                     UnitsPerPack = i.UnitsPerPack,
@@ -632,6 +638,7 @@ namespace POS.ViewModels
             NotifyHeldCartCounts();
             ClearCart();
             SetStatus("Bill placed on hold.", isError: false);
+            NotificationService.ShowWarning("Bill placed on hold.");
         }
 
         [RelayCommand]
@@ -928,12 +935,15 @@ namespace POS.ViewModels
                 string fbrNote = !isEstimate && !string.IsNullOrWhiteSpace(sale.FbrInvoiceNumber)
                     ? $" · FBR: {sale.FbrInvoiceNumber} ({sale.FbrStatus})"
                     : string.Empty;
-                SetStatus(isEstimate ? $"Estimate #{sale.ReceiptNumber} saved." : $"Sale #{sale.ReceiptNumber} completed{fbrNote}.", isError: false);
+                string successMsg = isEstimate ? $"Estimate #{sale.ReceiptNumber} saved." : $"Sale #{sale.ReceiptNumber} completed{fbrNote}.";
+                SetStatus(successMsg, isError: false);
+                NotificationService.ShowSuccess(successMsg);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
                 SetStatus($"Checkout failed: {ex.Message}", isError: true);
+                NotificationService.ShowError($"Checkout failed: {ex.Message}");
             }
         }
 

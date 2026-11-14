@@ -18,6 +18,7 @@ namespace POS.Models
         public string DefaultWarranty { get; set; } = string.Empty;
         public string Category { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public string? ImagePath { get; set; }
         public int SalesCount { get; set; }
         public bool IsDeleted { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.Now;

@@ -57,6 +57,7 @@ namespace POS.ViewModels
         [ObservableProperty] private decimal _editQuantity;
         [ObservableProperty] private decimal _editLowStockThreshold = 10m;
         [ObservableProperty] private string _editDefaultWarranty = string.Empty;
+        [ObservableProperty] private string? _editImagePath;
 
         private readonly BackupService _backupService;
 
@@ -149,6 +150,7 @@ namespace POS.ViewModels
             EditQuantity = 0m;
             EditLowStockThreshold = 10m;
             EditDefaultWarranty = string.Empty;
+            EditImagePath = null;
             ModalError = string.Empty;
             IsEditModalOpen = true;
         }
@@ -172,8 +174,49 @@ namespace POS.ViewModels
             EditQuantity = product.Quantity;
             EditLowStockThreshold = product.LowStockThreshold;
             EditDefaultWarranty = product.DefaultWarranty;
+            EditImagePath = product.ImagePath;
             ModalError = string.Empty;
             IsEditModalOpen = true;
+        }
+
+        [RelayCommand]
+        private void BrowseImage()
+        {
+            try
+            {
+                var dialog = new Microsoft.Win32.OpenFileDialog
+                {
+                    Filter = "Image Files (*.png;*.jpg;*.jpeg;*.webp;*.bmp)|*.png;*.jpg;*.jpeg;*.webp;*.bmp|All Files (*.*)|*.*",
+                    Title = "Select Product Image"
+                };
+
+                if (dialog.ShowDialog() == true)
+                {
+                    string ext = System.IO.Path.GetExtension(dialog.FileName);
+                    string storageDir = System.IO.Path.Combine(AppDbContext.GetAppDataDirectory(), "ProductImages");
+                    if (!System.IO.Directory.Exists(storageDir))
+                    {
+                        System.IO.Directory.CreateDirectory(storageDir);
+                    }
+
+                    string uniqueFileName = $"prod_{DateTime.Now:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}{ext}";
+                    string destPath = System.IO.Path.Combine(storageDir, uniqueFileName);
+                    System.IO.File.Copy(dialog.FileName, destPath, overwrite: true);
+
+                    EditImagePath = destPath;
+                    NotificationService.ShowInfo("Product image selected.");
+                }
+            }
+            catch (Exception ex)
+            {
+                NotificationService.ShowError($"Failed to attach image: {ex.Message}");
+            }
+        }
+
+        [RelayCommand]
+        private void RemoveImage()
+        {
+            EditImagePath = null;
         }
 
         [RelayCommand]
@@ -234,11 +277,13 @@ namespace POS.ViewModels
                     Quantity = EditQuantity,
                     LowStockThreshold = EditLowStockThreshold >= 0m ? EditLowStockThreshold : 10m,
                     DefaultWarranty = EditDefaultWarranty.Trim(),
+                    ImagePath = EditImagePath,
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now
                 };
                 context.Products.Add(product);
                 await context.SaveChangesAsync();
+                NotificationService.ShowSuccess($"Product '{trimmedName}' added.");
             }
             else
             {
@@ -261,9 +306,11 @@ namespace POS.ViewModels
                 dbProduct.Quantity = EditQuantity;
                 dbProduct.LowStockThreshold = EditLowStockThreshold >= 0m ? EditLowStockThreshold : 10m;
                 dbProduct.DefaultWarranty = EditDefaultWarranty.Trim();
+                dbProduct.ImagePath = EditImagePath;
                 dbProduct.UpdatedAt = DateTime.Now;
 
                 await context.SaveChangesAsync();
+                NotificationService.ShowSuccess($"Product '{dbProduct.Name}' updated.");
             }
 
             RefreshData();
@@ -284,6 +331,7 @@ namespace POS.ViewModels
                 dbProduct.IsDeleted = true;
                 dbProduct.UpdatedAt = DateTime.Now;
                 await context.SaveChangesAsync();
+                NotificationService.ShowWarning($"Product '{dbProduct.Name}' removed from catalog.");
             }
 
             RefreshData();

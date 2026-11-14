@@ -10,7 +10,7 @@ using POS.Services;
 
 namespace POS.ViewModels
 {
-    public partial class MainViewModel : ObservableObject, IRecipient<DataChangedMessage>
+    public partial class MainViewModel : ObservableObject, IRecipient<DataChangedMessage>, IRecipient<NavigationRequestMessage>
     {
         [ObservableProperty] private object _currentViewModel = null!;
         [ObservableProperty] private bool _isSidebarCollapsed;
@@ -27,6 +27,12 @@ namespace POS.ViewModels
         [ObservableProperty] private StaffUser? _selectedLoginUser;
         [ObservableProperty] private string _loginPin = string.Empty;
         [ObservableProperty] private string _loginError = string.Empty;
+
+        // Desktop Toast Notifications
+        [ObservableProperty] private bool _isToastVisible;
+        [ObservableProperty] private string _toastMessage = string.Empty;
+        [ObservableProperty] private NotificationType _toastType = NotificationType.Info;
+        private readonly System.Windows.Threading.DispatcherTimer _toastTimer = new();
 
         // ViewModels
         private readonly HomeViewModel _homeViewModel = null!;
@@ -66,9 +72,28 @@ namespace POS.ViewModels
 
             _currentViewModel = _posViewModel;
 
+            _toastTimer.Tick += (_, _) =>
+            {
+                IsToastVisible = false;
+                _toastTimer.Stop();
+            };
+
+            NotificationService.NotificationRequested += item =>
+            {
+                App.Current?.Dispatcher.Invoke(() =>
+                {
+                    ToastMessage = item.Message;
+                    ToastType = item.Type;
+                    IsToastVisible = true;
+                    _toastTimer.Stop();
+                    _toastTimer.Interval = TimeSpan.FromSeconds(item.DurationSeconds);
+                    _toastTimer.Start();
+                });
+            };
+
             LoadHeaderMetadata();
             LoadLoginUsers();
-            WeakReferenceMessenger.Default.Register(this);
+            WeakReferenceMessenger.Default.RegisterAll(this);
         }
 
         public void Receive(DataChangedMessage message)
@@ -84,8 +109,31 @@ namespace POS.ViewModels
                     CurrentUserName = SessionService.CurrentUserName;
                     CurrentUserRole = SessionService.CurrentUser?.Role ?? "Cashier";
                     IsOwner = SessionService.IsOwner;
+                    if (!SessionService.IsAuthenticated)
+                    {
+                        LoadLoginUsers();
+                        LoginPin = string.Empty;
+                        LoginError = string.Empty;
+                        IsLoginModalOpen = true;
+                    }
                 });
             }
+        }
+
+        public void Receive(NavigationRequestMessage message)
+        {
+            App.Current?.Dispatcher.Invoke(() =>
+            {
+                switch (message.Value)
+                {
+                    case "POS": NavigateToPOS(); break;
+                    case "Purchases": NavigateToPurchases(); break;
+                    case "Khata": NavigateToKhata(); break;
+                    case "Installments": NavigateToInstallments(); break;
+                    case "Products": NavigateToProducts(); break;
+                    case "Home": NavigateToHome(); break;
+                }
+            });
         }
 
         private void LoadHeaderMetadata()
@@ -102,6 +150,24 @@ namespace POS.ViewModels
             var users = SessionService.GetActiveUsers();
             StaffUsers = new ObservableCollection<StaffUser>(users);
             SelectedLoginUser = StaffUsers.FirstOrDefault();
+        }
+
+        [RelayCommand]
+        private void DismissToast()
+        {
+            IsToastVisible = false;
+            _toastTimer.Stop();
+        }
+
+        [RelayCommand]
+        private void LogOut()
+        {
+            SessionService.SignOut();
+            LoadLoginUsers();
+            LoginPin = string.Empty;
+            LoginError = string.Empty;
+            IsLoginModalOpen = true;
+            NotificationService.ShowInfo("Logged out. Please sign in.");
         }
 
         [RelayCommand]

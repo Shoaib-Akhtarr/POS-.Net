@@ -37,7 +37,8 @@ namespace POS.Services
                         ["PackUnitName"] = "TEXT NOT NULL DEFAULT ''",
                         ["UnitsPerPack"] = "TEXT NOT NULL DEFAULT '1'",
                         ["LowStockThreshold"] = "TEXT NOT NULL DEFAULT '10'",
-                        ["DefaultWarranty"] = "TEXT NOT NULL DEFAULT ''"
+                        ["DefaultWarranty"] = "TEXT NOT NULL DEFAULT ''",
+                        ["ImagePath"] = "TEXT NULL"
                     });
 
                     EnsureColumns(conn, "SaleItems", new Dictionary<string, string>

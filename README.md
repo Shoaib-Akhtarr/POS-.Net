@@ -91,12 +91,26 @@ Sign-in is managed via PBKDF2-hashed PINs in [`SessionService`](POS/Services/Ses
 
 > **Database Location:** Active data is stored in `%LocalAppData%\KarobarPOS\pos.db`. If a legacy `pos.db` exists next to the executable, it is automatically imported and schema-upgraded on first launch. Create a `.kposbackup` from **Settings → Data Safety**, copy it to the new computer, then choose **Restore backup** and select the file.
 
-### Building / Developing on Linux (Fedora / Ubuntu)
-`POS/POS.csproj` enables `<EnableWindowsTargeting>true</EnableWindowsTargeting>` so you can edit and compile-check C# and XAML directly on Linux with `.NET 10 SDK` installed:
+### 📦 Desktop Packaging & Deployment (Windows & Fedora Linux)
+
+#### Portable Standalone Windows Executable
+To generate a standalone single-file `POS.exe` that runs on any Windows 10/11 x64 PC without installing .NET:
+* **From Linux or Windows Terminal:**
+  ```bash
+  ./packaging/publish-windows.sh
+  ```
+  *(or `packaging\publish-windows.bat` on Windows)*
+  Output: `dist/windows-standalone/POS.exe`
+
+#### Windows Setup Installer
+Open [`packaging/installer.iss`](packaging/installer.iss) in **Inno Setup** and click **Compile** to generate a single setup installer with desktop shortcuts and uninstaller.
+
+#### Running on Linux Fedora
+WPF Windows Desktop applications can be run on Fedora via **Wine** or **Bottles**:
 ```bash
-dotnet build POS/POS.csproj
+./packaging/run-on-fedora.sh
 ```
-*(WPF execution and Windows print spooler testing require Windows.)*
+See [`packaging/README.md`](packaging/README.md) for full desktop shortcut and environment setup instructions.
 
 ---
 

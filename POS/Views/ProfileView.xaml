@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:conv="clr-namespace:POS.Converters"
              mc:Ignorable="d"
-             d:DesignHeight="820" d:DesignWidth="1150"
+             d:DesignHeight="860" d:DesignWidth="1180"
              Background="{DynamicResource BgCanvasBrush}">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -16,11 +16,79 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Header -->
-            <StackPanel Grid.Row="0" Margin="0,0,0,18">
-                <TextBlock Text="{DynamicResource Lang_ProfileSettings}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}"/>
-                <TextBlock Text="{Binding CurrentUserName, StringFormat='Signed in as: {0}'}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0"/>
-            </StackPanel>
+            <!-- Profile & Active Session Card -->
+            <Border Grid.Row="0" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="16" Padding="20" Margin="0,0,0,18">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="18"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Avatar Circle with User Initials -->
+                    <Border Grid.Column="0" Width="60" Height="60" CornerRadius="30" Background="{DynamicResource PrimarySoftBrush}" BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="2" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding UserInitials}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+
+                    <!-- User Information & Role -->
+                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding CurrentUserName}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                            <Border CornerRadius="8" Padding="10,3" Margin="10,0,0,0" VerticalAlignment="Center">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="{DynamicResource PrimarySoftBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsOwner}" Value="True">
+                                                <Setter Property="Background" Value="#F3E8FF"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <TextBlock Text="{Binding CurrentUserRole}" FontSize="11" FontWeight="Bold">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsOwner}" Value="True">
+                                                    <Setter Property="Foreground" Value="#7E22CE"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Text="{Binding RoleDescription}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+
+                    <!-- Shift Performance KPI Card -->
+                    <Border Grid.Column="3" Background="{DynamicResource BgMutedBrush}" CornerRadius="12" Padding="16,10" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <StackPanel Margin="0,0,16,0">
+                                <TextBlock Text="TODAY'S ORDERS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                                <TextBlock Text="{Binding TodayShiftSalesCount, StringFormat='{}{0} Orders'}" FontSize="15" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <Separator Width="1" Background="{DynamicResource BorderDefaultBrush}" Margin="0,2,16,2"/>
+                            <StackPanel>
+                                <TextBlock Text="SHIFT VOLUME" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                                <TextBlock Text="{Binding TodayShiftSalesVolume, StringFormat='Rs {0:N0}'}" FontSize="15" FontWeight="Black" Foreground="{DynamicResource PrimaryBrush}" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Log Out Button -->
+                    <Button Grid.Column="5" Command="{Binding LogOutCommand}" Style="{StaticResource DangerButtonStyle}" Padding="16,10" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource Icon_Logout}" Fill="White" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="Log Out" FontWeight="Bold" FontSize="12" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
 
             <!-- Status Banner -->
             <Border Grid.Row="1" CornerRadius="8" Padding="12,8" Margin="0,0,0,14" Visibility="{Binding StatusMessage, Converter={StaticResource StrNotEmptyToVis}}">
@@ -63,13 +131,13 @@
                         <StackPanel>
                             <TextBlock Text="{DynamicResource Lang_StoreBranding}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,14"/>
 
-                            <TextBlock Text="SHOP NAME" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="SHOP / BUSINESS NAME *" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                             <TextBox Text="{Binding ShopName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,10"/>
 
-                            <TextBlock Text="DEPARTMENTS / SUBTITLE" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="DEPARTMENTS / SUBTITLE (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                             <TextBox Text="{Binding Subtitle, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,10"/>
 
-                            <TextBlock Text="ADDRESS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="STORE ADDRESS (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                             <TextBox Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,10"/>
 
                             <Grid Margin="0,0,0,10">
@@ -79,16 +147,16 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="PHONE 1" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                    <TextBlock Text="PRIMARY PHONE *" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                                     <TextBox Text="{Binding Phone1, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
-                                    <TextBlock Text="PHONE 2" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                    <TextBlock Text="SECONDARY PHONE (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                                     <TextBox Text="{Binding Phone2, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}"/>
                                 </StackPanel>
                             </Grid>
 
-                            <TextBlock Text="RECEIPT FOOTER NOTE" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="RECEIPT FOOTER NOTE (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                             <TextBox Text="{Binding ReceiptFooter, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,14"/>
 
                             <TextBlock Text="{DynamicResource Lang_PrinterSettings}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,6,0,10"/>
@@ -99,16 +167,16 @@
                                     <ColumnDefinition Width="140"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="PRINTER NAME" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                    <TextBlock Text="RECEIPT PRINTER *" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                                     <ComboBox ItemsSource="{Binding InstalledPrinters}" Text="{Binding PrinterName}" IsEditable="True" Padding="10,8"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
-                                    <TextBlock Text="DEFAULT FORMAT" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                    <TextBlock Text="PRINT FORMAT *" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                                     <ComboBox ItemsSource="{Binding PrintFormats}" SelectedItem="{Binding PreferredPrintFormat}" Padding="10,8"/>
                                 </StackPanel>
                             </Grid>
 
-                            <CheckBox IsChecked="{Binding UseBitmapThermalForUrdu}" Content="Use Bitmap Thermal Printing (enables Urdu on 80mm receipts)" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,14"/>
+                            <CheckBox IsChecked="{Binding UseBitmapThermalForUrdu}" Content="Use Bitmap Thermal Printing (enables Urdu font on 80mm receipts)" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,14"/>
 
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -122,187 +190,6 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- FBR & Fiscal Tax Integration Card -->
-                    <Border Style="{StaticResource SurfaceCardStyle}" Padding="22" Margin="0,0,0,18">
-                        <StackPanel>
-                            <!-- Header with Badge -->
-                            <Grid Margin="0,0,0,10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="FBR FISCAL TAX INTEGRATION" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                    <TextBlock Text="Federal Board of Revenue Tier-1 POS Electronic Invoicing &amp; QR Codes" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0"/>
-                                </StackPanel>
-                                <Border Grid.Column="1" Background="{DynamicResource SuccessSoftBrush}" CornerRadius="12" Padding="10,4" VerticalAlignment="Center">
-                                    <TextBlock Text="Tier-1 Retailer" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}"/>
-                                </Border>
-                            </Grid>
-
-                            <!-- Enable Master Checkbox -->
-                            <Border Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,0,14">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Enable Real-Time FBR Fiscal Invoicing" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                        <TextBlock Text="Submits sales to FBR/PRAL gateway and prints official FBR Invoice # and 2D QR Code on receipts" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
-                                    </StackPanel>
-                                    <CheckBox Grid.Column="1" IsChecked="{Binding IsFbrTaxEnabled}" VerticalAlignment="Center" Margin="10,0,0,0"/>
-                                </Grid>
-                            </Border>
-
-                            <!-- Environment Selector: Sandbox vs Live -->
-                            <TextBlock Text="INTEGRATION ENVIRONMENT" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,6"/>
-                            <Grid Margin="0,0,0,14">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="10"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <!-- Sandbox Button -->
-                                <Button Grid.Column="0" Command="{Binding SetFbrEnvironmentCommand}" CommandParameter="Sandbox" Cursor="Hand">
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="Button">
-                                                        <Border x:Name="Bd" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
-                                                            <StackPanel HorizontalAlignment="Center">
-                                                                <TextBlock x:Name="Txt" Text="SANDBOX (TESTING)" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"/>
-                                                                <TextBlock x:Name="SubTxt" Text="Safe offline simulation &amp; PRAL test server" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" Margin="0,2,0,0"/>
-                                                            </StackPanel>
-                                                        </Border>
-                                                        <ControlTemplate.Triggers>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource BgMutedBrush}"/>
-                                                            </Trigger>
-                                                            <DataTrigger Binding="{Binding FbrEnvironment}" Value="Sandbox">
-                                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource WarningSoftBrush}"/>
-                                                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource WarningBrush}"/>
-                                                                <Setter TargetName="Txt" Property="Foreground" Value="{DynamicResource WarningBrush}"/>
-                                                            </DataTrigger>
-                                                        </ControlTemplate.Triggers>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
-
-                                <!-- Live Button -->
-                                <Button Grid.Column="2" Command="{Binding SetFbrEnvironmentCommand}" CommandParameter="Live" Cursor="Hand">
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="Button">
-                                                        <Border x:Name="Bd" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
-                                                            <StackPanel HorizontalAlignment="Center">
-                                                                <TextBlock x:Name="Txt" Text="LIVE (PRODUCTION)" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"/>
-                                                                <TextBlock x:Name="SubTxt" Text="Live submissions to gw.fbr.gov.pk" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" Margin="0,2,0,0"/>
-                                                            </StackPanel>
-                                                        </Border>
-                                                        <ControlTemplate.Triggers>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource BgMutedBrush}"/>
-                                                            </Trigger>
-                                                            <DataTrigger Binding="{Binding FbrEnvironment}" Value="Live">
-                                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SuccessSoftBrush}"/>
-                                                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource SuccessBrush}"/>
-                                                                <Setter TargetName="Txt" Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
-                                                            </DataTrigger>
-                                                        </ControlTemplate.Triggers>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
-                            </Grid>
-
-                            <!-- Credentials Grid -->
-                            <Grid Margin="0,0,0,10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="10"/>
-                                    <ColumnDefinition Width="140"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="POS TERMINAL ID (POSID)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
-                                    <TextBox Text="{Binding FbrPosId, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="e.g. 102345"/>
-                                </StackPanel>
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="DEFAULT SALES TAX %" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
-                                    <TextBox Text="{Binding FbrDefaultTaxRate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="18.0"/>
-                                </StackPanel>
-                            </Grid>
-
-                            <Grid Margin="0,0,0,10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="10"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="SALES TAX REG. NO (STRN)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
-                                    <TextBox Text="{Binding FbrStrn, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="e.g. 3277876123456"/>
-                                </StackPanel>
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="NATIONAL TAX NUMBER (NTN)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
-                                    <TextBox Text="{Binding FbrNtn, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="e.g. 1234567-8"/>
-                                </StackPanel>
-                            </Grid>
-
-                            <TextBlock Text="FBR BEARER TOKEN / API SECURITY KEY" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
-                            <TextBox Text="{Binding FbrBearerToken, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="Paste 32+ character bearer token from FBR IRIS portal" Margin="0,0,0,10"/>
-
-                            <!-- Offline Resilience Options -->
-                            <StackPanel Margin="0,0,0,14">
-                                <CheckBox IsChecked="{Binding FbrOfflineModeAllowed}" Content="Allow offline checkout if internet/server times out (Zero delay)" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4"/>
-                                <CheckBox IsChecked="{Binding FbrAutoSync}" Content="Automatically sync queued offline invoices when network is available" Foreground="{DynamicResource TextSecondaryBrush}"/>
-                            </StackPanel>
-
-                            <!-- Offline Queue & Diagnostics Badge -->
-                            <Border Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,0,14">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Offline Queue Status" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                        <TextBlock Text="{Binding PendingOfflineFbrCount, StringFormat='{}{0} invoices queued locally for FBR sync'}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0"/>
-                                    </StackPanel>
-                                    <Button Grid.Column="1" Command="{Binding SyncPendingFbrInvoicesCommand}" Content="Sync Now" Style="{StaticResource SecondaryButtonStyle}" Padding="12,6"/>
-                                </Grid>
-                            </Border>
-
-                            <!-- Action Buttons -->
-                            <Grid Margin="0,0,0,10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="10"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <Button Grid.Column="0" Command="{Binding SaveStoreSettingsCommand}" Content="Save FBR Settings" Style="{StaticResource PrimaryButtonStyle}"/>
-                                <Button Grid.Column="2" Command="{Binding TestFbrConnectionCommand}" Content="Test Connection" Style="{StaticResource SecondaryButtonStyle}"/>
-                            </Grid>
-
-                            <!-- Test Result Output -->
-                            <Border CornerRadius="6" Padding="10,8" Margin="0,4,0,0" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" Visibility="{Binding FbrTestResult, Converter={StaticResource StrNotEmptyToVis}}">
-                                <TextBlock Text="{Binding FbrTestResult}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
-                            </Border>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-
-                <!-- RIGHT COLUMN: Language, Theme, PIN Management, DB Backup -->
-                <StackPanel Grid.Column="2">
                     <!-- Language & Theme Card -->
                     <Border Style="{StaticResource SurfaceCardStyle}" Padding="22" Margin="0,0,0,18">
                         <StackPanel>
@@ -427,13 +314,194 @@
                             </Grid>
                         </StackPanel>
                     </Border>
+                </StackPanel>
+
+                <!-- RIGHT COLUMN: FBR Tax + Staff PIN Management + DB Backup -->
+                <StackPanel Grid.Column="2">
+                    <!-- FBR & Fiscal Tax Integration Card (Owner Only) -->
+                    <Border Style="{StaticResource SurfaceCardStyle}" Padding="22" Margin="0,0,0,18" Visibility="{Binding IsOwner, Converter={StaticResource BoolToVis}}">
+                        <StackPanel>
+                            <!-- Header with Badge -->
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="FBR FISCAL TAX INTEGRATION" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    <TextBlock Text="Federal Board of Revenue Tier-1 POS Electronic Invoicing &amp; QR Codes" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <Border Grid.Column="1" Background="{DynamicResource SuccessSoftBrush}" CornerRadius="12" Padding="10,4" VerticalAlignment="Center">
+                                    <TextBlock Text="Tier-1 Retailer" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}"/>
+                                </Border>
+                            </Grid>
+
+                            <!-- Enable Master Checkbox -->
+                            <Border Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,0,14">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Enable Real-Time FBR Fiscal Invoicing" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        <TextBlock Text="Submits sales to FBR/PRAL gateway and prints official FBR Invoice # and 2D QR Code on receipts" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <CheckBox Grid.Column="1" IsChecked="{Binding IsFbrTaxEnabled}" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- Environment Selector: Sandbox vs Live -->
+                            <TextBlock Text="INTEGRATION ENVIRONMENT" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,6"/>
+                            <Grid Margin="0,0,0,14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Sandbox Button -->
+                                <Button Grid.Column="0" Command="{Binding SetFbrEnvironmentCommand}" CommandParameter="Sandbox" Cursor="Hand">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="Bd" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
+                                                            <StackPanel HorizontalAlignment="Center">
+                                                                <TextBlock x:Name="Txt" Text="SANDBOX (TESTING)" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"/>
+                                                                <TextBlock x:Name="SubTxt" Text="Safe offline simulation &amp; PRAL test server" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                                            </StackPanel>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource BgMutedBrush}"/>
+                                                            </Trigger>
+                                                            <DataTrigger Binding="{Binding FbrEnvironment}" Value="Sandbox">
+                                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource WarningSoftBrush}"/>
+                                                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource WarningBrush}"/>
+                                                                <Setter TargetName="Txt" Property="Foreground" Value="{DynamicResource WarningBrush}"/>
+                                                            </DataTrigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+
+                                <!-- Live Button -->
+                                <Button Grid.Column="2" Command="{Binding SetFbrEnvironmentCommand}" CommandParameter="Live" Cursor="Hand">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="Bd" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
+                                                            <StackPanel HorizontalAlignment="Center">
+                                                                <TextBlock x:Name="Txt" Text="LIVE (PRODUCTION)" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"/>
+                                                                <TextBlock x:Name="SubTxt" Text="Live submissions to gw.fbr.gov.pk" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                                            </StackPanel>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource BgMutedBrush}"/>
+                                                            </Trigger>
+                                                            <DataTrigger Binding="{Binding FbrEnvironment}" Value="Live">
+                                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SuccessSoftBrush}"/>
+                                                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource SuccessBrush}"/>
+                                                                <Setter TargetName="Txt" Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
+                                                            </DataTrigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </Grid>
+
+                            <!-- Credentials Grid -->
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="140"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="POS TERMINAL ID (POSID) *" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                    <TextBox Text="{Binding FbrPosId, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="e.g. 102345"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="DEFAULT SALES TAX % *" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                    <TextBox Text="{Binding FbrDefaultTaxRate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="18.0"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="SALES TAX REG. NO (STRN) (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                    <TextBox Text="{Binding FbrStrn, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="e.g. 3277876123456"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="NATIONAL TAX NUMBER (NTN) (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                    <TextBox Text="{Binding FbrNtn, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="e.g. 1234567-8"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock Text="FBR BEARER TOKEN / SECURITY KEY (OPTIONAL IN SANDBOX)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding FbrBearerToken, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="Paste 32+ character bearer token from FBR IRIS portal" Margin="0,0,0,10"/>
+
+                            <!-- Offline Resilience Options -->
+                            <StackPanel Margin="0,0,0,14">
+                                <CheckBox IsChecked="{Binding FbrOfflineModeAllowed}" Content="Allow offline checkout if internet/server times out (Zero delay)" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4"/>
+                                <CheckBox IsChecked="{Binding FbrAutoSync}" Content="Automatically sync queued offline invoices when network is available" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            </StackPanel>
+
+                            <!-- Offline Queue & Diagnostics Badge -->
+                            <Border Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,0,14">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Offline Queue Status" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        <TextBlock Text="{Binding PendingOfflineFbrCount, StringFormat='{}{0} invoices queued locally for FBR sync'}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Command="{Binding SyncPendingFbrInvoicesCommand}" Content="Sync Now" Style="{StaticResource SecondaryButtonStyle}" Padding="12,6"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- Action Buttons -->
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" Command="{Binding SaveStoreSettingsCommand}" Content="Save FBR Settings" Style="{StaticResource PrimaryButtonStyle}"/>
+                                <Button Grid.Column="2" Command="{Binding TestFbrConnectionCommand}" Content="Test Connection" Style="{StaticResource SecondaryButtonStyle}"/>
+                            </Grid>
+
+                            <!-- Test Result Output -->
+                            <Border CornerRadius="6" Padding="10,8" Margin="0,4,0,0" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" Visibility="{Binding FbrTestResult, Converter={StaticResource StrNotEmptyToVis}}">
+                                <TextBlock Text="{Binding FbrTestResult}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+                            </Border>
+                        </StackPanel>
+                    </Border>
 
                     <!-- Staff & Owner PINs (Owner Only) -->
                     <Border Style="{StaticResource SurfaceCardStyle}" Padding="22" Margin="0,0,0,18" Visibility="{Binding IsOwner, Converter={StaticResource BoolToVis}}">
                         <StackPanel>
                             <TextBlock Text="{DynamicResource Lang_StaffPins}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,12"/>
 
-                            <TextBlock Text="CHANGE STAFF PIN" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="SELECT STAFF MEMBER *" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                             <Grid Margin="0,0,0,14">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -443,38 +511,40 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <ComboBox Grid.Column="0" ItemsSource="{Binding StaffUsers}" SelectedItem="{Binding SelectedStaffUser}" DisplayMemberPath="DisplayName" Padding="8,7"/>
-                                <TextBox Grid.Column="2" Text="{Binding ResetPinValue, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="New PIN"/>
-                                <Button Grid.Column="4" Command="{Binding UpdateSelectedUserPinCommand}" Content="Update" Style="{StaticResource PrimaryButtonStyle}" Padding="14,8"/>
+                                <TextBox Grid.Column="2" Text="{Binding ResetPinValue, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="New 4+ Digit PIN"/>
+                                <Button Grid.Column="4" Command="{Binding UpdateSelectedUserPinCommand}" Content="Update PIN" Style="{StaticResource PrimaryButtonStyle}" Padding="14,8"/>
                             </Grid>
 
-                            <TextBlock Text="ADD NEW STAFF USER" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="ADD NEW STAFF MEMBER" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="8"/>
-                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="105"/>
                                     <ColumnDefinition Width="8"/>
                                     <ColumnDefinition Width="90"/>
                                     <ColumnDefinition Width="8"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBox Grid.Column="0" Text="{Binding NewStaffName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="Name"/>
+                                <TextBox Grid.Column="0" Text="{Binding NewStaffName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="Full Name *"/>
                                 <ComboBox Grid.Column="2" ItemsSource="{Binding AvailableRoles}" SelectedItem="{Binding NewStaffRole}" Padding="8,7"/>
-                                <TextBox Grid.Column="4" Text="{Binding NewStaffPin, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="PIN"/>
-                                <Button Grid.Column="6" Command="{Binding AddStaffUserCommand}" Content="Add" Style="{StaticResource SecondaryButtonStyle}" Padding="14,8"/>
+                                <TextBox Grid.Column="4" Text="{Binding NewStaffPin, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="PIN *"/>
+                                <Button Grid.Column="6" Command="{Binding AddStaffUserCommand}" Content="Add Staff" Style="{StaticResource SecondaryButtonStyle}" Padding="14,8"/>
                             </Grid>
                         </StackPanel>
                     </Border>
 
-                    <!-- Database Backup & Restore -->
-                    <Border Style="{StaticResource SurfaceCardStyle}" Padding="22">
+                    <!-- Database Backup & Restore (Owner Only) -->
+                    <Border Style="{StaticResource SurfaceCardStyle}" Padding="22" Visibility="{Binding IsOwner, Converter={StaticResource BoolToVis}}">
                         <StackPanel>
                             <TextBlock Text="{DynamicResource Lang_DatabaseBackup}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,6"/>
-                            <TextBlock Text="{Binding DatabasePath}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,14"/>
+                            <Border Background="{DynamicResource BgMutedBrush}" CornerRadius="6" Padding="10,6" Margin="0,0,0,14">
+                                <TextBlock Text="{Binding DatabasePath, StringFormat='Active DB: {0}'}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap"/>
+                            </Border>
 
                             <!-- Auto-Backup Folder (Google Drive / OneDrive / USB) -->
-                            <TextBlock Text="Auto-Backup Folder" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,6"/>
-                            <TextBlock Text="Auto-saves daily .kposbackup packages + latest Excel-ready CSV spreadsheets (Khata dues, stock, sales) to Google Drive / OneDrive. Backups older than 30 days are automatically cleaned up." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                            <TextBlock Text="AUTO-BACKUP DIRECTORY (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Auto-saves daily .kposbackup packages + latest Excel spreadsheets (Khata dues, stock, sales) to Google Drive / OneDrive. Backups older than 30 days are automatically rotated." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,8"/>
                             <Grid Margin="0,0,0,16">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -489,9 +559,8 @@
                                          Padding="8,6" VerticalContentAlignment="Center"
                                          ToolTip="{Binding AutoBackupFolder}"/>
                                 <Button Grid.Column="2" Command="{Binding BrowseAutoBackupFolderCommand}"
-                                        Content="Browse"
-                                        Style="{StaticResource SecondaryButtonStyle}"
-                                        Visibility="{Binding IsOwner, Converter={StaticResource BoolToVis}}"/>
+                                         Content="📁 Browse"
+                                         Style="{StaticResource SecondaryButtonStyle}"/>
                             </Grid>
 
                             <!-- Manual Backup / Restore -->
@@ -501,8 +570,8 @@
                                     <ColumnDefinition Width="10"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Button Grid.Column="0" Command="{Binding BackupDatabaseCommand}" Content="Create portable backup" Style="{StaticResource PrimaryButtonStyle}"/>
-                                <Button Grid.Column="2" Command="{Binding RestoreDatabaseCommand}" Content="Restore Backup" Style="{StaticResource DangerButtonStyle}" Visibility="{Binding IsOwner, Converter={StaticResource BoolToVis}}"/>
+                                <Button Grid.Column="0" Command="{Binding BackupDatabaseCommand}" Content="Create Portable Backup" Style="{StaticResource PrimaryButtonStyle}"/>
+                                <Button Grid.Column="2" Command="{Binding RestoreDatabaseCommand}" Content="Restore Backup" Style="{StaticResource DangerButtonStyle}"/>
                             </Grid>
                         </StackPanel>
                     </Border>

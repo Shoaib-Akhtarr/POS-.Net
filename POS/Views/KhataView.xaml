@@ -150,19 +150,19 @@
                         <ComboBox ItemsSource="{Binding PartyTypes}" SelectedItem="{Binding NewPartyType}" Padding="9,7" Margin="0,0,0,12"/>
                         <TextBlock Text="NAME *" Style="{StaticResource FormLabelStyle}"/>
                         <TextBox Text="{Binding NewPartyName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,12"/>
-                        <TextBlock Text="PHONE" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="PHONE (OPTIONAL)" Style="{StaticResource FormLabelStyle}"/>
                         <TextBox Text="{Binding NewPartyPhone, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,12"/>
-                        <TextBlock Text="CNIC" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="CNIC (OPTIONAL)" Style="{StaticResource FormLabelStyle}"/>
                         <TextBox Text="{Binding NewPartyCnic, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,12"/>
-                        <TextBlock Text="FATHER / HUSBAND NAME" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="FATHER / HUSBAND NAME (OPTIONAL)" Style="{StaticResource FormLabelStyle}"/>
                         <TextBox Text="{Binding NewPartyFatherName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,12"/>
-                        <TextBlock Text="ADDRESS" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="ADDRESS (OPTIONAL)" Style="{StaticResource FormLabelStyle}"/>
                         <TextBox Text="{Binding NewPartyAddress, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,12"/>
-                        <TextBlock Text="CREDIT LIMIT (PKR, 0 = UNLIMITED)" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="CREDIT LIMIT (PKR, 0 = UNLIMITED) (OPTIONAL)" Style="{StaticResource FormLabelStyle}"/>
                         <TextBox Text="{Binding NewPartyCreditLimit, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,14"/>
                         <TextBlock Text="OPENING BALANCE SIDE" Style="{StaticResource FormLabelStyle}"/>
                         <ComboBox ItemsSource="{Binding OpeningBalanceSides}" SelectedItem="{Binding NewPartyOpeningSide}" Padding="8,6" Margin="0,0,0,10"/>
-                        <TextBlock Text="OPENING BALANCE (PKR)" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="OPENING BALANCE (PKR) (OPTIONAL)" Style="{StaticResource FormLabelStyle}"/>
                         <TextBox Text="{Binding NewPartyOpeningBalance, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,14"/>
                         <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource DangerBrush}" TextWrapping="Wrap" Margin="0,0,0,10"/>
                         <UniformGrid Columns="2">
@@ -193,7 +193,7 @@
                         <TextBlock Text="CLEARING DATE" Style="{StaticResource FormLabelStyle}"/>
                         <DatePicker SelectedDate="{Binding ClearingDate}" Margin="0,0,0,10"/>
                     </StackPanel>
-                    <TextBlock Text="REFERENCE / NOTES" Style="{StaticResource FormLabelStyle}"/>
+                    <TextBlock Text="REFERENCE / NOTES (OPTIONAL)" Style="{StaticResource FormLabelStyle}"/>
                     <TextBox Text="{Binding PaymentNotes, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,14"/>
                     <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource DangerBrush}" TextWrapping="Wrap" Margin="0,0,0,10"/>
                     <UniformGrid Columns="2">

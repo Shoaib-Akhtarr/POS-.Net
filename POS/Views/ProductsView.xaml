@@ -140,6 +140,20 @@
                         <conv:BindingProxy x:Key="ViewProxy" Data="{Binding}"/>
                     </DataGrid.Resources>
                     <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="PHOTO" Width="64">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Width="38" Height="38" CornerRadius="8" Background="{DynamicResource BgMutedBrush}" ClipToBounds="True" HorizontalAlignment="Center">
+                                        <Grid>
+                                            <Image Source="{Binding ImagePath, Converter={StaticResource SafeImageConv}}" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <Path Data="{StaticResource Icon_Inventory}" Fill="{DynamicResource TextMutedBrush}" Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  Visibility="{Binding ImagePath, Converter={StaticResource HasImageConv}, ConverterParameter=Inverse}"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
                         <DataGridTemplateColumn Header="DEPARTMENT" Width="125">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -224,7 +238,38 @@
             <Border Style="{StaticResource SurfaceCardStyle}" Width="560" MaxHeight="700" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="26">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <TextBlock Text="{Binding ModalTitle}" FontSize="19" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,18"/>
+                        <TextBlock Text="{Binding ModalTitle}" FontSize="19" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,16"/>
+
+                        <!-- Product Photo Attachment -->
+                        <Border Background="{DynamicResource BgMutedBrush}" CornerRadius="12" Padding="14" Margin="0,0,0,16" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0" Width="80" Height="80" CornerRadius="10" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" ClipToBounds="True">
+                                    <Grid>
+                                        <Image Source="{Binding EditImagePath, Converter={StaticResource SafeImageConv}}" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding EditImagePath, Converter={StaticResource HasImageConv}, ConverterParameter=Inverse}">
+                                            <Path Data="{StaticResource Icon_Inventory}" Fill="{DynamicResource TextMutedBrush}" Width="24" Height="24" Stretch="Uniform" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="No Image" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                    <TextBlock Text="PRODUCT PHOTO (OPTIONAL)" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    <TextBlock Text="Attach JPG, PNG or WEBP picture to display across Inventory &amp; POS terminal." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,8" TextWrapping="Wrap"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Command="{Binding BrowseImageCommand}" Style="{StaticResource SecondaryButtonStyle}" Padding="12,6" FontSize="11" Content="📁 Select Picture" Margin="0,0,8,0"/>
+                                        <Button Command="{Binding RemoveImageCommand}" Style="{StaticResource DangerButtonStyle}" Padding="10,6" FontSize="11" Content="Remove"
+                                                Visibility="{Binding EditImagePath, Converter={StaticResource HasImageConv}}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
 
                         <TextBlock Text="PRODUCT NAME *" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                         <TextBox Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,12" conv:PlaceholderHelper.Placeholder="e.g. GM 7/29 Copper Cable"/>
@@ -236,11 +281,11 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="BARCODE / SKU" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="BARCODE / SKU (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                                 <TextBox Text="{Binding EditBarcode, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="Scan or enter SKU"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="BRAND" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="BRAND (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                                 <TextBox Text="{Binding EditBrand, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="e.g. GM, Haier, Brighto"/>
                             </StackPanel>
                         </Grid>
@@ -252,11 +297,11 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="DEPARTMENT" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="DEPARTMENT *" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                                 <ComboBox ItemsSource="{Binding AvailableDepartments}" Text="{Binding EditCategory}" IsEditable="True" Padding="10,8"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="SELLING UNIT" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="SELLING UNIT *" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                                 <ComboBox ItemsSource="{Binding AvailableUnits}" Text="{Binding EditUnit}" IsEditable="True" Padding="10,8"/>
                             </StackPanel>
                         </Grid>
@@ -270,15 +315,15 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="COST PRICE (Rs)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="COST PRICE (Rs) (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                                 <TextBox Text="{Binding EditCostPrice, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="SELLING PRICE (Rs)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="SELLING PRICE (Rs) *" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                                 <TextBox Text="{Binding EditSellingPrice, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}"/>
                             </StackPanel>
                             <StackPanel Grid.Column="4">
-                                <TextBlock Text="CURRENT STOCK" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="CURRENT STOCK (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                                 <TextBox Text="{Binding EditQuantity, UpdateSourceTrigger=LostFocus}" Style="{StaticResource ModernTextBoxStyle}"/>
                             </StackPanel>
                         </Grid>
@@ -294,7 +339,7 @@
                                 <TextBox Text="{Binding EditPackUnitName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="e.g. box, coil"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="UNITS PER PACK" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="UNITS PER PACK (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                                 <TextBox Text="{Binding EditUnitsPerPack, UpdateSourceTrigger=LostFocus}" Style="{StaticResource ModernTextBoxStyle}"/>
                             </StackPanel>
                         </Grid>
@@ -306,11 +351,11 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="LOW STOCK ALERT LIMIT" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="LOW STOCK ALERT LIMIT (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                                 <TextBox Text="{Binding EditLowStockThreshold, UpdateSourceTrigger=LostFocus}" Style="{StaticResource ModernTextBoxStyle}"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="DEFAULT WARRANTY" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="DEFAULT WARRANTY (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
                                 <TextBox Text="{Binding EditDefaultWarranty, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="e.g. 1 Year"/>
                             </StackPanel>
                         </Grid>

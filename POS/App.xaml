@@ -1,11 +1,14 @@
 <Application x:Class="POS.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:converters="clr-namespace:POS.Converters"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <materialDesign:BundledTheme BaseTheme="Inherit" PrimaryColor="Teal" SecondaryColor="Teal" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml" />
                 <ResourceDictionary Source="Themes/LightTheme.xaml"/>
                 <ResourceDictionary Source="Themes/Tokens.xaml"/>
                 <ResourceDictionary Source="Themes/Controls.xaml"/>
@@ -33,6 +36,8 @@
             <converters:StringNotEmptyToVisibilityConverter x:Key="StrNotEmptyToVis" />
             <converters:NullToVisibilityConverter x:Key="NullToVis" />
             <converters:EqualityToVisibilityConverter x:Key="EqToVis" />
+            <converters:ImageFallbackConverter x:Key="SafeImageConv" />
+            <converters:HasImageConverter x:Key="HasImageConv" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

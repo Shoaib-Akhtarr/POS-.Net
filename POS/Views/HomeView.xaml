@@ -3,248 +3,465 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:conv="clr-namespace:POS.Converters"
              mc:Ignorable="d"
-             d:DesignHeight="800" d:DesignWidth="1050"
+             d:DesignHeight="900" d:DesignWidth="1200"
              Background="{DynamicResource BgCanvasBrush}">
 
-    <Grid Margin="24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="24">
+                <!-- TOP HEADER & GREETING -->
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-        <!-- Header & Date Period Chips -->
-        <Grid Grid.Row="0" Margin="0,0,0,18">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Welcome back, " FontSize="22" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="{Binding CurrentUserName}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource PrimaryBrush}"/>
+                            <TextBlock Text=" 👋" FontSize="20"/>
+                        </StackPanel>
+                        <TextBlock Text="Aizaz Fareed Center &amp; Al-Kuwait Electronics • Real-time Store Intelligence" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,3,0,0"/>
+                    </StackPanel>
 
-            <StackPanel Grid.Column="0">
-                <TextBlock Text="{DynamicResource Lang_PerformanceOverview}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}"/>
-                <TextBlock Text="Aizaz Fareed Center &amp; Al-Kuwait Electronics" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0"/>
-            </StackPanel>
-
-            <ItemsControl Grid.Column="1" ItemsSource="{Binding AvailablePeriods}" VerticalAlignment="Center">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Button Content="{Binding}"
-                                Command="{Binding DataContext.ChangePeriodCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                CommandParameter="{Binding}"
-                                Margin="6,0,0,0" Cursor="Hand">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border x:Name="Bd" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="14,8">
-                                                    <TextBlock x:Name="Txt" Text="{TemplateBinding Content}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}"/>
-                                                </Border>
-                                                <ControlTemplate.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter TargetName="Bd" Property="Background" Value="{DynamicResource BgMutedBrush}"/>
-                                                    </Trigger>
-                                                    <DataTrigger Value="True">
-                                                        <DataTrigger.Binding>
-                                                            <MultiBinding Converter="{StaticResource EqMultiConv}">
-                                                                <Binding Path="."/>
-                                                                <Binding Path="DataContext.SelectedPeriod" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
-                                                            </MultiBinding>
-                                                        </DataTrigger.Binding>
-                                                        <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
-                                                        <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                                                        <Setter TargetName="Txt" Property="Foreground" Value="White"/>
-                                                    </DataTrigger>
-                                                </ControlTemplate.Triggers>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </Button.Style>
-                        </Button>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </Grid>
-
-        <!-- Line Chart Card -->
-        <Border Grid.Row="1" Style="{StaticResource SurfaceCardStyle}" Margin="0,0,0,18" Padding="24">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
-                    <TextBlock Text="NET SALES TREND (LAST 7 DAYS)" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextSecondaryBrush}"/>
-                    <Border Background="{DynamicResource PrimarySoftBrush}" CornerRadius="6" Padding="8,3" Margin="12,0,0,0">
-                        <TextBlock Text="{Binding SelectedPeriod}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource PrimarySoftTextBrush}"/>
+                    <!-- Period Filter Pills -->
+                    <Border Grid.Column="1" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="18" Padding="4">
+                        <ItemsControl ItemsSource="{Binding AvailablePeriods}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Content="{Binding}"
+                                            Command="{Binding DataContext.ChangePeriodCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}"
+                                            Cursor="Hand" Margin="2,0">
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border x:Name="Bd" Background="Transparent" CornerRadius="14" Padding="14,6">
+                                                                <TextBlock x:Name="Txt" Text="{TemplateBinding Content}" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource BgMutedBrush}"/>
+                                                                </Trigger>
+                                                                <DataTrigger Value="True">
+                                                                    <DataTrigger.Binding>
+                                                                        <MultiBinding Converter="{StaticResource EqMultiConv}">
+                                                                            <Binding Path="."/>
+                                                                            <Binding Path="DataContext.SelectedPeriod" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                                                        </MultiBinding>
+                                                                    </DataTrigger.Binding>
+                                                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                                                    <Setter TargetName="Txt" Property="Foreground" Value="White"/>
+                                                                    <Setter TargetName="Txt" Property="FontWeight" Value="Bold"/>
+                                                                </DataTrigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </Border>
-                </StackPanel>
+                </Grid>
 
-                <ItemsControl Grid.Row="1" ItemsSource="{Binding SalesTrend}" FlowDirection="LeftToRight">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate><UniformGrid Columns="7"/></ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Grid Margin="5,0">
+                <!-- QUICK ACTIONS ROW (Inspired by Medipulse & Starline POS) -->
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Action 1: New Sale (F2) -->
+                    <Button Grid.Column="0" Command="{Binding QuickNewSaleCommand}" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Style="{StaticResource SurfaceCardStyle}" Padding="16,14" Background="{DynamicResource BgSurfaceBrush}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="38" Height="38" CornerRadius="10" Background="{DynamicResource PrimarySoftBrush}" Margin="0,0,12,0">
+                                            <Path Data="{StaticResource Icon_POS}" Fill="{DynamicResource PrimaryBrush}" Width="18" Height="18" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="New Sale (F2)" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                            <TextBlock Text="Fast counter checkout" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="2" Text="→" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <!-- Action 2: Stock Procurement -->
+                    <Button Grid.Column="2" Command="{Binding QuickStockInCommand}" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Style="{StaticResource SurfaceCardStyle}" Padding="16,14" Background="{DynamicResource BgSurfaceBrush}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="38" Height="38" CornerRadius="10" Background="#F0F9FF" Margin="0,0,12,0">
+                                            <Path Data="{StaticResource Icon_StockIn}" Fill="#0284C7" Width="18" Height="18" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="Stock In / Purchases" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                            <TextBlock Text="Receive vendor arrivals" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="2" Text="→" FontSize="14" FontWeight="Bold" Foreground="#0284C7" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <!-- Action 3: Party Khata -->
+                    <Button Grid.Column="4" Command="{Binding QuickKhataCommand}" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Style="{StaticResource SurfaceCardStyle}" Padding="16,14" Background="{DynamicResource BgSurfaceBrush}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="38" Height="38" CornerRadius="10" Background="{DynamicResource WarningSoftBrush}" Margin="0,0,12,0">
+                                            <Path Data="{StaticResource Icon_Customers}" Fill="{DynamicResource WarningBrush}" Width="18" Height="18" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="Party Khata" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                            <TextBlock Text="Customer &amp; vendor ledger" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="2" Text="→" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WarningBrush}" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <!-- Action 4: Installment Plans -->
+                    <Button Grid.Column="6" Command="{Binding QuickInstallmentsCommand}" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Style="{StaticResource SurfaceCardStyle}" Padding="16,14" Background="{DynamicResource BgSurfaceBrush}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="38" Height="38" CornerRadius="10" Background="#EEF2FF" Margin="0,0,12,0">
+                                            <Path Data="{StaticResource Icon_Records}" Fill="#6366F1" Width="18" Height="18" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="Qist / Installments" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                            <TextBlock Text="Contracts &amp; collections" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="2" Text="→" FontSize="14" FontWeight="Bold" Foreground="#6366F1" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </Grid>
+
+                <!-- KPI METRICS SUMMARY GRID -->
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Card 1: Revenue -->
+                    <Border Grid.Column="0" Style="{StaticResource SurfaceCardStyle}" Padding="18">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,10">
+                                <Border Width="32" Height="32" CornerRadius="8" Background="{DynamicResource SuccessSoftBrush}" HorizontalAlignment="Left">
+                                    <Path Data="{StaticResource Icon_Dashboard}" Fill="{DynamicResource SuccessBrush}" Width="15" Height="15" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="{Binding SelectedPeriod}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                            </Grid>
+                            <TextBlock Text="NET REVENUE" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                            <TextBlock Text="{Binding TotalSalesRevenue, StringFormat=Rs {0:N0}}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,4,0,0"/>
+                            <TextBlock Text="Gross revenue after returns" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Card 2: Net Profit (Owner Only) -->
+                    <Border Grid.Column="2" Style="{StaticResource SurfaceCardStyle}" Padding="18">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,10">
+                                <Border Width="32" Height="32" CornerRadius="8" Background="{DynamicResource PrimarySoftBrush}" HorizontalAlignment="Left">
+                                    <Path Data="{StaticResource Icon_Check}" Fill="{DynamicResource PrimaryBrush}" Width="15" Height="15" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <Border Background="{DynamicResource PrimarySoftBrush}" CornerRadius="6" Padding="6,2" HorizontalAlignment="Right">
+                                    <TextBlock Text="Margin" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource PrimarySoftTextBrush}"/>
+                                </Border>
+                            </Grid>
+                            <TextBlock Text="NET PROFIT" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                            <Grid Margin="0,4,0,0">
+                                <TextBlock Text="{Binding WeeklyProfit, StringFormat=Rs {0:N0}}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource SuccessBrush}" Visibility="{Binding IsOwner, Converter={StaticResource BoolToVis}}"/>
+                                <TextBlock Text="Owner Protected" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Visibility="{Binding IsOwner, Converter={StaticResource InverseBoolToVis}}"/>
+                            </Grid>
+                            <TextBlock Text="Calculated after item costs" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Card 3: Invoices / Orders -->
+                    <Border Grid.Column="4" Style="{StaticResource SurfaceCardStyle}" Padding="18">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,10">
+                                <Border Width="32" Height="32" CornerRadius="8" Background="#F0FDF4" HorizontalAlignment="Left">
+                                    <Path Data="{StaticResource Icon_POS}" Fill="#16A34A" Width="15" Height="15" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Completed" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                            </Grid>
+                            <TextBlock Text="TOTAL SALES ORDERS" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                            <TextBlock Text="{Binding TotalOrdersCount, StringFormat='{}{0} Orders'}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,4,0,0"/>
+                            <TextBlock Text="Processed register tickets" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Card 4: Customer Khata Dues -->
+                    <Border Grid.Column="6" Style="{StaticResource SurfaceCardStyle}" Padding="18">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,10">
+                                <Border Width="32" Height="32" CornerRadius="8" Background="{DynamicResource WarningSoftBrush}" HorizontalAlignment="Left">
+                                    <Path Data="{StaticResource Icon_Customers}" Fill="{DynamicResource WarningBrush}" Width="15" Height="15" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Active Dues" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WarningBrush}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                            </Grid>
+                            <TextBlock Text="TOTAL PENDING DUES" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                            <TextBlock Text="{Binding TotalPendingDues, StringFormat=Rs {0:N0}}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource WarningBrush}" Margin="0,4,0,0"/>
+                            <TextBlock Text="Customer market credit" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Card 5: Low Stock Alerts -->
+                    <Button Grid.Column="8" Command="{Binding ToggleLowStockModalCommand}" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Style="{StaticResource SurfaceCardStyle}" Padding="18" Background="{DynamicResource BgSurfaceBrush}">
+                                    <StackPanel>
+                                        <Grid Margin="0,0,0,10">
+                                            <Border Width="32" Height="32" CornerRadius="8" Background="{DynamicResource DangerSoftBrush}" HorizontalAlignment="Left">
+                                                <Path Data="{StaticResource Icon_Warning}" Fill="{DynamicResource DangerBrush}" Width="15" Height="15" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <Border Background="{DynamicResource DangerSoftBrush}" CornerRadius="6" Padding="6,2" HorizontalAlignment="Right">
+                                                <TextBlock Text="Review →" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource DangerBrush}"/>
+                                            </Border>
+                                        </Grid>
+                                        <TextBlock Text="LOW STOCK ITEMS" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                                        <TextBlock Text="{Binding LowInStockCount, StringFormat='{}{0} Products'}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource DangerBrush}" Margin="0,4,0,0"/>
+                                        <TextBlock Text="At or below threshold" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </Grid>
+
+                <!-- DUAL-COLUMN OPERATIONAL DASHBOARD (62% Chart & Health / 38% Top Products) -->
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.6*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- LEFT: Sales Performance Trend & Financial Health -->
+                    <StackPanel Grid.Column="0">
+                        <!-- Sales Trend Visualizer Card -->
+                        <Border Style="{StaticResource SurfaceCardStyle}" Padding="22" Margin="0,0,0,16">
+                            <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-                                <TextBlock Grid.Row="0" Text="{Binding Amount, StringFormat=PKR {0:N0}}" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                <Border Grid.Row="1" Background="{DynamicResource BgSubtleBrush}" CornerRadius="5" Height="116" VerticalAlignment="Bottom" Margin="0,8">
-                                    <Border Background="{DynamicResource PrimaryBrush}" Height="{Binding BarHeight}" Width="28" CornerRadius="5" VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
-                                </Border>
-                                <TextBlock Grid.Row="2" Text="{Binding Label}" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+
+                                <Grid Grid.Row="0" Margin="0,0,0,16">
+                                    <StackPanel>
+                                        <TextBlock Text="REVENUE PERFORMANCE TREND (LAST 7 DAYS)" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        <TextBlock Text="Daily net turnover after returns" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <Border Background="{DynamicResource PrimarySoftBrush}" CornerRadius="8" Padding="10,4" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding TotalSalesRevenue, StringFormat='Period Total: Rs {0:N0}'}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource PrimarySoftTextBrush}"/>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Visual Bar Chart with Rounded Tops -->
+                                <ItemsControl Grid.Row="1" ItemsSource="{Binding SalesTrend}" FlowDirection="LeftToRight" Height="160">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Columns="7"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="6,0" VerticalAlignment="Bottom">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+
+                                                <TextBlock Grid.Row="0" Text="{Binding Amount, StringFormat={}{0:N0}}" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+
+                                                <!-- Bar Column -->
+                                                <Border Grid.Row="1" Background="{DynamicResource BgSubtleBrush}" CornerRadius="6" Height="110" VerticalAlignment="Bottom">
+                                                    <Border Background="{DynamicResource PrimaryBrush}" Height="{Binding BarHeight}" Width="32" CornerRadius="6" VerticalAlignment="Bottom" HorizontalAlignment="Center">
+                                                        <Border.ToolTip>
+                                                            <ToolTip Content="{Binding Amount, StringFormat='Net Sales: Rs {0:N0}'}"/>
+                                                        </Border.ToolTip>
+                                                    </Border>
+                                                </Border>
+
+                                                <TextBlock Grid.Row="2" Text="{Binding Label}" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
                             </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </Grid>
-        </Border>
-
-        <!-- Summary KPI Cards -->
-        <Grid Grid.Row="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <!-- Card 1: Net Sales Revenue -->
-            <Border Grid.Column="0" Style="{StaticResource SurfaceCardStyle}" Margin="0,0,10,0" Padding="18">
-                <StackPanel>
-                    <TextBlock Text="{DynamicResource Lang_SaleRevenue}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
-                    <TextBlock Text="{Binding TotalSalesRevenue, StringFormat=Rs {0:N0}}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,8,0,0"/>
-                </StackPanel>
-            </Border>
-
-            <!-- Card 2: Net Profit (Owner Only) -->
-            <Border Grid.Column="1" Style="{StaticResource SurfaceCardStyle}" Margin="6,0,6,0" Padding="18">
-                <Grid>
-                    <StackPanel Visibility="{Binding IsOwner, Converter={StaticResource BoolToVis}}">
-                        <TextBlock Text="{DynamicResource Lang_ProfitPeriod}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
-                        <TextBlock Text="{Binding WeeklyProfit, StringFormat=Rs {0:N0}}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource SuccessBrush}" Margin="0,8,0,0"/>
-                    </StackPanel>
-                    <StackPanel Visibility="{Binding IsOwner, Converter={StaticResource InverseBoolToVis}}">
-                        <TextBlock Text="{DynamicResource Lang_ProfitPeriod}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
-                        <TextBlock Text="Owner Only" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,12,0,0"/>
-                    </StackPanel>
-                </Grid>
-            </Border>
-
-            <!-- Card 3: Purchases (Owner Only) -->
-            <Border Grid.Column="2" Style="{StaticResource SurfaceCardStyle}" Margin="6,0,6,0" Padding="18">
-                <Grid>
-                    <StackPanel Visibility="{Binding IsOwner, Converter={StaticResource BoolToVis}}">
-                        <TextBlock Text="{DynamicResource Lang_PurchasePeriod}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
-                        <TextBlock Text="{Binding WeeklyPurchasesSum, StringFormat=Rs {0:N0}}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,8,0,0"/>
-                    </StackPanel>
-                    <StackPanel Visibility="{Binding IsOwner, Converter={StaticResource InverseBoolToVis}}">
-                        <TextBlock Text="{DynamicResource Lang_PurchasePeriod}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
-                        <TextBlock Text="Owner Only" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,12,0,0"/>
-                    </StackPanel>
-                </Grid>
-            </Border>
-
-            <!-- Card 4: Customer Khata Dues -->
-            <Border Grid.Column="3" Style="{StaticResource SurfaceCardStyle}" Margin="6,0,6,0" Padding="18">
-                <StackPanel>
-                    <TextBlock Text="{DynamicResource Lang_PendingDues}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
-                    <TextBlock Text="{Binding TotalPendingDues, StringFormat=Rs {0:N0}}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource WarningBrush}" Margin="0,8,0,0"/>
-                </StackPanel>
-            </Border>
-
-            <!-- Card 5: Low Stock Alerts -->
-            <Button Grid.Column="4" Command="{Binding ToggleLowStockModalCommand}" Background="Transparent" BorderThickness="0" Padding="0" Margin="10,0,0,0" Cursor="Hand">
-                <Button.Template>
-                    <ControlTemplate TargetType="Button">
-                        <Border Style="{StaticResource SurfaceCardStyle}" Padding="18">
-                            <StackPanel>
-                                <TextBlock Text="{DynamicResource Lang_LowStock}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
-                                <TextBlock Text="{Binding LowInStockCount}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource DangerBrush}" Margin="0,8,0,0"/>
-                                <TextBlock Text="{DynamicResource Lang_ViewItems}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="0,4,0,0"/>
-                            </StackPanel>
                         </Border>
-                    </ControlTemplate>
-                </Button.Template>
-            </Button>
-        </Grid>
 
-        <!-- Financial Intelligence & Khata / Installments / FBR Row -->
-        <Grid Grid.Row="3" Margin="0,14,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+                        <!-- Financial Ledger Snapshot (Khata & Installments) -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
-            <!-- Khata Receivables (Maine Lena Hai) -->
-            <Border Grid.Column="0" Style="{StaticResource SurfaceCardStyle}" Margin="0,0,10,0" Padding="16">
-                <StackPanel>
-                    <TextBlock Text="KHATA RECEIVABLES (LE NA HAI)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
-                    <TextBlock Text="{Binding KhataTotalReceivable, StringFormat=Rs {0:N0}}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource SuccessBrush}" Margin="0,6,0,0"/>
-                    <TextBlock Text="● Maine Lena Hai" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource SuccessBrush}" Margin="0,3,0,0"/>
-                </StackPanel>
-            </Border>
+                            <Border Grid.Column="0" Style="{StaticResource SurfaceCardStyle}" Padding="18">
+                                <StackPanel>
+                                    <TextBlock Text="KHATA LEDGER BALANCE" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                                    <Grid Margin="0,10,0,6">
+                                        <TextBlock Text="Maine Lena Hai (Receivable)" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                        <TextBlock Text="{Binding KhataTotalReceivable, StringFormat=Rs {0:N0}}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Right"/>
+                                    </Grid>
+                                    <Grid Margin="0,4,0,0">
+                                        <TextBlock Text="Maine Dena Hai (Payable)" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                        <TextBlock Text="{Binding KhataTotalPayable, StringFormat=Rs {0:N0}}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource DangerBrush}" HorizontalAlignment="Right"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
 
-            <!-- Khata Payables (Maine Dena Hai) -->
-            <Border Grid.Column="1" Style="{StaticResource SurfaceCardStyle}" Margin="6,0,6,0" Padding="16">
-                <StackPanel>
-                    <TextBlock Text="KHATA PAYABLES (DE NA HAI)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
-                    <TextBlock Text="{Binding KhataTotalPayable, StringFormat=Rs {0:N0}}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource DangerBrush}" Margin="0,6,0,0"/>
-                    <TextBlock Text="● Maine Dena Hai" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource DangerBrush}" Margin="0,3,0,0"/>
-                </StackPanel>
-            </Border>
+                            <Border Grid.Column="2" Style="{StaticResource SurfaceCardStyle}" Padding="18">
+                                <StackPanel>
+                                    <TextBlock Text="QIST PORTFOLIO &amp; RISK" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                                    <Grid Margin="0,10,0,6">
+                                        <TextBlock Text="Active Financed Capital" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                        <TextBlock Text="{Binding ActiveInstallmentPortfolio, StringFormat=Rs {0:N0}}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Right"/>
+                                    </Grid>
+                                    <Grid Margin="0,4,0,0">
+                                        <TextBlock Text="Overdue Defaulters" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                        <TextBlock Text="{Binding OverdueInstallmentAmount, StringFormat=Rs {0:N0}}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource WarningBrush}" HorizontalAlignment="Right"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
 
-            <!-- Active Qist Portfolio -->
-            <Border Grid.Column="2" Style="{StaticResource SurfaceCardStyle}" Margin="6,0,6,0" Padding="16">
-                <StackPanel>
-                    <TextBlock Text="ACTIVE QIST PORTFOLIO" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
-                    <TextBlock Text="{Binding ActiveInstallmentPortfolio, StringFormat=Rs {0:N0}}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryBrush}" Margin="0,6,0,0"/>
-                    <TextBlock Text="Total financed capital" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,0"/>
-                </StackPanel>
-            </Border>
+                    <!-- RIGHT: Top Selling Products (Matching CosyPOS & Starline) -->
+                    <Border Grid.Column="2" Style="{StaticResource SurfaceCardStyle}" Padding="22">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
 
-            <!-- Overdue Qist Alert -->
-            <Border Grid.Column="3" Style="{StaticResource SurfaceCardStyle}" Margin="6,0,6,0" Padding="16">
-                <StackPanel>
-                    <TextBlock Text="OVERDUE QIST (WAJIB-UL-ADA)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
-                    <TextBlock Text="{Binding OverdueInstallmentAmount, StringFormat=Rs {0:N0}}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource WarningBrush}" Margin="0,6,0,0"/>
-                    <TextBlock Text="{Binding OverdueInstallmentCount, StringFormat='⚠ {0} Defaulters past due'}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WarningBrush}" Margin="0,3,0,0"/>
-                </StackPanel>
-            </Border>
+                            <Grid Grid.Row="0" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="TOP SELLING PRODUCTS" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    <TextBlock Text="Ranked by unit sales volume" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <Button Command="{Binding QuickProductsCommand}" Content="View All →" Style="{StaticResource GhostButtonStyle}" Padding="6,2" FontSize="11" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                            </Grid>
 
-            <!-- FBR Fiscal Status -->
-            <Border Grid.Column="4" Style="{StaticResource SurfaceCardStyle}" Margin="10,0,0,0" Padding="16">
-                <StackPanel>
-                    <TextBlock Text="FBR FISCAL SYNC QUEUE" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
-                    <TextBlock Text="{Binding FbrOfflinePendingCount, StringFormat='{}{0} Pending'}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,6,0,0"/>
-                    <TextBlock Text="All invoices synchronized" FontSize="10" Foreground="{DynamicResource SuccessBrush}" Margin="0,3,0,0" Visibility="{Binding HasFbrOfflinePending, Converter={StaticResource InverseBoolToVis}}"/>
-                    <TextBlock Text="⚠ Offline queue waiting" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WarningBrush}" Margin="0,3,0,0" Visibility="{Binding HasFbrOfflinePending, Converter={StaticResource BoolToVis}}"/>
-                </StackPanel>
-            </Border>
-        </Grid>
+                            <ItemsControl Grid.Row="1" ItemsSource="{Binding TopSellingProducts}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,0,1" Padding="0,10">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
 
-        <!-- Low Stock Modal Overlay -->
-        <Grid Grid.RowSpan="3" Margin="-24" Visibility="{Binding IsLowStockModalOpen, Converter={StaticResource BoolToVis}}">
-            <Border Background="{DynamicResource ModalOverlayBrush}" MouseDown="Border_MouseDown"/>
+                                                <!-- Image Thumbnail with Fallback -->
+                                                <Border Grid.Column="0" Width="42" Height="42" CornerRadius="8" Background="{DynamicResource BgSubtleBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" Margin="0,0,12,0" ClipToBounds="True">
+                                                    <Grid>
+                                                        <Image Source="{Binding ImagePath, Converter={StaticResource SafeImageConv}}" Stretch="UniformToFill"
+                                                               Visibility="{Binding ImagePath, Converter={StaticResource HasImageConv}, ConverterParameter=BoolToVis}"/>
+                                                        <Path Data="{StaticResource Icon_Inventory}" Fill="{DynamicResource TextMutedBrush}" Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                              Visibility="{Binding ImagePath, Converter={StaticResource HasImageConv}, ConverterParameter=Invert}"/>
+                                                    </Grid>
+                                                </Border>
 
-            <Border Style="{StaticResource SurfaceCardStyle}" MaxWidth="680" MaxHeight="650" Margin="40" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="28">
+                                                <!-- Name, Category & Progress -->
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,10,0">
+                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="12.5" Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                                    <Grid Margin="0,4,0,0">
+                                                        <ProgressBar Value="{Binding ProgressPercent}" Maximum="100" Height="5" Foreground="{DynamicResource PrimaryBrush}" Background="{DynamicResource BgSubtleBrush}"/>
+                                                    </Grid>
+                                                    <TextBlock Text="{Binding Category}" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0"/>
+                                                </StackPanel>
+
+                                                <!-- Sales Count & Revenue -->
+                                                <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                                    <TextBlock Text="{Binding Revenue, StringFormat=Rs {0:N0}}" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Right"/>
+                                                    <Border Background="{DynamicResource PrimarySoftBrush}" CornerRadius="6" Padding="6,1" HorizontalAlignment="Right" Margin="0,2,0,0">
+                                                        <TextBlock Text="{Binding SalesCount, StringFormat='{}{0} sold'}" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource PrimarySoftTextBrush}"/>
+                                                    </Border>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- LOW STOCK MODAL OVERLAY -->
+        <Grid Visibility="{Binding IsLowStockModalOpen, Converter={StaticResource BoolToVis}}" Background="{DynamicResource ModalOverlayBrush}">
+            <Border Style="{StaticResource SurfaceCardStyle}" Width="650" MaxHeight="620" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="26">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -253,50 +470,42 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Header -->
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
-                        <Border Width="34" Height="34" CornerRadius="8" Background="{DynamicResource WarningSoftBrush}" Margin="0,0,12,0">
-                            <Path Data="{StaticResource Icon_Warning}" Fill="{DynamicResource WarningBrush}" Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Grid Grid.Row="0" Margin="0,0,0,18">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="34" Height="34" CornerRadius="8" Background="{DynamicResource WarningSoftBrush}" Margin="0,0,12,0">
+                                <Path Data="{StaticResource Icon_Warning}" Fill="{DynamicResource WarningBrush}" Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Low Stock Replenishment Alert" FontSize="17" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                <TextBlock Text="Items that have fallen at or below their reorder threshold" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <Border Background="{DynamicResource DangerSoftBrush}" CornerRadius="10" Padding="10,4" HorizontalAlignment="Right" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding LowInStockCount, StringFormat={}{0} Items}" Foreground="{DynamicResource DangerBrush}" FontSize="11" FontWeight="Bold"/>
                         </Border>
-                        <TextBlock Text="{DynamicResource Lang_LowStock}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                        <Border Background="{DynamicResource DangerSoftBrush}" CornerRadius="10" Padding="10,4" Margin="12,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding LowInStockCount, StringFormat={}{0} items}" Foreground="{DynamicResource DangerBrush}" FontSize="11" FontWeight="Bold"/>
-                        </Border>
-                    </StackPanel>
+                    </Grid>
 
-                    <!-- Stat Chips -->
-                    <Grid Grid.Row="1" Margin="0,0,0,18" Visibility="{Binding IsAlertDismissed, Converter={StaticResource InverseBoolToVis}}">
+                    <Grid Grid.Row="1" Margin="0,0,0,14">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="8"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-
-                        <Border Grid.Column="0" Background="{DynamicResource BgSubtleBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="10" Padding="14,10" Margin="0,0,6,0">
+                        <Border Grid.Column="0" Background="{DynamicResource DangerSoftBrush}" CornerRadius="8" Padding="12,8">
                             <StackPanel>
-                                <TextBlock Text="{DynamicResource Lang_TotalAlerts}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
-                                <TextBlock Text="{Binding LowInStockCount}" FontSize="18" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,4,0,0"/>
+                                <TextBlock Text="CRITICALLY OUT OF STOCK" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource DangerBrush}"/>
+                                <TextBlock Text="{Binding CriticalAlertCount}" FontSize="18" FontWeight="Black" Foreground="{DynamicResource DangerBrush}" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Border>
-
-                        <Border Grid.Column="1" Background="{DynamicResource DangerSoftBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="10" Padding="14,10" Margin="6,0,6,0">
+                        <Border Grid.Column="2" Background="{DynamicResource BgSubtleBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8">
                             <StackPanel>
-                                <TextBlock Text="{DynamicResource Lang_CriticalOut}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource DangerBrush}"/>
-                                <TextBlock Text="{Binding CriticalAlertCount}" FontSize="18" FontWeight="Black" Foreground="{DynamicResource DangerBrush}" Margin="0,4,0,0"/>
-                            </StackPanel>
-                        </Border>
-
-                        <Border Grid.Column="2" Background="{DynamicResource BgSubtleBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="10" Padding="14,10" Margin="6,0,0,0">
-                            <StackPanel>
-                                <TextBlock Text="{DynamicResource Lang_LowestUnits}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
-                                <TextBlock Text="{Binding LowestUnitInfo}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,4,0,0" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="LOWEST STOCK ITEM" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                                <TextBlock Text="{Binding LowestUnitInfo}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Border>
                     </Grid>
 
-                    <!-- Table -->
-                    <DataGrid Grid.Row="2" ItemsSource="{Binding LowStockProducts}" Style="{StaticResource ModernDataGridStyle}" Margin="0,0,0,18"
-                              Visibility="{Binding IsAlertDismissed, Converter={StaticResource InverseBoolToVis}}">
+                    <DataGrid Grid.Row="2" ItemsSource="{Binding LowStockProducts}" Style="{StaticResource ModernDataGridStyle}" MaxHeight="300" Margin="0,0,0,18">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="PRODUCT NAME" Binding="{Binding Name}" Width="*"/>
                             <DataGridTemplateColumn Header="DEPARTMENT" Width="130">
@@ -308,7 +517,7 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="STOCK" Width="100">
+                            <DataGridTemplateColumn Header="STOCK" Width="110">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Border Background="{Binding Quantity, Converter={StaticResource StockBgConv}}" CornerRadius="8" Padding="8,3" HorizontalAlignment="Left">
@@ -323,21 +532,7 @@
                         </DataGrid.Columns>
                     </DataGrid>
 
-                    <!-- Dismissed State -->
-                    <StackPanel Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{Binding IsAlertDismissed, Converter={StaticResource BoolToVis}}">
-                        <Border Width="54" Height="54" CornerRadius="27" Background="{DynamicResource PrimarySoftBrush}" Margin="0,0,0,16">
-                            <Path Data="{StaticResource Icon_Check}" Fill="{DynamicResource PrimaryBrush}" Width="24" Height="24" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <TextBlock Text="{DynamicResource Lang_DismissedMessage}" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"/>
-                        <TextBlock Text="{DynamicResource Lang_DismissedSub}" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,6,0,16" HorizontalAlignment="Center"/>
-                        <Button Command="{Binding RestoreAlertCommand}" Content="{DynamicResource Lang_ReopenAlerts}" Style="{StaticResource GhostButtonStyle}"/>
-                    </StackPanel>
-
-                    <!-- Footer -->
-                    <Grid Grid.Row="3">
-                        <Button Command="{Binding DismissAlertCommand}" Content="ACKNOWLEDGE &amp; HIDE" Style="{StaticResource PrimaryButtonStyle}" Visibility="{Binding IsAlertDismissed, Converter={StaticResource InverseBoolToVis}}"/>
-                        <Button Command="{Binding ToggleLowStockModalCommand}" Content="{DynamicResource Lang_Done}" Style="{StaticResource PrimaryButtonStyle}" Visibility="{Binding IsAlertDismissed, Converter={StaticResource BoolToVis}}"/>
-                    </Grid>
+                    <Button Grid.Row="3" Command="{Binding ToggleLowStockModalCommand}" Content="CLOSE" Style="{StaticResource PrimaryButtonStyle}"/>
                 </Grid>
             </Border>
         </Grid>

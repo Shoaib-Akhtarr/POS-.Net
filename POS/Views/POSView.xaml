@@ -5,16 +5,18 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:conv="clr-namespace:POS.Converters"
              mc:Ignorable="d"
-             d:DesignHeight="820" d:DesignWidth="1120"
+             d:DesignHeight="850" d:DesignWidth="1200"
              Background="{DynamicResource BgCanvasBrush}">
 
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="420"/>
+            <ColumnDefinition Width="440"/>
         </Grid.ColumnDefinitions>
 
-        <!-- LEFT: Product Catalog -->
+        <!-- ========================================== -->
+        <!-- LEFT: PRODUCT CATALOG & SEARCH (65% width) -->
+        <!-- ========================================== -->
         <Grid Grid.Column="0" Margin="20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -22,7 +24,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Search Bar + View Toggle + Held Bills -->
+            <!-- Top Search Bar + View Toggle + Held Bills -->
             <Grid Grid.Row="0" Margin="0,0,0,14">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -30,35 +32,43 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Style="{StaticResource SurfaceCardStyle}" Padding="14,10">
+                <!-- Search Input with Barcode Icon -->
+                <Border Grid.Column="0" Style="{StaticResource SurfaceCardStyle}" Padding="14,9">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <Path Data="{StaticResource Icon_Search}" Fill="{DynamicResource TextMutedBrush}" Width="16" Height="16" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <Path Grid.Column="0" Data="{StaticResource Icon_Search}" Fill="{DynamicResource TextMutedBrush}" Width="16" Height="16" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,10,0"/>
                         <TextBox Grid.Column="1"
                                  x:Name="ProductSearchBox"
                                  Text="{Binding ProductSearchText, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource SearchInnerTextBoxStyle}"
-                                 conv:PlaceholderHelper.Placeholder="{DynamicResource Lang_ProductSearch}">
+                                 FontSize="13"
+                                 conv:PlaceholderHelper.Placeholder="Scan barcode or search product name, brand, SKU...">
                             <TextBox.InputBindings>
                                 <KeyBinding Key="Return" Command="{Binding QuickAddFromSearchCommand}"/>
                             </TextBox.InputBindings>
                         </TextBox>
+                        <Border Grid.Column="2" Background="{DynamicResource BgSubtleBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="6,2" VerticalAlignment="Center">
+                            <TextBlock Text="Enter ↵ to Add" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}"/>
+                        </Border>
                     </Grid>
                 </Border>
 
-                <Button Grid.Column="1" Command="{Binding ToggleCatalogViewCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="10,0,0,0" Padding="12,10" ToolTip="Switch Grid / Compact Table">
+                <!-- Toggle Grid / List View -->
+                <Button Grid.Column="1" Command="{Binding ToggleCatalogViewCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="10,0,0,0" Padding="12,9" ToolTip="Switch Grid / Dense Table View">
                     <Grid>
                         <Path Data="{StaticResource Icon_List}" Fill="{DynamicResource TextPrimaryBrush}" Width="16" Height="16" Stretch="Uniform" Visibility="{Binding IsCompactListView, Converter={StaticResource InverseBoolToVis}}"/>
                         <Path Data="{StaticResource Icon_Grid}" Fill="{DynamicResource TextPrimaryBrush}" Width="16" Height="16" Stretch="Uniform" Visibility="{Binding IsCompactListView, Converter={StaticResource BoolToVis}}"/>
                     </Grid>
                 </Button>
 
+                <!-- Held Bills Pill -->
                 <Button Grid.Column="2" Command="{Binding OpenHeldCartsModalCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="8,0,0,0" Visibility="{Binding HasHeldCarts, Converter={StaticResource BoolToVis}}">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{DynamicResource Lang_HeldBills}"/>
+                        <TextBlock Text="{DynamicResource Lang_HeldBills}" FontSize="12" FontWeight="SemiBold"/>
                         <Border Background="{DynamicResource WarningBrush}" CornerRadius="8" Padding="6,1" Margin="8,0,0,0">
                             <TextBlock Text="{Binding HeldCartCount}" Foreground="White" FontSize="11" FontWeight="Bold"/>
                         </Border>
@@ -66,7 +76,7 @@
                 </Button>
             </Grid>
 
-            <!-- Dynamic Department Filter Chips -->
+            <!-- Horizontal Department Filter Chips -->
             <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Margin="0,0,0,14">
                 <ItemsControl ItemsSource="{Binding Categories}">
                     <ItemsControl.ItemsPanel>
@@ -82,18 +92,11 @@
                                     Margin="0,0,8,0" Cursor="Hand">
                                 <Button.Style>
                                     <Style TargetType="Button">
-                                        <Setter Property="Background" Value="{DynamicResource BgSurfaceBrush}"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
-                                        <Setter Property="BorderBrush" Value="{DynamicResource BorderDefaultBrush}"/>
-                                        <Setter Property="BorderThickness" Value="1"/>
-                                        <Setter Property="FontWeight" Value="SemiBold"/>
-                                        <Setter Property="FontSize" Value="12"/>
-                                        <Setter Property="Padding" Value="14,7"/>
                                         <Setter Property="Template">
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="Button">
-                                                    <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="16" Padding="{TemplateBinding Padding}">
-                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    <Border x:Name="Bd" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="16" Padding="14,7">
+                                                        <TextBlock x:Name="Txt" Text="{TemplateBinding Content}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}"/>
                                                     </Border>
                                                     <ControlTemplate.Triggers>
                                                         <Trigger Property="IsMouseOver" Value="True">
@@ -108,7 +111,8 @@
                                                             </DataTrigger.Binding>
                                                             <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
                                                             <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                                                            <Setter Property="Foreground" Value="White"/>
+                                                            <Setter TargetName="Txt" Property="Foreground" Value="White"/>
+                                                            <Setter TargetName="Txt" Property="FontWeight" Value="Bold"/>
                                                         </DataTrigger>
                                                     </ControlTemplate.Triggers>
                                                 </ControlTemplate>
@@ -122,8 +126,8 @@
                 </ItemsControl>
             </ScrollViewer>
 
-            <!-- Catalog View 1: Cards -->
-            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Visibility="{Binding IsCompactListView, Converter={StaticResource InverseBoolToVis}}">
+            <!-- CATALOG VIEW 1: Visual Cards with Product Images -->
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Visibility="{Binding IsCompactListView, Converter={StaticResource InverseBoolToVis}}">
                 <ItemsControl ItemsSource="{Binding FilteredProducts}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -134,43 +138,85 @@
                         <DataTemplate>
                             <Button Command="{Binding DataContext.AddToCartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     CommandParameter="{Binding}"
-                                    Background="Transparent" BorderThickness="0" Padding="0" Margin="0,0,12,12" Cursor="Hand">
+                                    Background="Transparent" BorderThickness="0" Padding="0" Margin="0,0,14,14" Cursor="Hand">
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
-                                        <Border x:Name="Card" Style="{StaticResource SurfaceCardStyle}" Width="184" Height="138" Padding="14">
+                                        <Border x:Name="Card" Style="{StaticResource SurfaceCardStyle}" Width="195" Height="225" Padding="0" ClipToBounds="True">
                                             <Grid>
                                                 <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="115"/>
                                                     <RowDefinition Height="*"/>
-                                                    <RowDefinition Height="Auto"/>
                                                 </Grid.RowDefinitions>
 
-                                                <Grid Grid.Row="0">
-                                                    <Border Background="{Binding Category, Converter={StaticResource DeptBgConv}}" CornerRadius="6" Padding="7,2" HorizontalAlignment="Left">
-                                                        <TextBlock Text="{Binding Category}" FontSize="10" FontWeight="Bold" Foreground="{Binding Category, Converter={StaticResource DeptFgConv}}" TextTrimming="CharacterEllipsis" MaxWidth="82"/>
-                                                    </Border>
-                                                    <Border Background="{Binding Quantity, Converter={StaticResource StockBgConv}}" CornerRadius="6" Padding="6,2" HorizontalAlignment="Right">
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="{Binding Quantity, Converter={StaticResource QtyConv}}" FontSize="10" FontWeight="Bold" Foreground="{Binding Quantity, Converter={StaticResource StockFgConv}}"/>
-                                                            <TextBlock Text="{Binding Unit, StringFormat=' {0}'}" FontSize="10" Foreground="{Binding Quantity, Converter={StaticResource StockFgConv}}"/>
+                                                <!-- Top: Product Image or Vector Fallback -->
+                                                <Border Grid.Row="0" Background="{DynamicResource BgSubtleBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,0,1" ClipToBounds="True">
+                                                    <Grid>
+                                                        <!-- Actual Product Photo -->
+                                                        <Image Source="{Binding ImagePath, Converter={StaticResource SafeImageConv}}" Stretch="UniformToFill"
+                                                               Visibility="{Binding ImagePath, Converter={StaticResource HasImageConv}, ConverterParameter=BoolToVis}"/>
+
+                                                        <!-- Clean Pastel Vector Fallback when no photo exists -->
+                                                        <Border Background="{Binding Category, Converter={StaticResource DeptBgConv}}"
+                                                                Visibility="{Binding ImagePath, Converter={StaticResource HasImageConv}, ConverterParameter=Invert}">
+                                                            <Path Data="{StaticResource Icon_Inventory}" Fill="{Binding Category, Converter={StaticResource DeptFgConv}}" Width="28" Height="28" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+
+                                                        <!-- Layered Badges over Image -->
+                                                        <!-- Top Left: Department Badge -->
+                                                        <Border Background="{Binding Category, Converter={StaticResource DeptBgConv}}" CornerRadius="6" Padding="6,2" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8">
+                                                            <TextBlock Text="{Binding Category}" FontSize="9.5" FontWeight="Bold" Foreground="{Binding Category, Converter={StaticResource DeptFgConv}}" TextTrimming="CharacterEllipsis" MaxWidth="80"/>
+                                                        </Border>
+
+                                                        <!-- Top Right: Stock Pill -->
+                                                        <Border Background="{Binding Quantity, Converter={StaticResource StockBgConv}}" CornerRadius="6" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="8">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="{Binding Quantity, Converter={StaticResource QtyConv}}" FontSize="9.5" FontWeight="Bold" Foreground="{Binding Quantity, Converter={StaticResource StockFgConv}}"/>
+                                                                <TextBlock Text="{Binding Unit, StringFormat=' {0}'}" FontSize="9.5" Foreground="{Binding Quantity, Converter={StaticResource StockFgConv}}"/>
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </Grid>
+                                                </Border>
+
+                                                <!-- Bottom: Product Metadata & Price -->
+                                                <Grid Grid.Row="1" Margin="12,10,12,10">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="*"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                    </Grid.RowDefinitions>
+
+                                                    <StackPanel Grid.Row="0">
+                                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="12.5" Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap" MaxHeight="34" TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock Text="{Binding Brand}" FontSize="10.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0" Visibility="{Binding Brand, Converter={StaticResource StrNotEmptyToVis}}"/>
+                                                    </StackPanel>
+
+                                                    <!-- Price & Add Button -->
+                                                    <Grid Grid.Row="1">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding SellingPrice, StringFormat=Rs {0:N0}}" Foreground="{DynamicResource PrimaryBrush}" FontWeight="Black" FontSize="15"/>
+                                                            <TextBlock Text="{Binding Unit, StringFormat='per {0}'}" Foreground="{DynamicResource TextMutedBrush}" FontSize="9.5"/>
                                                         </StackPanel>
-                                                    </Border>
+
+                                                        <!-- Mini Add Pill -->
+                                                        <Border Grid.Column="1" Background="{DynamicResource PrimarySoftBrush}" CornerRadius="12" Padding="8,4" VerticalAlignment="Center">
+                                                            <TextBlock Text="+ Add" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource PrimarySoftTextBrush}"/>
+                                                        </Border>
+                                                    </Grid>
                                                 </Grid>
-
-                                                <StackPanel Grid.Row="1" Margin="0,10,0,4">
-                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap" MaxHeight="38" TextTrimming="CharacterEllipsis"/>
-                                                    <TextBlock Text="{Binding Brand}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0" Visibility="{Binding Brand, Converter={StaticResource StrNotEmptyToVis}}"/>
-                                                </StackPanel>
-
-                                                <StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Bottom">
-                                                    <TextBlock Text="{Binding SellingPrice, StringFormat=Rs {0:N0}}" Foreground="{DynamicResource PrimaryBrush}" FontWeight="Black" FontSize="15"/>
-                                                    <TextBlock Text="{Binding Unit, StringFormat=' / {0}'}" Foreground="{DynamicResource TextMutedBrush}" FontSize="11" VerticalAlignment="Bottom" Margin="0,0,0,1"/>
-                                                </StackPanel>
                                             </Grid>
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
                                                 <Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                                <Setter TargetName="Card" Property="Effect">
+                                                    <Setter.Value>
+                                                        <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.12" Color="Black"/>
+                                                    </Setter.Value>
+                                                </Setter>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -181,14 +227,29 @@
                 </ItemsControl>
             </ScrollViewer>
 
-            <!-- Catalog View 2: Compact Fast Table -->
+            <!-- CATALOG VIEW 2: Dense Table View -->
             <Border Grid.Row="2" Style="{StaticResource SurfaceCardStyle}" Visibility="{Binding IsCompactListView, Converter={StaticResource BoolToVis}}">
                 <DataGrid ItemsSource="{Binding FilteredProducts}" Style="{StaticResource ModernDataGridStyle}">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="SKU" Binding="{Binding Barcode}" Width="95"/>
-                        <DataGridTextColumn Header="ITEM" Binding="{Binding Name}" Width="*"/>
+                        <DataGridTemplateColumn Header="PHOTO" Width="55">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Width="34" Height="34" CornerRadius="6" Background="{DynamicResource BgSubtleBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" ClipToBounds="True">
+                                        <Grid>
+                                            <Image Source="{Binding ImagePath, Converter={StaticResource SafeImageConv}}" Stretch="UniformToFill"
+                                                   Visibility="{Binding ImagePath, Converter={StaticResource HasImageConv}, ConverterParameter=BoolToVis}"/>
+                                            <Path Data="{StaticResource Icon_Inventory}" Fill="{DynamicResource TextMutedBrush}" Width="14" Height="14" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  Visibility="{Binding ImagePath, Converter={StaticResource HasImageConv}, ConverterParameter=Invert}"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTextColumn Header="SKU / BARCODE" Binding="{Binding Barcode}" Width="110"/>
+                        <DataGridTextColumn Header="PRODUCT NAME" Binding="{Binding Name}" Width="*"/>
                         <DataGridTextColumn Header="BRAND" Binding="{Binding Brand}" Width="100"/>
-                        <DataGridTemplateColumn Header="STOCK" Width="90">
+                        <DataGridTemplateColumn Header="STOCK" Width="95">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="{Binding Quantity, Converter={StaticResource StockBgConv}}" CornerRadius="6" Padding="6,2" HorizontalAlignment="Left">
@@ -200,8 +261,15 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="RATE" Binding="{Binding SellingPrice, StringFormat=Rs {0:N0}}" Width="90"/>
-                        <DataGridTemplateColumn Header="" Width="75">
+                        <DataGridTextColumn Header="RATE" Binding="{Binding SellingPrice, StringFormat=Rs {0:N0}}" Width="95">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTemplateColumn Header="" Width="80">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Button Content="+ Add"
@@ -217,7 +285,9 @@
             </Border>
         </Grid>
 
-        <!-- RIGHT: Order Cart & Checkout Sidebar -->
+        <!-- ============================================== -->
+        <!-- RIGHT: ORDER CART & CHECKOUT PANEL (35% width) -->
+        <!-- ============================================== -->
         <Border Grid.Column="1" Background="{DynamicResource BgSurfaceBrush}" BorderThickness="1,0,0,0" BorderBrush="{DynamicResource BorderDefaultBrush}">
             <Grid>
                 <Grid.RowDefinitions>
@@ -225,18 +295,22 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Cart Section -->
+                <!-- TOP: Cart Line Items -->
                 <Grid Grid.Row="0" Margin="18,16,18,10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
+                    <!-- Cart Header Bar -->
                     <Grid Grid.Row="0" Margin="0,0,0,12">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="{DynamicResource Lang_OrderCart}" FontSize="16" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Text="{DynamicResource Lang_OrderCart}" FontSize="16" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <Border Background="{DynamicResource PrimarySoftBrush}" CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding CartItems.Count, StringFormat='{}{0} items'}" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource PrimarySoftTextBrush}"/>
+                            </Border>
                             <!-- FBR Active Indicator Pill -->
-                            <Border CornerRadius="10" Padding="8,2" VerticalAlignment="Center" Visibility="{Binding IsFbrTaxEnabled, Converter={StaticResource BoolToVis}}">
+                            <Border CornerRadius="10" Padding="8,2" VerticalAlignment="Center" Margin="8,0,0,0" Visibility="{Binding IsFbrTaxEnabled, Converter={StaticResource BoolToVis}}">
                                 <Border.Style>
                                     <Style TargetType="Border">
                                         <Setter Property="Background" Value="{DynamicResource WarningSoftBrush}"/>
@@ -261,62 +335,73 @@
                                 </TextBlock>
                             </Border>
                         </StackPanel>
+
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Command="{Binding HoldCurrentCartCommand}" Content="{DynamicResource Lang_HoldBill}" Style="{StaticResource GhostButtonStyle}" Padding="10,5" FontSize="11"/>
-                            <Button Command="{Binding ClearCartCommand}" Content="{DynamicResource Lang_ClearCart}" Style="{StaticResource GhostButtonStyle}" Foreground="{DynamicResource DangerBrush}" Padding="10,5" FontSize="11"/>
+                            <Button Command="{Binding HoldCurrentCartCommand}" Content="{DynamicResource Lang_HoldBill}" Style="{StaticResource GhostButtonStyle}" Padding="8,4" FontSize="11"/>
+                            <Button Command="{Binding ClearCartCommand}" Content="{DynamicResource Lang_ClearCart}" Style="{StaticResource GhostButtonStyle}" Foreground="{DynamicResource DangerBrush}" Padding="8,4" FontSize="11" Margin="4,0,0,0"/>
                         </StackPanel>
                     </Grid>
 
+                    <!-- Line Items List -->
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                         <ItemsControl ItemsSource="{Binding CartItems}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="{DynamicResource BgSubtleBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="10" Margin="0,0,0,8" Padding="12">
+                                    <Border Background="{DynamicResource BgSubtleBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="10" Margin="0,0,0,8" Padding="10">
                                         <Grid>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
 
-                                            <!-- Row 1: Item Name & Remove -->
-                                            <Grid Grid.Row="0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap"/>
-                                                <Button Grid.Column="1" Command="{Binding DataContext.RemoveFromCartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Padding="4" Cursor="Hand" Margin="6,0,0,0">
-                                                    <Path Data="{StaticResource Icon_Close}" Fill="{DynamicResource DangerBrush}" Width="11" Height="11" Stretch="Uniform"/>
-                                                </Button>
-                                            </Grid>
+                                            <!-- Thumbnail with Fallback -->
+                                            <Border Grid.Column="0" Width="38" Height="38" CornerRadius="6" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" Margin="0,0,10,0" ClipToBounds="True" VerticalAlignment="Top">
+                                                <Grid>
+                                                    <Image Source="{Binding ImagePath, Converter={StaticResource SafeImageConv}}" Stretch="UniformToFill"
+                                                           Visibility="{Binding ImagePath, Converter={StaticResource HasImageConv}, ConverterParameter=BoolToVis}"/>
+                                                    <Path Data="{StaticResource Icon_Inventory}" Fill="{DynamicResource TextMutedBrush}" Width="14" Height="14" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                          Visibility="{Binding ImagePath, Converter={StaticResource HasImageConv}, ConverterParameter=Invert}"/>
+                                                </Grid>
+                                            </Border>
 
-                                            <!-- Row 2: Qty Controls, Unit Rate, Line Total -->
-                                            <Grid Grid.Row="1" Margin="0,8,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
+                                            <!-- Item Details -->
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <Grid>
+                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="12.5" Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap" MaxWidth="210"/>
+                                                </Grid>
 
-                                                <!-- Stepper + Editable Decimal Qty -->
-                                                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                                    <Button Content="-" Command="{Binding DataContext.DecrementCartItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{StaticResource SecondaryButtonStyle}" Width="26" Height="26" Padding="0"/>
-                                                    <TextBox Text="{Binding Quantity, UpdateSourceTrigger=LostFocus}" Width="46" Height="26" Padding="2" Margin="4,0" TextAlignment="Center" FontWeight="Bold" FontSize="12" Style="{StaticResource ModernTextBoxStyle}"/>
-                                                    <Button Content="+" Command="{Binding DataContext.IncrementCartItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{StaticResource SecondaryButtonStyle}" Width="26" Height="26" Padding="0"/>
-                                                    <TextBlock Text="{Binding Unit}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                                                <!-- Stepper + Unit Rate -->
+                                                <Grid Margin="0,6,0,0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                                        <Button Content="-" Command="{Binding DataContext.DecrementCartItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{StaticResource SecondaryButtonStyle}" Width="24" Height="24" Padding="0"/>
+                                                        <TextBox Text="{Binding Quantity, UpdateSourceTrigger=LostFocus}" Width="44" Height="24" Padding="1" Margin="4,0" TextAlignment="Center" FontWeight="Bold" FontSize="11.5" Style="{StaticResource ModernTextBoxStyle}"/>
+                                                        <Button Content="+" Command="{Binding DataContext.IncrementCartItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{StaticResource SecondaryButtonStyle}" Width="24" Height="24" Padding="0"/>
+                                                        <TextBlock Text="{Binding Unit}" FontSize="10.5" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                                                    </StackPanel>
+
+                                                    <TextBlock Grid.Column="1" Text="{Binding UnitPrice, StringFormat=@ Rs {0:N0}}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                                </Grid>
+
+                                                <!-- Links for Edit / S.N. -->
+                                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                                    <Button Content="Edit Rate / S.N." Command="{Binding DataContext.OpenItemEditModalCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{StaticResource GhostButtonStyle}" Padding="4,1" FontSize="10" Foreground="{DynamicResource PrimaryBrush}"/>
+                                                    <Button Content="Pack Calc" Command="{Binding DataContext.OpenPackCalcModalCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{StaticResource GhostButtonStyle}" Padding="4,1" FontSize="10" Visibility="{Binding HasPackConversion, Converter={StaticResource BoolToVis}}"/>
+                                                    <TextBlock Text="{Binding SerialNumber, StringFormat='S/N: {0}'}" FontSize="9.5" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="6,0,0,0" Visibility="{Binding SerialNumber, Converter={StaticResource StrNotEmptyToVis}}"/>
                                                 </StackPanel>
+                                            </StackPanel>
 
-                                                <TextBlock Grid.Column="1" Text="{Binding UnitPrice, StringFormat=@ Rs {0:N0}}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-
-                                                <TextBlock Grid.Column="2" Text="{Binding LineTotal, StringFormat=Rs {0:N0}}" FontWeight="Black" FontSize="14" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
-                                            </Grid>
-
-                                            <!-- Row 3: Quick Edit / Serial / Pack Calc Links -->
-                                            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,6,0,0">
-                                                <Button Content="Edit Price / S.N." Command="{Binding DataContext.OpenItemEditModalCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{StaticResource GhostButtonStyle}" Padding="6,2" FontSize="11" Foreground="{DynamicResource PrimaryBrush}"/>
-                                                <Button Content="Pack Calc" Command="{Binding DataContext.OpenPackCalcModalCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{StaticResource GhostButtonStyle}" Padding="6,2" FontSize="11" Visibility="{Binding HasPackConversion, Converter={StaticResource BoolToVis}}"/>
-                                                <TextBlock Text="{Binding SerialNumber, StringFormat='S/N: {0}'}" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="6,0,0,0" Visibility="{Binding SerialNumber, Converter={StaticResource StrNotEmptyToVis}}"/>
+                                            <!-- Line Total & Delete -->
+                                            <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Top">
+                                                <Button Command="{Binding DataContext.RemoveFromCartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Padding="4" Cursor="Hand" HorizontalAlignment="Right">
+                                                    <Path Data="{StaticResource Icon_Close}" Fill="{DynamicResource DangerBrush}" Width="10" Height="10" Stretch="Uniform"/>
+                                                </Button>
+                                                <TextBlock Text="{Binding LineTotal, StringFormat=Rs {0:N0}}" FontWeight="Black" FontSize="13.5" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Right" Margin="0,10,0,0"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
@@ -326,27 +411,28 @@
                     </ScrollViewer>
                 </Grid>
 
-                <!-- Checkout Summary Footer (Scrollable on small screens) -->
+                <!-- BOTTOM: Checkout Summary & Tender Controls -->
                 <Border Grid.Row="1" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource BorderDefaultBrush}" Padding="18,14">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="440">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="450">
                         <StackPanel>
-                            <!-- Customer Lookup or Selected Customer Pill -->
-                            <Grid Margin="0,0,0,8">
-                                <!-- Search Box + Popup Dropdown when Walk-in -->
+                            <!-- 1. Customer Selection -->
+                            <TextBlock Text="CUSTOMER (SELECT FOR KHATA ACCOUNT)" Style="{StaticResource FormLabelStyle}"/>
+                            <Grid Margin="0,0,0,10">
+                                <!-- Search Box + Dropdown Popup when Walk-in -->
                                 <Grid Visibility="{Binding SelectedCustomer, Converter={StaticResource NullToVis}, ConverterParameter=Invert}">
                                     <TextBox x:Name="CustomerSearchBox"
                                              Text="{Binding CustomerSearchText, UpdateSourceTrigger=PropertyChanged}"
                                              Style="{StaticResource ModernTextBoxStyle}"
                                              Padding="10,7"
                                              FontSize="12"
-                                             conv:PlaceholderHelper.Placeholder="{DynamicResource Lang_CustomerSearch}"/>
+                                             conv:PlaceholderHelper.Placeholder="Walk-in Customer (Type name or phone for Khata...)"/>
 
                                     <Popup PlacementTarget="{Binding ElementName=CustomerSearchBox}"
                                            Placement="Top"
                                            IsOpen="{Binding IsCustomerDropdownOpen, Mode=TwoWay}"
                                            StaysOpen="False"
                                            AllowsTransparency="True">
-                                        <Border Style="{StaticResource SurfaceCardStyle}" Width="370" MaxHeight="200" Padding="6">
+                                        <Border Style="{StaticResource SurfaceCardStyle}" Width="390" MaxHeight="220" Padding="6">
                                             <ScrollViewer VerticalScrollBarVisibility="Auto">
                                                 <ItemsControl ItemsSource="{Binding FilteredCustomers}">
                                                     <ItemsControl.ItemTemplate>
@@ -393,68 +479,89 @@
                                 </Border>
                             </Grid>
 
-                            <!-- Buyer CNIC & NTN for FBR Invoicing -->
-                            <Grid Margin="0,0,0,8" Visibility="{Binding IsFbrTaxEnabled, Converter={StaticResource BoolToVis}}">
+                            <!-- 2. Payment Method & Optional Notes -->
+                            <Grid Margin="0,0,0,10">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="6"/>
+                                    <ColumnDefinition Width="130"/>
+                                    <ColumnDefinition Width="10"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBox Grid.Column="0" Text="{Binding BuyerCnic, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Padding="8,5" FontSize="11" conv:PlaceholderHelper.Placeholder="Buyer CNIC (Optional)"/>
-                                <TextBox Grid.Column="2" Text="{Binding BuyerNtn, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Padding="8,5" FontSize="11" conv:PlaceholderHelper.Placeholder="Buyer NTN (Optional)"/>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="PAYMENT METHOD" Style="{StaticResource FormLabelStyle}"/>
+                                    <ComboBox ItemsSource="{Binding AvailablePaymentMethods}" SelectedItem="{Binding PaymentMethod}" Padding="8,7" FontSize="12"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="SITE / CONTRACTOR NOTES (OPTIONAL)" Style="{StaticResource FormLabelStyle}"/>
+                                    <TextBox Text="{Binding SaleNotes, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Padding="10,6" FontSize="12" conv:PlaceholderHelper.Placeholder="e.g. Site delivery, plumber reference..."/>
+                                </StackPanel>
                             </Grid>
 
-                            <!-- Payment Method & Site/Contractor Notes -->
-                            <Grid Margin="0,0,0,8">
+                            <!-- 3. Buyer Tax Details (Optional, when FBR active) -->
+                            <Grid Margin="0,0,0,10" Visibility="{Binding IsFbrTaxEnabled, Converter={StaticResource BoolToVis}}">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="8"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <ComboBox Grid.Column="0" ItemsSource="{Binding AvailablePaymentMethods}" SelectedItem="{Binding PaymentMethod}" Padding="8,6" FontSize="12"/>
-                                <TextBox Grid.Column="2" Text="{Binding SaleNotes, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Padding="10,6" FontSize="12" conv:PlaceholderHelper.Placeholder="{DynamicResource Lang_SiteNotes}"/>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="BUYER CNIC (OPTIONAL)" Style="{StaticResource FormLabelStyle}"/>
+                                    <TextBox Text="{Binding BuyerCnic, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Padding="8,5" FontSize="11" conv:PlaceholderHelper.Placeholder="13-digit CNIC"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="BUYER NTN (OPTIONAL)" Style="{StaticResource FormLabelStyle}"/>
+                                    <TextBox Text="{Binding BuyerNtn, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Padding="8,5" FontSize="11" conv:PlaceholderHelper.Placeholder="7-digit NTN"/>
+                                </StackPanel>
                             </Grid>
 
-                            <!-- Financial Breakdown -->
-                            <Grid Margin="0,2,0,4" Visibility="{Binding IsFbrTaxEnabled, Converter={StaticResource BoolToVis}}">
-                                <TextBlock Text="Excl. Tax Value" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
-                                <TextBlock Text="{Binding TotalExclTax, StringFormat=Rs {0:N0}}" HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
-                            </Grid>
+                            <!-- 4. Financial Calculations -->
+                            <Border Background="{DynamicResource BgSubtleBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="10" Padding="14,10" Margin="0,0,0,10">
+                                <StackPanel>
+                                    <Grid Margin="0,0,0,4">
+                                        <TextBlock Text="Subtotal Amount" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"/>
+                                        <TextBlock Text="{Binding SubtotalAmount, StringFormat=Rs {0:N0}}" HorizontalAlignment="Right" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold" FontSize="12"/>
+                                    </Grid>
 
-                            <Grid Margin="0,2,0,4" Visibility="{Binding IsFbrTaxEnabled, Converter={StaticResource BoolToVis}}">
-                                <TextBlock Text="{Binding FbrTaxRate, StringFormat='GST ({0:0.#}%)'}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
-                                <TextBlock Text="{Binding FbrTaxAmount, StringFormat=Rs {0:N0}}" HorizontalAlignment="Right" Foreground="{DynamicResource PrimaryBrush}" FontWeight="SemiBold" FontSize="11"/>
-                            </Grid>
+                                    <Grid Margin="0,0,0,4">
+                                        <TextBlock Text="Order Discount" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" VerticalAlignment="Center"/>
+                                        <TextBox Text="{Binding DiscountAmount, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Right" Width="95" TextAlignment="Right" Padding="6,3" FontSize="12" FontWeight="Bold" Style="{StaticResource ModernTextBoxStyle}"/>
+                                    </Grid>
 
-                            <Grid Margin="0,2,0,4">
-                                <TextBlock Text="{DynamicResource Lang_PrevDues}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"/>
-                                <TextBlock Text="{Binding SelectedCustomer.TotalDues, StringFormat=Rs {0:N0}}" HorizontalAlignment="Right" Foreground="{DynamicResource DangerBrush}" FontWeight="Bold" FontSize="12"/>
-                            </Grid>
+                                    <!-- FBR Tax Row if enabled -->
+                                    <Grid Margin="0,0,0,4" Visibility="{Binding IsFbrTaxEnabled, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock Text="{Binding FbrTaxRate, StringFormat='GST Tax Included ({0:0.#}%)'}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
+                                        <TextBlock Text="{Binding FbrTaxAmount, StringFormat=Rs {0:N0}}" HorizontalAlignment="Right" Foreground="{DynamicResource PrimaryBrush}" FontWeight="SemiBold" FontSize="11"/>
+                                    </Grid>
 
-                            <Grid Margin="0,2,0,4">
-                                <TextBlock Text="{DynamicResource Lang_Discount}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" VerticalAlignment="Center"/>
-                                <TextBox Text="{Binding DiscountAmount, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Right" Width="100" TextAlignment="Right" Padding="8,4" FontSize="12" FontWeight="Bold" Style="{StaticResource ModernTextBoxStyle}"/>
-                            </Grid>
+                                    <!-- Previous Dues if customer selected -->
+                                    <Grid Margin="0,0,0,4" Visibility="{Binding SelectedCustomer, Converter={StaticResource NullToVis}}">
+                                        <TextBlock Text="Previous Account Dues" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"/>
+                                        <TextBlock Text="{Binding SelectedCustomer.TotalDues, StringFormat=Rs {0:N0}}" HorizontalAlignment="Right" Foreground="{DynamicResource DangerBrush}" FontWeight="Bold" FontSize="12"/>
+                                    </Grid>
 
-                            <Grid Margin="0,2,0,4">
-                                <TextBlock Text="{DynamicResource Lang_BillNow}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"/>
-                                <TextBlock Text="{Binding TotalAmount, StringFormat=Rs {0:N0}}" HorizontalAlignment="Right" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="Bold" FontSize="13"/>
-                            </Grid>
+                                    <Border Height="1" Background="{DynamicResource BorderDefaultBrush}" Margin="0,6"/>
 
-                            <Grid Margin="0,2,0,8" Visibility="{Binding SelectedCustomer, Converter={StaticResource NullToVis}}">
-                                <TextBlock Text="{DynamicResource Lang_TotalWithOld}" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="13" FontWeight="Bold"/>
-                                <TextBlock Text="{Binding TotalBillWithOld, StringFormat=Rs {0:N0}}" HorizontalAlignment="Right" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="15" FontWeight="Black"/>
-                            </Grid>
+                                    <!-- Grand Total -->
+                                    <Grid>
+                                        <TextBlock Text="GRAND TOTAL" FontWeight="Black" FontSize="14" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding TotalAmount, StringFormat=Rs {0:N0}}" HorizontalAlignment="Right" Foreground="{DynamicResource PrimaryBrush}" FontWeight="Black" FontSize="20"/>
+                                    </Grid>
 
-                            <!-- Amount Paid + Quick Full/0 -->
-                            <Border Background="{DynamicResource BgMutedBrush}" CornerRadius="8" Padding="10,7" Margin="0,0,0,6">
+                                    <Grid Margin="0,2,0,0" Visibility="{Binding SelectedCustomer, Converter={StaticResource NullToVis}}">
+                                        <TextBlock Text="Total Bill with Previous Dues" Foreground="{DynamicResource TextMutedBrush}" FontSize="11"/>
+                                        <TextBlock Text="{Binding TotalBillWithOld, StringFormat=Rs {0:N0}}" HorizontalAlignment="Right" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="Bold" FontSize="13"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 5. Amount Paid & Cash Tender -->
+                            <Border Background="{DynamicResource BgMutedBrush}" CornerRadius="8" Padding="12,8" Margin="0,0,0,8">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="{DynamicResource Lang_PayNow}" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}" FontWeight="Bold" FontSize="12"/>
+                                    <TextBlock Grid.Column="0" Text="AMOUNT PAID:" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}" FontWeight="Bold" FontSize="11.5"/>
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="8,0,0,0">
                                         <Button Command="{Binding SetFullPaymentCommand}" Content="Full" Style="{StaticResource GhostButtonStyle}" Padding="6,2" FontSize="10"/>
                                         <Button Command="{Binding SetZeroPaymentCommand}" Content="0" Style="{StaticResource GhostButtonStyle}" Padding="6,2" FontSize="10" Visibility="{Binding SelectedCustomer, Converter={StaticResource NullToVis}}"/>
@@ -464,74 +571,47 @@
                             </Border>
 
                             <!-- Cash Tendered & Change Return (Cash Mode) -->
-                            <Grid Margin="0,0,0,4" Visibility="{Binding PaymentMethod, Converter={StaticResource EqToVis}, ConverterParameter=Cash}">
+                            <Grid Margin="0,0,0,6" Visibility="{Binding PaymentMethod, Converter={StaticResource EqToVis}, ConverterParameter=Cash}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="10"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBox Grid.Column="0" Text="{Binding CashTendered, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Padding="10,5" FontSize="12" conv:PlaceholderHelper.Placeholder="{DynamicResource Lang_CashTendered}"/>
+                                <TextBox Grid.Column="0" Text="{Binding CashTendered, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Padding="10,6" FontSize="12" conv:PlaceholderHelper.Placeholder="Cash received from buyer"/>
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <TextBlock Text="Baqaya: " FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
-                                    <TextBlock Text="{Binding ChangeReturned, StringFormat=Rs {0:N0}}" FontSize="14" FontWeight="Black" Foreground="{DynamicResource SuccessBrush}"/>
+                                    <TextBlock Text="Baqaya: " FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <TextBlock Text="{Binding ChangeReturned, StringFormat=Rs {0:N0}}" FontSize="15" FontWeight="Black" Foreground="{DynamicResource SuccessBrush}"/>
                                 </StackPanel>
                             </Grid>
 
-                            <!-- Quick Cash Tender Denomination Chips -->
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6" Visibility="{Binding PaymentMethod, Converter={StaticResource EqToVis}, ConverterParameter=Cash}">
-                                <Button Command="{Binding SetExactTenderCommand}" Content="Exact" Style="{StaticResource GhostButtonStyle}" Padding="6,2" FontSize="10" Margin="0,0,4,0"/>
-                                <Button Command="{Binding AddTenderAmountCommand}" CommandParameter="500" Content="+500" Style="{StaticResource GhostButtonStyle}" Padding="6,2" FontSize="10" Margin="0,0,4,0"/>
-                                <Button Command="{Binding AddTenderAmountCommand}" CommandParameter="1000" Content="+1,000" Style="{StaticResource GhostButtonStyle}" Padding="6,2" FontSize="10" Margin="0,0,4,0"/>
-                                <Button Command="{Binding AddTenderAmountCommand}" CommandParameter="5000" Content="+5,000" Style="{StaticResource GhostButtonStyle}" Padding="6,2" FontSize="10" Margin="0,0,4,0"/>
-                                <Button Command="{Binding ClearTenderCommand}" Content="Clear" Style="{StaticResource GhostButtonStyle}" Padding="6,2" FontSize="10"/>
+                            <!-- Cash Denominations -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8" Visibility="{Binding PaymentMethod, Converter={StaticResource EqToVis}, ConverterParameter=Cash}">
+                                <Button Command="{Binding SetExactTenderCommand}" Content="Exact" Style="{StaticResource GhostButtonStyle}" Padding="8,3" FontSize="10.5" Margin="0,0,4,0"/>
+                                <Button Command="{Binding AddTenderAmountCommand}" CommandParameter="500" Content="+500" Style="{StaticResource GhostButtonStyle}" Padding="8,3" FontSize="10.5" Margin="0,0,4,0"/>
+                                <Button Command="{Binding AddTenderAmountCommand}" CommandParameter="1000" Content="+1,000" Style="{StaticResource GhostButtonStyle}" Padding="8,3" FontSize="10.5" Margin="0,0,4,0"/>
+                                <Button Command="{Binding AddTenderAmountCommand}" CommandParameter="5000" Content="+5,000" Style="{StaticResource GhostButtonStyle}" Padding="8,3" FontSize="10.5" Margin="0,0,4,0"/>
+                                <Button Command="{Binding ClearTenderCommand}" Content="Clear" Style="{StaticResource GhostButtonStyle}" Padding="8,3" FontSize="10.5"/>
                             </StackPanel>
 
+                            <!-- Remaining Khata Balance for Customer -->
                             <Grid Margin="0,0,0,8" Visibility="{Binding SelectedCustomer, Converter={StaticResource NullToVis}}">
-                                <TextBlock Text="{DynamicResource Lang_RemainingKhata}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" FontWeight="Bold"/>
+                                <TextBlock Text="Remaining Khata Due" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" FontWeight="Bold"/>
                                 <TextBlock Text="{Binding RemainingKhata, StringFormat=Rs {0:N0}}" HorizontalAlignment="Right" Foreground="{Binding RemainingKhata, Converter={StaticResource DuesColorConv}}" FontSize="15" FontWeight="Black"/>
                             </Grid>
 
                             <TextBlock Text="{Binding CreditLimitWarning}" Foreground="{DynamicResource DangerBrush}" FontSize="11" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,8" Visibility="{Binding CreditLimitWarning, Converter={StaticResource StrNotEmptyToVis}}"/>
 
-                            <!-- Inline Status / Error Banner -->
-                            <Border CornerRadius="8" Padding="10,7" Margin="0,0,0,8" Visibility="{Binding StatusMessage, Converter={StaticResource StrNotEmptyToVis}}">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Setter Property="Background" Value="{DynamicResource SuccessSoftBrush}"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsErrorStatus}" Value="True">
-                                                <Setter Property="Background" Value="{DynamicResource DangerSoftBrush}"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
-                                <TextBlock Text="{Binding StatusMessage}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsErrorStatus}" Value="True">
-                                                    <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                            </Border>
+                            <!-- Primary Checkout Actions -->
+                            <Button Command="{Binding CompleteSaleCommand}" Content="PROCESS CHECKOUT (Ctrl+Enter / F9)" Style="{StaticResource PrimaryButtonStyle}" Padding="14,13" FontSize="13.5" Margin="0,4,0,8"/>
 
-                            <!-- Action Buttons -->
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="6"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="6"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-
-                                <Button Grid.Column="0" Command="{Binding SaveAsEstimateCommand}" Content="{DynamicResource Lang_SaveEstimate}" Style="{StaticResource SecondaryButtonStyle}" Padding="10,12" FontSize="11"/>
-                                <Button Grid.Column="2" Command="{Binding CompleteSaleA4Command}" Content="{DynamicResource Lang_PrintA4}" Style="{StaticResource SecondaryButtonStyle}" Padding="10,12" FontSize="11"/>
-                                <Button Grid.Column="4" Command="{Binding CompleteSaleCommand}" Content="{DynamicResource Lang_ProcessCheckout}" Style="{StaticResource PrimaryButtonStyle}" Padding="12,12" FontSize="13"/>
+                                <Button Grid.Column="0" Command="{Binding SaveAsEstimateCommand}" Content="Estimate (F8)" Style="{StaticResource SecondaryButtonStyle}" Padding="8,9" FontSize="11.5"/>
+                                <Button Grid.Column="2" Command="{Binding CompleteSaleA4Command}" Content="Print A4 Invoice" Style="{StaticResource SecondaryButtonStyle}" Padding="8,9" FontSize="11.5"/>
                             </Grid>
                         </StackPanel>
                     </ScrollViewer>
@@ -539,7 +619,10 @@
             </Grid>
         </Border>
 
-        <!-- MODAL 1: Line Item Edit (Decimal Qty, Negotiated Price + Owner Override, Serial/Warranty) -->
+        <!-- ============================================== -->
+        <!-- MODALS (Line Item Edit, Pack Calc, Held Carts) -->
+        <!-- ============================================== -->
+        <!-- Modal 1: Line Item Edit -->
         <Border Grid.ColumnSpan="2" Background="{DynamicResource ModalOverlayBrush}" Visibility="{Binding IsItemEditModalOpen, Converter={StaticResource BoolToVis}}">
             <Border Style="{StaticResource SurfaceCardStyle}" Width="440" Padding="26" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <StackPanel>
@@ -552,16 +635,16 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="QUANTITY" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="QUANTITY" Style="{StaticResource FormLabelStyle}"/>
                             <TextBox Text="{Binding EditItemQty, UpdateSourceTrigger=LostFocus}" Style="{StaticResource ModernTextBoxStyle}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="2">
-                            <TextBlock Text="UNIT RATE (Rs)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="UNIT RATE (RS)" Style="{StaticResource FormLabelStyle}"/>
                             <TextBox Text="{Binding EditItemUnitPrice, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}"/>
                         </StackPanel>
                     </Grid>
 
-                    <TextBlock Text="LINE DISCOUNT (Rs)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                    <TextBlock Text="LINE DISCOUNT (RS)" Style="{StaticResource FormLabelStyle}"/>
                     <TextBox Text="{Binding EditItemDiscount, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,12"/>
 
                     <Grid Margin="0,0,0,12">
@@ -571,18 +654,18 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="SERIAL NO. (SOLAR/ELEC)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
-                            <TextBox Text="{Binding EditItemSerial, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="Optional S/N"/>
+                            <TextBlock Text="SERIAL NO. (OPTIONAL)" Style="{StaticResource FormLabelStyle}"/>
+                            <TextBox Text="{Binding EditItemSerial, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="e.g. S/N 98234"/>
                         </StackPanel>
                         <StackPanel Grid.Column="2">
-                            <TextBlock Text="WARRANTY" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="WARRANTY (OPTIONAL)" Style="{StaticResource FormLabelStyle}"/>
                             <TextBox Text="{Binding EditItemWarranty, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="e.g. 1 Year"/>
                         </StackPanel>
                     </Grid>
 
                     <StackPanel Visibility="{Binding IsOwner, Converter={StaticResource InverseBoolToVis}}" Margin="0,0,0,12">
-                        <TextBlock Text="OWNER PIN (IF SELLING BELOW COST)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WarningBrush}" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding OwnerOverridePin, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="Owner PIN only needed below cost"/>
+                        <TextBlock Text="OWNER PIN (REQUIRED IF SELLING BELOW COST)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WarningBrush}" Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding OwnerOverridePin, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="Enter Owner PIN"/>
                     </StackPanel>
 
                     <TextBlock Text="{Binding ItemEditError}" Foreground="{DynamicResource DangerBrush}" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,12" Visibility="{Binding ItemEditError, Converter={StaticResource StrNotEmptyToVis}}"/>
@@ -600,7 +683,7 @@
             </Border>
         </Border>
 
-        <!-- MODAL 2: Box/Coil/Sq.Ft. Pack Calculator -->
+        <!-- Modal 2: Box / Coil / Loose Pack Calculator -->
         <Border Grid.ColumnSpan="2" Background="{DynamicResource ModalOverlayBrush}" Visibility="{Binding IsPackCalcModalOpen, Converter={StaticResource BoolToVis}}">
             <Border Style="{StaticResource SurfaceCardStyle}" Width="400" Padding="26" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <StackPanel>
@@ -614,18 +697,18 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="{Binding PackCalcItem.PackUnitName, StringFormat='PACKS ({0})'}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="{Binding PackCalcItem.PackUnitName, StringFormat='PACKS ({0})'}" Style="{StaticResource FormLabelStyle}"/>
                             <TextBox Text="{Binding PackCalcPacks, UpdateSourceTrigger=LostFocus}" Style="{StaticResource ModernTextBoxStyle}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="2">
-                            <TextBlock Text="{Binding PackCalcItem.Unit, StringFormat='LOOSE ({0})'}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="{Binding PackCalcItem.Unit, StringFormat='LOOSE ({0})'}" Style="{StaticResource FormLabelStyle}"/>
                             <TextBox Text="{Binding PackCalcLoose, UpdateSourceTrigger=LostFocus}" Style="{StaticResource ModernTextBoxStyle}"/>
                         </StackPanel>
                     </Grid>
 
                     <Border Background="{DynamicResource PrimarySoftBrush}" CornerRadius="8" Padding="12" Margin="0,0,0,18">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="Total Quantity: " Foreground="{DynamicResource PrimarySoftTextBrush}" FontWeight="SemiBold"/>
+                            <TextBlock Text="Total Calculated Quantity: " Foreground="{DynamicResource PrimarySoftTextBrush}" FontWeight="SemiBold"/>
                             <TextBlock Text="{Binding PackCalcTotalUnits, Converter={StaticResource QtyConv}}" Foreground="{DynamicResource PrimarySoftTextBrush}" FontWeight="Black"/>
                             <TextBlock Text="{Binding PackCalcItem.Unit, StringFormat=' {0}'}" Foreground="{DynamicResource PrimarySoftTextBrush}" FontWeight="Bold"/>
                         </StackPanel>
@@ -644,7 +727,7 @@
             </Border>
         </Border>
 
-        <!-- MODAL 3: Held Bills -->
+        <!-- Modal 3: Held Bills -->
         <Border Grid.ColumnSpan="2" Background="{DynamicResource ModalOverlayBrush}" Visibility="{Binding IsHeldCartsModalOpen, Converter={StaticResource BoolToVis}}">
             <Border Style="{StaticResource SurfaceCardStyle}" Width="460" MaxHeight="520" Padding="24" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <Grid>

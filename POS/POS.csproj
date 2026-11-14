@@ -7,10 +7,21 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>Resources\app.ico</ApplicationIcon>
+    <AssemblyName>POS</AssemblyName>
+    <AssemblyTitle>Aizaz Fareed Center - POS</AssemblyTitle>
+    <Product>Karobar POS &amp; Inventory Management System</Product>
+    <Description>Modern Point of Sale, Inventory, Khata &amp; FBR Tier-1 Invoicing System</Description>
+    <Version>2.0.0</Version>
+    <FileVersion>2.0.0.0</FileVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <Company>Karobar Technologies</Company>
+    <Copyright>Copyright © 2026</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="MaterialDesignThemes" Version="5.4.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.6" />
     <PackageReference Include="QRCoder" Version="1.8.1" />
     <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.14" />
@@ -22,6 +33,7 @@
 
   <ItemGroup>
     <Resource Include="Resources\icon.png" />
+    <Resource Include="Resources\app.ico" />
   </ItemGroup>
 
 </Project>

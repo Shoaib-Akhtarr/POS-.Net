@@ -62,6 +62,12 @@ namespace POS.ViewModels
         [ObservableProperty] private bool _isFbrTesting;
         [ObservableProperty] private bool _isFbrSyncing;
 
+        // Shift Summary & Role Metadata
+        [ObservableProperty] private int _todayShiftSalesCount;
+        [ObservableProperty] private decimal _todayShiftSalesVolume;
+        [ObservableProperty] private string _roleDescription = string.Empty;
+        [ObservableProperty] private string _userInitials = "U";
+
         public bool IsOwner => SessionService.IsOwner;
         public string CurrentUserName => SessionService.CurrentUserName;
         public string CurrentUserRole => SessionService.CurrentUser?.Role ?? "Cashier";
@@ -82,15 +88,23 @@ namespace POS.ViewModels
 
         public void Receive(DataChangedMessage message)
         {
-            if (message.Value == "Session")
+            if (message.Value is "Session" or "Transaction")
             {
                 App.Current?.Dispatcher.Invoke(() =>
                 {
                     OnPropertyChanged(nameof(IsOwner));
                     OnPropertyChanged(nameof(CurrentUserName));
                     OnPropertyChanged(nameof(CurrentUserRole));
+                    RefreshData();
                 });
             }
+        }
+
+        [RelayCommand]
+        private void LogOut()
+        {
+            SessionService.SignOut();
+            NotificationService.ShowInfo("Logged out successfully.");
         }
 
         public void RefreshData()
@@ -129,6 +143,28 @@ namespace POS.ViewModels
             InstalledPrinters = new ObservableCollection<string>(printers);
 
             LoadStaffUsers();
+
+            // Calculate current shift stats
+            var today = DateTime.Today;
+            using var context = new AppDbContext();
+            var todaySales = context.Sales.Where(s => s.CreatedAt >= today && s.RecordType == "Sale").ToList();
+            if (!SessionService.IsOwner && SessionService.CurrentUser != null)
+            {
+                var cashierSales = todaySales.Where(s => string.Equals(s.CreatedBy, SessionService.CurrentUserName, StringComparison.OrdinalIgnoreCase)).ToList();
+                TodayShiftSalesCount = cashierSales.Count;
+                TodayShiftSalesVolume = cashierSales.Sum(s => s.TotalAmount);
+            }
+            else
+            {
+                TodayShiftSalesCount = todaySales.Count;
+                TodayShiftSalesVolume = todaySales.Sum(s => s.TotalAmount);
+            }
+
+            string name = SessionService.CurrentUserName;
+            UserInitials = string.IsNullOrWhiteSpace(name) ? "U" : (name.Length >= 2 ? name.Substring(0, 2).ToUpperInvariant() : name.ToUpperInvariant());
+            RoleDescription = IsOwner
+                ? "Full Owner Access · Product catalog pricing, Khata ledgers, Staff PINs, FBR Taxes, and System Backups."
+                : "Cashier Terminal Access · Rapid POS checkout, holding active carts, and customer receipts printing.";
         }
 
         private void LoadStaffUsers()
@@ -416,6 +452,14 @@ namespace POS.ViewModels
         {
             StatusMessage = message;
             IsErrorStatus = isError;
+            if (isError)
+            {
+                NotificationService.ShowError(message);
+            }
+            else
+            {
+                NotificationService.ShowSuccess(message);
+            }
         }
     }
 }

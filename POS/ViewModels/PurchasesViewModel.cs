@@ -116,11 +116,8 @@ namespace POS.ViewModels
             StatusMessage = string.Empty;
             IsErrorStatus = false;
 
-            if (string.IsNullOrWhiteSpace(SupplierName))
-            {
-                SetStatus("Please enter the supplier name.", isError: true);
-                return;
-            }
+            string effectiveSupplier = string.IsNullOrWhiteSpace(SupplierName) ? "General Supplier" : SupplierName.Trim();
+
             if (CostPrice <= 0m)
             {
                 SetStatus("Unit cost must be greater than 0.", isError: true);
@@ -197,7 +194,7 @@ namespace POS.ViewModels
             {
                 ProductId = targetProduct.Id,
                 ProductName = targetProduct.Name,
-                SupplierName = SupplierName.Trim(),
+                SupplierName = effectiveSupplier,
                 CostPrice = CostPrice,
                 Quantity = Quantity,
                 Unit = targetProduct.Unit,
@@ -250,6 +247,14 @@ namespace POS.ViewModels
         {
             StatusMessage = msg;
             IsErrorStatus = isError;
+            if (isError)
+            {
+                NotificationService.ShowError(msg);
+            }
+            else
+            {
+                NotificationService.ShowSuccess(msg);
+            }
         }
     }
 }
