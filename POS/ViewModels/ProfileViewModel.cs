@@ -25,12 +25,12 @@ namespace POS.ViewModels
         [ObservableProperty] private string _phone1 = string.Empty;
         [ObservableProperty] private string _phone2 = string.Empty;
         [ObservableProperty] private string _receiptFooter = string.Empty;
-        [ObservableProperty] private string _printerName = "XP-80";
-        [ObservableProperty] private string _preferredPrintFormat = "Thermal80mm";
+        [ObservableProperty] private string _printerName = string.Empty;
+        [ObservableProperty] private string _preferredPrintFormat = "A4";
         [ObservableProperty] private bool _useBitmapThermalForUrdu;
         [ObservableProperty] private ObservableCollection<string> _installedPrinters = new();
 
-        public List<string> PrintFormats { get; } = new() { "Thermal80mm", "A4" };
+        public List<string> PrintFormats { get; } = new() { "A4" };
 
         // Staff PIN Management (Owner only)
         [ObservableProperty] private ObservableCollection<StaffUser> _staffUsers = new();
@@ -317,9 +317,9 @@ namespace POS.ViewModels
             settings.Phone1 = Phone1.Trim();
             settings.Phone2 = Phone2.Trim();
             settings.ReceiptFooter = ReceiptFooter.Trim();
-            settings.PrinterName = string.IsNullOrWhiteSpace(PrinterName) ? "XP-80" : PrinterName.Trim();
-            settings.PreferredPrintFormat = PreferredPrintFormat;
-            settings.UseBitmapThermalForUrdu = UseBitmapThermalForUrdu;
+            settings.PrinterName = PrinterName?.Trim() ?? string.Empty;
+            settings.PreferredPrintFormat = "A4";
+            settings.UseBitmapThermalForUrdu = false;
             settings.Language = CurrentLanguage;
             settings.Theme = CurrentTheme;
             settings.AutoBackupFolder = AutoBackupFolder.Trim();

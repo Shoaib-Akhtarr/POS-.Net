@@ -737,13 +737,13 @@ namespace POS.ViewModels
         }
 
         [RelayCommand]
-        private Task CompleteSale() => ProcessTransactionAsync("Sale", printA4: false);
+        private Task CompleteSale() => ProcessTransactionAsync("Sale", printA4: true);
 
         [RelayCommand]
         private Task CompleteSaleA4() => ProcessTransactionAsync("Sale", printA4: true);
 
         [RelayCommand]
-        private Task SaveAsEstimate() => ProcessTransactionAsync("Estimate", printA4: false);
+        private Task SaveAsEstimate() => ProcessTransactionAsync("Estimate", printA4: true);
 
         private async Task ProcessTransactionAsync(string recordType, bool printA4)
         {
@@ -902,14 +902,7 @@ namespace POS.ViewModels
                 await context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                if (printA4)
-                {
-                    _printService.PrintA4Invoice(sale);
-                }
-                else
-                {
-                    _printService.PrintReceipt(sale);
-                }
+                _printService.PrintA4Invoice(sale);
 
                 await _backupService.BackupSaleAsync(sale);
                 if (!isEstimate)

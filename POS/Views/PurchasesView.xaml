@@ -5,286 +5,563 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:conv="clr-namespace:POS.Converters"
              mc:Ignorable="d"
-             d:DesignHeight="820" d:DesignWidth="1050"
+             d:DesignHeight="900" d:DesignWidth="1150"
              Background="{DynamicResource BgCanvasBrush}">
 
-    <Grid Margin="24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <Grid>
+        <!-- Main Scrollable Page Content -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <Grid Margin="24">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-        <!-- Header & Mode Toggle -->
-        <StackPanel Grid.Row="0" Margin="0,0,0,18">
-            <TextBlock Text="{DynamicResource Lang_StockProcurement}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,12"/>
+                <!-- Header & Mode Toggle -->
+                <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                    <TextBlock Text="{DynamicResource Lang_StockProcurement}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,12"/>
 
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="14"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="14"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
 
-                <RadioButton Grid.Column="0" IsChecked="{Binding IsNewProduct}" Cursor="Hand">
-                    <RadioButton.Template>
-                        <ControlTemplate TargetType="RadioButton">
-                            <Border x:Name="Bd" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="10" Padding="16,12">
-                                <TextBlock x:Name="Txt" Text="{DynamicResource Lang_NewArrival}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsChecked" Value="True">
-                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                                    <Setter TargetName="Bd" Property="BorderThickness" Value="2"/>
-                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PrimarySoftBrush}"/>
-                                    <Setter TargetName="Txt" Property="Foreground" Value="{DynamicResource PrimarySoftTextBrush}"/>
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </RadioButton.Template>
-                </RadioButton>
+                        <RadioButton Grid.Column="0" IsChecked="{Binding IsNewProduct}" Cursor="Hand">
+                            <RadioButton.Template>
+                                <ControlTemplate TargetType="RadioButton">
+                                    <Border x:Name="Bd" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="10" Padding="16,12">
+                                        <TextBlock x:Name="Txt" Text="{DynamicResource Lang_NewArrival}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                            <Setter TargetName="Bd" Property="BorderThickness" Value="2"/>
+                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PrimarySoftBrush}"/>
+                                            <Setter TargetName="Txt" Property="Foreground" Value="{DynamicResource PrimarySoftTextBrush}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </RadioButton.Template>
+                        </RadioButton>
 
-                <RadioButton Grid.Column="2" IsChecked="{Binding IsNewProduct, Mode=TwoWay, Converter={StaticResource InverseBool}}" Cursor="Hand">
-                    <RadioButton.Template>
-                        <ControlTemplate TargetType="RadioButton">
-                            <Border x:Name="Bd" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="10" Padding="16,12">
-                                <TextBlock x:Name="Txt" Text="{DynamicResource Lang_RestockExisting}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsChecked" Value="True">
-                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                                    <Setter TargetName="Bd" Property="BorderThickness" Value="2"/>
-                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PrimarySoftBrush}"/>
-                                    <Setter TargetName="Txt" Property="Foreground" Value="{DynamicResource PrimarySoftTextBrush}"/>
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </RadioButton.Template>
-                </RadioButton>
-            </Grid>
-        </StackPanel>
+                        <RadioButton Grid.Column="2" IsChecked="{Binding IsNewProduct, Mode=TwoWay, Converter={StaticResource InverseBool}}" Cursor="Hand">
+                            <RadioButton.Template>
+                                <ControlTemplate TargetType="RadioButton">
+                                    <Border x:Name="Bd" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="10" Padding="16,12">
+                                        <TextBlock x:Name="Txt" Text="{DynamicResource Lang_RestockExisting}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                            <Setter TargetName="Bd" Property="BorderThickness" Value="2"/>
+                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PrimarySoftBrush}"/>
+                                            <Setter TargetName="Txt" Property="Foreground" Value="{DynamicResource PrimarySoftTextBrush}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </RadioButton.Template>
+                        </RadioButton>
+                    </Grid>
+                </StackPanel>
 
-        <!-- Procurement Form -->
-        <Border Grid.Row="1" Style="{StaticResource SurfaceCardStyle}" Padding="20" Margin="0,0,0,18">
-            <StackPanel>
-                <Grid Margin="0,0,0,12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="12"/>
-                        <ColumnDefinition Width="1.5*"/>
-                        <ColumnDefinition Width="12"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="12"/>
-                        <ColumnDefinition Width="110"/>
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="SUPPLIER NAME (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding SupplierName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="e.g. Lahore Cable Traders (or Walk-in)"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="2">
-                        <TextBlock Text="PRODUCT *" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
-                        <Grid>
-                            <ComboBox Visibility="{Binding IsNewProduct, Converter={StaticResource InverseBoolToVis}}"
-                                      ItemsSource="{Binding AvailableProducts}"
-                                      SelectedItem="{Binding SelectedProduct}"
-                                      DisplayMemberPath="Name"
-                                      TextSearch.TextPath="Name"
-                                      IsEditable="True" Padding="10,8"/>
-                            <TextBox Visibility="{Binding IsNewProduct, Converter={StaticResource BoolToVis}}"
-                                     Text="{Binding NewProductName, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource ModernTextBoxStyle}"
-                                     conv:PlaceholderHelper.Placeholder="New product name"/>
-                        </Grid>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="4">
-                        <TextBlock Text="DEPARTMENT" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
-                        <ComboBox ItemsSource="{Binding AvailableDepartments}" Text="{Binding Category}" IsEditable="True" Padding="10,8" IsEnabled="{Binding IsNewProduct}"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="6">
-                        <TextBlock Text="UNIT" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
-                        <ComboBox ItemsSource="{Binding AvailableUnits}" Text="{Binding Unit}" IsEditable="True" Padding="10,8" IsEnabled="{Binding IsNewProduct}"/>
-                    </StackPanel>
-                </Grid>
-
-                <!-- Optional New Product Metadata -->
-                <Grid Margin="0,0,0,12" Visibility="{Binding IsNewProduct, Converter={StaticResource BoolToVis}}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="12"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="12"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="12"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="BARCODE / SKU (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding Barcode, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="2">
-                        <TextBlock Text="BRAND (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding Brand, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="4">
-                        <TextBlock Text="PACK / UNITS PER PACK (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
-                        <Grid>
+                <!-- Procurement Form Card -->
+                <Border Grid.Row="1" Style="{StaticResource SurfaceCardStyle}" Padding="20" Margin="0,0,0,18">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="6"/>
-                                <ColumnDefinition Width="70"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBox Grid.Column="0" Text="{Binding PackUnitName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="box/coil"/>
-                            <TextBox Grid.Column="2" Text="{Binding UnitsPerPack, UpdateSourceTrigger=LostFocus}" Style="{StaticResource ModernTextBoxStyle}"/>
-                        </Grid>
-                    </StackPanel>
-                    <StackPanel Grid.Column="6">
-                        <TextBlock Text="WARRANTY (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding DefaultWarranty, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="e.g. 1 Year"/>
-                    </StackPanel>
-                </Grid>
-
-                <!-- Financials & Quantity -->
-                <Grid Margin="0,0,0,12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="12"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="12"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="UNIT COST (Rs) *" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding CostPrice, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="2">
-                        <TextBlock Text="QUANTITY *" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="38"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="1.5*"/>
+                                <ColumnDefinition Width="12"/>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="38"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="110"/>
                             </Grid.ColumnDefinitions>
-                            <Button Grid.Column="0" Command="{Binding DecrementQuantityCommand}" Content="-" Style="{StaticResource SecondaryButtonStyle}" Padding="0" Height="38"/>
-                            <TextBox Grid.Column="1" Text="{Binding Quantity, UpdateSourceTrigger=LostFocus}" Margin="6,0" TextAlignment="Center" FontWeight="Bold" FontSize="15" Style="{StaticResource ModernTextBoxStyle}"/>
-                            <Button Grid.Column="2" Command="{Binding IncrementQuantityCommand}" Content="+" Style="{StaticResource SecondaryButtonStyle}" Padding="0" Height="38"/>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="SUPPLIER NAME (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding SupplierName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="e.g. Lahore Cable Traders (or Walk-in)"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="PRODUCT *" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <Grid>
+                                    <ComboBox Visibility="{Binding IsNewProduct, Converter={StaticResource InverseBoolToVis}}"
+                                              ItemsSource="{Binding AvailableProducts}"
+                                              SelectedItem="{Binding SelectedProduct}"
+                                              DisplayMemberPath="Name"
+                                              TextSearch.TextPath="Name"
+                                              IsEditable="True" Padding="10,8"/>
+                                    <TextBox Visibility="{Binding IsNewProduct, Converter={StaticResource BoolToVis}}"
+                                             Text="{Binding NewProductName, UpdateSourceTrigger=PropertyChanged}"
+                                             Style="{StaticResource ModernTextBoxStyle}"
+                                             conv:PlaceholderHelper.Placeholder="New product name"/>
+                                </Grid>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="4">
+                                <TextBlock Text="DEPARTMENT" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <ComboBox ItemsSource="{Binding AvailableDepartments}" Text="{Binding Category}" IsEditable="True" Padding="10,8" IsEnabled="{Binding IsNewProduct}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="6">
+                                <TextBlock Text="UNIT" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <ComboBox ItemsSource="{Binding AvailableUnits}" Text="{Binding Unit}" IsEditable="True" Padding="10,8" IsEnabled="{Binding IsNewProduct}"/>
+                            </StackPanel>
                         </Grid>
-                    </StackPanel>
 
-                    <StackPanel Grid.Column="4">
-                        <TextBlock Text="SELLING PRICE (Rs)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding SellingPrice, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}"/>
-                    </StackPanel>
-                </Grid>
+                        <!-- Optional New Product Metadata -->
+                        <Grid Margin="0,0,0,12" Visibility="{Binding IsNewProduct, Converter={StaticResource BoolToVis}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="BARCODE / SKU (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding Barcode, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="BRAND (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding Brand, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="4">
+                                <TextBlock Text="PACK / UNITS PER PACK (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="6"/>
+                                        <ColumnDefinition Width="70"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" Text="{Binding PackUnitName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="box/coil"/>
+                                    <TextBox Grid.Column="2" Text="{Binding UnitsPerPack, UpdateSourceTrigger=LostFocus}" Style="{StaticResource ModernTextBoxStyle}"/>
+                                </Grid>
+                            </StackPanel>
+                            <StackPanel Grid.Column="6">
+                                <TextBlock Text="WARRANTY (OPTIONAL)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding DefaultWarranty, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="e.g. 1 Year"/>
+                            </StackPanel>
+                        </Grid>
 
-                <!-- Status Banner -->
-                <Border CornerRadius="8" Padding="10,7" Margin="0,0,0,10" Visibility="{Binding StatusMessage, Converter={StaticResource StrNotEmptyToVis}}">
-                    <Border.Style>
-                        <Style TargetType="Border">
-                            <Setter Property="Background" Value="{DynamicResource SuccessSoftBrush}"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsErrorStatus}" Value="True">
-                                    <Setter Property="Background" Value="{DynamicResource DangerSoftBrush}"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Style>
-                    <TextBlock Text="{Binding StatusMessage}" FontSize="12" FontWeight="SemiBold">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsErrorStatus}" Value="True">
-                                        <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+                        <!-- Financials & Quantity -->
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="UNIT COST (Rs) *" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding CostPrice, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="QUANTITY *" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="38"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="38"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button Grid.Column="0" Command="{Binding DecrementQuantityCommand}" Content="-" Style="{StaticResource SecondaryButtonStyle}" Padding="0" Height="38"/>
+                                    <TextBox Grid.Column="1" Text="{Binding Quantity, UpdateSourceTrigger=LostFocus}" Margin="6,0" TextAlignment="Center" FontWeight="Bold" FontSize="15" Style="{StaticResource ModernTextBoxStyle}"/>
+                                    <Button Grid.Column="2" Command="{Binding IncrementQuantityCommand}" Content="+" Style="{StaticResource SecondaryButtonStyle}" Padding="0" Height="38"/>
+                                </Grid>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="4">
+                                <TextBlock Text="SELLING PRICE (Rs)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding SellingPrice, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Status Banner -->
+                        <Border CornerRadius="8" Padding="10,7" Margin="0,0,0,10" Visibility="{Binding StatusMessage, Converter={StaticResource StrNotEmptyToVis}}">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="{DynamicResource SuccessSoftBrush}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsErrorStatus}" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource DangerSoftBrush}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <TextBlock Text="{Binding StatusMessage}" FontSize="12" FontWeight="SemiBold">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsErrorStatus}" Value="True">
+                                                <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Border>
+
+                        <Button Command="{Binding RecordPurchaseCommand}" Content="{DynamicResource Lang_RecordRestock}" Style="{StaticResource PrimaryButtonStyle}" Height="44"/>
+                    </StackPanel>
                 </Border>
 
-                <Button Command="{Binding RecordPurchaseCommand}" Content="{DynamicResource Lang_RecordRestock}" Style="{StaticResource PrimaryButtonStyle}" Height="44"/>
-            </StackPanel>
-        </Border>
+                <!-- Procurement Records Section (Large, Spacious Data Box) -->
+                <Border Grid.Row="2" Style="{StaticResource SurfaceCardStyle}" Padding="0" MinHeight="520" Margin="0,4,0,24">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
 
-        <!-- Audit Log Table -->
-        <Border Grid.Row="2" Style="{StaticResource SurfaceCardStyle}">
-            <DataGrid ItemsSource="{Binding Purchases}" Style="{StaticResource ModernDataGridStyle}">
-                <DataGrid.Resources>
-                    <conv:BindingProxy x:Key="PurProxy" Data="{Binding}"/>
-                </DataGrid.Resources>
-                <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow" BasedOn="{StaticResource ModernDataGridRowStyle}">
-                        <Setter Property="Cursor" Value="Hand"/>
-                        <EventSetter Event="MouseLeftButtonUp" Handler="DataGridRow_MouseLeftButtonUp"/>
-                    </Style>
-                </DataGrid.RowStyle>
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="DATE" Binding="{Binding PurchaseDate, StringFormat='dd MMM, HH:mm'}" Width="130"/>
-                    <DataGridTextColumn Header="SUPPLIER" Binding="{Binding SupplierName}" Width="180"/>
-                    <DataGridTextColumn Header="PRODUCT" Binding="{Binding ProductName}" Width="*"/>
-                    <DataGridTemplateColumn Header="QTY" Width="105">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="+" Foreground="{DynamicResource SuccessBrush}" FontWeight="Bold"/>
-                                    <TextBlock Text="{Binding Quantity, Converter={StaticResource QtyConv}}" Foreground="{DynamicResource SuccessBrush}" FontWeight="Bold"/>
-                                    <TextBlock Text="{Binding Unit, StringFormat=' {0}'}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <!-- Box Header Bar -->
+                        <Border Grid.Row="0" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,0,1" Padding="20,16">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="14"/>
+                                    <ColumnDefinition Width="260"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Title and Subtitle -->
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Border Width="34" Height="34" CornerRadius="8" Background="{DynamicResource PrimarySoftBrush}" Margin="0,0,10,0">
+                                            <Path Data="{StaticResource Icon_Inventory}" Fill="{DynamicResource PrimaryBrush}" Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <TextBlock Text="PROCUREMENT RECORDS &amp; AUDIT LOG" FontSize="15" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <TextBlock Text="Complete log of stock entries and purchases. Click any row or 'View Slip' to inspect full details or print." FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="44,2,0,0"/>
                                 </StackPanel>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTextColumn Header="TOTAL COST" Binding="{Binding TotalCost, StringFormat=Rs {0:N0}}" Width="130"
-                                        Visibility="{Binding Data.IsOwner, Source={StaticResource PurProxy}, Converter={StaticResource BoolToVis}}">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="FontWeight" Value="Bold"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
-                </DataGrid.Columns>
-            </DataGrid>
-        </Border>
 
-        <!-- Purchase Detail Modal -->
-        <Grid Grid.RowSpan="3" Margin="-24" Visibility="{Binding IsDetailModalOpen, Converter={StaticResource BoolToVis}}">
-            <Border Background="{DynamicResource ModalOverlayBrush}" MouseDown="Border_MouseDown"/>
-            <Border Style="{StaticResource SurfaceCardStyle}" Width="420" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="26">
-                <StackPanel>
-                    <TextBlock Text="PROCUREMENT DETAILS" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,0,6"/>
-                    <TextBlock Text="{Binding SelectedPurchaseHistory.ProductName}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap" Margin="0,0,0,14"/>
+                                <!-- Record Counter Badge -->
+                                <Border Grid.Column="1" Background="{DynamicResource BgSubtleBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="12,6" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Purchases.Count}" FontWeight="Black" Foreground="{DynamicResource PrimaryBrush}"/>
+                                        <TextBlock Text=" Entries" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    </StackPanel>
+                                </Border>
 
-                    <Border Background="{DynamicResource BgSubtleBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="10" Padding="14" Margin="0,0,0,18">
-                        <StackPanel>
-                            <Grid Margin="0,0,0,8">
-                                <TextBlock Text="Supplier" Foreground="{DynamicResource TextSecondaryBrush}"/>
-                                <TextBlock Text="{Binding SelectedPurchaseHistory.SupplierName}" HorizontalAlignment="Right" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                <!-- Live Filter / Search Box -->
+                                <Border Grid.Column="3" Background="{DynamicResource BgSubtleBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="10,6" VerticalAlignment="Center">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Path Data="{StaticResource Icon_Search}" Fill="{DynamicResource TextMutedBrush}" Width="13" Height="13" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SearchInnerTextBoxStyle}" conv:PlaceholderHelper.Placeholder="Search product, supplier, PUR#..."/>
+                                    </Grid>
+                                </Border>
                             </Grid>
-                            <Grid Margin="0,0,0,8">
-                                <TextBlock Text="Date" Foreground="{DynamicResource TextSecondaryBrush}"/>
-                                <TextBlock Text="{Binding SelectedPurchaseHistory.PurchaseDate, StringFormat='dd MMM yyyy, HH:mm'}" HorizontalAlignment="Right" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
-                            </Grid>
-                            <Grid Margin="0,0,0,8">
-                                <TextBlock Text="Quantity" Foreground="{DynamicResource TextSecondaryBrush}"/>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                    <TextBlock Text="{Binding SelectedPurchaseHistory.Quantity, Converter={StaticResource QtyConv}}" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                    <TextBlock Text="{Binding SelectedPurchaseHistory.Unit, StringFormat=' {0}'}" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}"/>
-                                </StackPanel>
-                            </Grid>
-                            <Grid Visibility="{Binding IsOwner, Converter={StaticResource BoolToVis}}">
-                                <TextBlock Text="Total Cost" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                <TextBlock Text="{Binding SelectedPurchaseHistory.TotalCost, StringFormat=Rs {0:N0}}" HorizontalAlignment="Right" FontSize="16" FontWeight="Black" Foreground="{DynamicResource PrimaryBrush}"/>
-                            </Grid>
+                        </Border>
+
+                        <!-- Large Spacious DataGrid Table -->
+                        <DataGrid Grid.Row="1" ItemsSource="{Binding Purchases}" Style="{StaticResource ModernDataGridStyle}" MinHeight="440" MaxHeight="650" RowHeight="44">
+                            <DataGrid.Resources>
+                                <conv:BindingProxy x:Key="PurProxy" Data="{Binding}"/>
+                            </DataGrid.Resources>
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow" BasedOn="{StaticResource ModernDataGridRowStyle}">
+                                    <Setter Property="Cursor" Value="Hand"/>
+                                    <EventSetter Event="MouseLeftButtonUp" Handler="DataGridRow_MouseLeftButtonUp"/>
+                                </Style>
+                            </DataGrid.RowStyle>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="DATE" Binding="{Binding PurchaseDate, StringFormat='dd MMM yyyy, HH:mm'}" Width="145"/>
+                                <DataGridTemplateColumn Header="VOUCHER" Width="105">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{DynamicResource BgSubtleBrush}" CornerRadius="4" Padding="6,3" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Id, StringFormat='#PUR-{0:D4}'}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="SUPPLIER" Binding="{Binding SupplierName}" Width="170">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTemplateColumn Header="PRODUCT" Width="*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding ProductName}" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding Product.Category}" FontSize="10.5" Foreground="{DynamicResource TextMutedBrush}" Visibility="{Binding Product.Category, Converter={StaticResource StrNotEmptyToVis}}"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="QTY" Width="120">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{DynamicResource SuccessSoftBrush}" CornerRadius="6" Padding="8,4" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="+" Foreground="{DynamicResource SuccessBrush}" FontWeight="Black"/>
+                                                    <TextBlock Text="{Binding Quantity, Converter={StaticResource QtyConv}}" Foreground="{DynamicResource SuccessBrush}" FontWeight="Black"/>
+                                                    <TextBlock Text="{Binding Unit, StringFormat=' {0}'}" Foreground="{DynamicResource SuccessBrush}" FontWeight="SemiBold"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="UNIT COST" Binding="{Binding CostPrice, StringFormat=Rs {0:N0}}" Width="120"
+                                                    Visibility="{Binding Data.IsOwner, Source={StaticResource PurProxy}, Converter={StaticResource BoolToVis}}">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTextColumn Header="TOTAL COST" Binding="{Binding TotalCost, StringFormat=Rs {0:N0}}" Width="140"
+                                                    Visibility="{Binding Data.IsOwner, Source={StaticResource PurProxy}, Converter={StaticResource BoolToVis}}">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                            <Setter Property="FontWeight" Value="Black"/>
+                                            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTemplateColumn Header="ACTION" Width="110">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="View Slip" Click="ViewSlipButton_Click" Style="{StaticResource GhostButtonStyle}" Padding="10,4" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+
+        <!-- Redesigned Purchase Detail Slip Modal (With All Information & Print Buttons) -->
+        <Grid Visibility="{Binding IsDetailModalOpen, Converter={StaticResource BoolToVis}}" Panel.ZIndex="1000">
+            <Border Background="{DynamicResource ModalOverlayBrush}" MouseDown="Border_MouseDown" Cursor="Hand" ToolTip="Click anywhere outside to close"/>
+            <Border Style="{StaticResource SurfaceCardStyle}" Width="580" MaxHeight="520" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="20,16" CornerRadius="16">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="30" Direction="270" ShadowDepth="8" Opacity="0.3" Color="Black"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Modal Top Bar -->
+                    <Grid Grid.Row="0" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{Binding ShopName}" FontSize="15" FontWeight="Black" Foreground="{DynamicResource PrimaryBrush}"/>
+                            <TextBlock Text="GOODS RECEIVED NOTE (GRN) · STOCK INWARD SLIP" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
-                    </Border>
 
-                    <Button Command="{Binding CloseDetailCommand}" Content="{DynamicResource Lang_Done}" Style="{StaticResource PrimaryButtonStyle}"/>
-                </StackPanel>
+                        <Button Grid.Column="1" Command="{Binding CloseDetailCommand}" Style="{StaticResource SecondaryButtonStyle}" Padding="10,5" Content="✕ Close" FontWeight="Bold" FontSize="11"/>
+                    </Grid>
+
+                    <!-- Scrollable Slip Content -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,0,18">
+                        <StackPanel>
+                            <!-- Voucher Info Banner -->
+                            <Border Background="{DynamicResource BgSubtleBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="10" Padding="14,10" Margin="0,0,0,14">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="VOUCHER NUMBER" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                                        <TextBlock Text="{Binding SelectedPurchaseHistory.Id, StringFormat='#PUR-{0:D5}'}" FontSize="14" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,2,0,4"/>
+                                        <TextBlock Text="{Binding SelectedPurchaseHistory.PurchaseDate, StringFormat='dd MMM yyyy, HH:mm'}" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                                        <Border Background="{DynamicResource SuccessSoftBrush}" CornerRadius="12" Padding="10,4" HorizontalAlignment="Right" Margin="0,0,0,6">
+                                            <TextBlock Text="● Stock In / Verified" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}"/>
+                                        </Border>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <TextBlock Text="Received by: " FontSize="11" Foreground="{DynamicResource TextMutedBrush}"/>
+                                            <TextBlock Text="{Binding SelectedPurchaseHistory.CreatedBy}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Product Hero Card -->
+                            <Border Background="{DynamicResource PrimarySoftBrush}" BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="1" CornerRadius="12" Padding="16,14" Margin="0,0,0,14">
+                                <StackPanel>
+                                    <TextBlock Text="PRODUCT DETAILS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{Binding SelectedPurchaseHistory.ProductName}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8"/>
+
+                                    <WrapPanel>
+                                        <!-- Category / Department Badge -->
+                                        <Border Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="8,4" Margin="0,0,6,4"
+                                                Visibility="{Binding SelectedPurchaseHistory.Product.Category, Converter={StaticResource StrNotEmptyToVis}}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Dept: " FontSize="10" Foreground="{DynamicResource TextMutedBrush}"/>
+                                                <TextBlock Text="{Binding SelectedPurchaseHistory.Product.Category}" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Brand Badge -->
+                                        <Border Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="8,4" Margin="0,0,6,4"
+                                                Visibility="{Binding SelectedPurchaseHistory.Product.Brand, Converter={StaticResource StrNotEmptyToVis}}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Brand: " FontSize="10" Foreground="{DynamicResource TextMutedBrush}"/>
+                                                <TextBlock Text="{Binding SelectedPurchaseHistory.Product.Brand}" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Barcode / SKU Badge -->
+                                        <Border Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="8,4" Margin="0,0,6,4"
+                                                Visibility="{Binding SelectedPurchaseHistory.Product.Barcode, Converter={StaticResource StrNotEmptyToVis}}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="SKU: " FontSize="10" Foreground="{DynamicResource TextMutedBrush}"/>
+                                                <TextBlock Text="{Binding SelectedPurchaseHistory.Product.Barcode}" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Information Breakdown Grid -->
+                            <Border Background="{DynamicResource BgSubtleBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="10" Padding="16,14" Margin="0,0,0,14">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="16"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Left Column -->
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="SUPPLIER / VENDOR" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,2"/>
+                                        <TextBlock Text="{Binding SelectedPurchaseHistory.SupplierName}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,10"/>
+
+                                        <TextBlock Text="UNIT TYPE" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,2"/>
+                                        <TextBlock Text="{Binding SelectedPurchaseHistory.Unit}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,10"/>
+
+                                        <TextBlock Text="PACK / PACKAGING" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,2"
+                                                   Visibility="{Binding SelectedPurchaseHistory.Product.PackUnitName, Converter={StaticResource StrNotEmptyToVis}}"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10" Visibility="{Binding SelectedPurchaseHistory.Product.PackUnitName, Converter={StaticResource StrNotEmptyToVis}}">
+                                            <TextBlock Text="{Binding SelectedPurchaseHistory.Product.UnitsPerPack, StringFormat='{}{0:N0} units per '}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                            <TextBlock Text="{Binding SelectedPurchaseHistory.Product.PackUnitName}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        </StackPanel>
+
+                                        <TextBlock Text="CURRENT STOCK IN HAND" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,2"/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding SelectedPurchaseHistory.Product.Quantity, Converter={StaticResource QtyConv}}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                            <TextBlock Text="{Binding SelectedPurchaseHistory.Unit, StringFormat=' {0}'}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <!-- Right Column -->
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="QUANTITY INWARD" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,2"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                            <TextBlock Text="+" FontSize="14" FontWeight="Black" Foreground="{DynamicResource SuccessBrush}"/>
+                                            <TextBlock Text="{Binding SelectedPurchaseHistory.Quantity, Converter={StaticResource QtyConv}}" FontSize="14" FontWeight="Black" Foreground="{DynamicResource SuccessBrush}"/>
+                                            <TextBlock Text="{Binding SelectedPurchaseHistory.Unit, StringFormat=' {0}'}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}"/>
+                                        </StackPanel>
+
+                                        <TextBlock Text="UNIT PURCHASE COST" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,2"
+                                                   Visibility="{Binding IsOwner, Converter={StaticResource BoolToVis}}"/>
+                                        <TextBlock Text="{Binding SelectedPurchaseHistory.CostPrice, StringFormat=Rs {0:N0}}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,10"
+                                                   Visibility="{Binding IsOwner, Converter={StaticResource BoolToVis}}"/>
+
+                                        <TextBlock Text="RETAIL SELLING RATE" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,2"/>
+                                        <TextBlock Text="{Binding SelectedPurchaseHistory.Product.SellingPrice, StringFormat=Rs {0:N0}}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,10"/>
+
+                                        <TextBlock Text="WARRANTY PERIOD" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,2"
+                                                   Visibility="{Binding SelectedPurchaseHistory.Product.DefaultWarranty, Converter={StaticResource StrNotEmptyToVis}}"/>
+                                        <TextBlock Text="{Binding SelectedPurchaseHistory.Product.DefaultWarranty}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"
+                                                   Visibility="{Binding SelectedPurchaseHistory.Product.DefaultWarranty, Converter={StaticResource StrNotEmptyToVis}}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Financial Total Card -->
+                            <Border Background="{DynamicResource PrimaryBrush}" CornerRadius="12" Padding="18,14" Visibility="{Binding IsOwner, Converter={StaticResource BoolToVis}}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                        <TextBlock Text="TOTAL PROCUREMENT VALUE" FontSize="10" FontWeight="Bold" Foreground="White" Opacity="0.85"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                            <TextBlock Text="{Binding SelectedPurchaseHistory.Quantity, Converter={StaticResource QtyConv}}" FontSize="12" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text="{Binding SelectedPurchaseHistory.Unit, StringFormat=' {0}'}" FontSize="12" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text=" × Rs " FontSize="12" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text="{Binding SelectedPurchaseHistory.CostPrice, StringFormat='{}{0:N0}'}" FontSize="12" Foreground="White" Opacity="0.9"/>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <TextBlock Grid.Column="1" Text="{Binding SelectedPurchaseHistory.TotalCost, StringFormat=Rs {0:N0}}" FontSize="24" FontWeight="Black" Foreground="White" VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Bottom Action Buttons with Print & Close -->
+                    <Border Grid.Row="2" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="0,1,0,0" Padding="0,12,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Primary Print A4 Voucher Button -->
+                            <Button Grid.Column="0" Command="{Binding PrintSlipA4Command}" Style="{StaticResource PrimaryButtonStyle}" Height="38">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource Icon_Print}" Fill="White" Width="13" Height="13" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Print A4 Voucher" FontWeight="Bold" FontSize="12" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- 80mm Thermal Slip Button -->
+                            <Button Grid.Column="2" Command="{Binding PrintSlipThermalCommand}" Style="{StaticResource SecondaryButtonStyle}" Padding="12,0" Height="38">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource Icon_Receipt}" Fill="{DynamicResource TextPrimaryBrush}" Width="12" Height="12" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="80mm Thermal Slip" FontWeight="SemiBold" FontSize="11.5" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Prominent Close Button -->
+                            <Button Grid.Column="4" Command="{Binding CloseDetailCommand}" Style="{StaticResource SecondaryButtonStyle}" Padding="18,0" Height="38">
+                                <TextBlock Text="Close Slip" FontWeight="Bold" FontSize="12"/>
+                            </Button>
+                        </Grid>
+                    </Border>
+                </Grid>
             </Border>
         </Grid>
     </Grid>

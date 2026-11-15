@@ -34,12 +34,6 @@
                         <TextBlock Text="Electric, Sanitary, Hardware, Tiles, Paint, Solar &amp; Electronics" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"/>
                     </StackPanel>
                 </StackPanel>
-
-                <Button Grid.Column="1"
-                        Command="{Binding OpenAddModalCommand}"
-                        Content="+ Add Product"
-                        Style="{StaticResource PrimaryButtonStyle}"
-                        Visibility="{Binding IsOwner, Converter={StaticResource BoolToVis}}"/>
             </Grid>
 
             <!-- Summary Cards -->
@@ -136,6 +130,12 @@
             <!-- Product DataGrid -->
             <Border Grid.Row="4" Style="{StaticResource SurfaceCardStyle}">
                 <DataGrid ItemsSource="{Binding FilteredProducts}" Style="{StaticResource ModernDataGridStyle}">
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow" BasedOn="{StaticResource ModernDataGridRowStyle}">
+                            <Setter Property="Cursor" Value="Hand"/>
+                            <EventSetter Event="PreviewMouseLeftButtonUp" Handler="DataGridRow_PreviewMouseLeftButtonUp"/>
+                        </Style>
+                    </DataGrid.RowStyle>
                     <DataGrid.Resources>
                         <conv:BindingProxy x:Key="ViewProxy" Data="{Binding}"/>
                     </DataGrid.Resources>

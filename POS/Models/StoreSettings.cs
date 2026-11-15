@@ -11,8 +11,8 @@ namespace POS.Models
         public string Phone1 { get; set; } = "0336-4994843";
         public string Phone2 { get; set; } = "0327-5898969";
         public string ReceiptFooter { get; set; } = "Thank you for your business!";
-        public string PrinterName { get; set; } = "XP-80";
-        public string PreferredPrintFormat { get; set; } = "Thermal80mm"; // Thermal80mm or A4
+        public string PrinterName { get; set; } = "";
+        public string PreferredPrintFormat { get; set; } = "A4";
         public bool UseBitmapThermalForUrdu { get; set; } = false;
         public string Language { get; set; } = "English"; // English or Urdu
         public string Theme { get; set; } = "Light"; // Light or Dark

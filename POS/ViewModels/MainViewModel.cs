@@ -256,6 +256,7 @@ namespace POS.ViewModels
         {
             _installmentsViewModel.IsNewCustomerPage = false;
             _installmentsViewModel.IsPaymentModalOpen = false;
+            _installmentsViewModel.IsDetailView = false;
             _installmentsViewModel.RefreshData();
             SetCurrentView(_installmentsViewModel);
         }

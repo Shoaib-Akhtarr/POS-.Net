@@ -19,12 +19,39 @@ namespace POS.ViewModels
         InstallmentContract Contract,
         string CustomerName,
         string CustomerPhone,
+        string CustomerCnic,
         decimal Paid,
         decimal Outstanding,
         DateTime? NextDue,
-        int OverdueCount);
+        decimal NextDueAmount,
+        int OverdueCount,
+        int TotalInstallments,
+        int PaidInstallments)
+    {
+        public bool IsDueToday => NextDue.HasValue && NextDue.Value.Date == DateTime.Today;
+        public bool IsOverdue => OverdueCount > 0 || (NextDue.HasValue && NextDue.Value.Date < DateTime.Today);
+        public bool HasPending => Outstanding > 0m;
+        public string DueStatusBadge =>
+            Outstanding <= 0m ? "Settled" :
+            IsOverdue ? $"Overdue ({OverdueCount})" :
+            IsDueToday ? "Due Today" :
+            NextDue.HasValue ? $"Due {NextDue.Value:dd MMM}" : "Active";
+        public double ProgressPercentage => TotalInstallments > 0 ? Math.Min(100.0, (double)PaidInstallments / TotalInstallments * 100.0) : 0.0;
+        public int RemainingInstallments => Math.Max(0, TotalInstallments - PaidInstallments);
+    }
 
-    public sealed record InstallmentScheduleRow(InstallmentSchedule Schedule, decimal Outstanding);
+    public sealed record InstallmentScheduleRow(InstallmentSchedule Schedule, decimal Outstanding)
+    {
+        public bool IsPaid => Schedule.Status == "Paid" || Outstanding <= 0m;
+        public bool IsOverdue => Schedule.Status == "Overdue" || (!IsPaid && Schedule.DueDate.Date < DateTime.Today);
+        public bool IsDueToday => !IsPaid && Schedule.DueDate.Date == DateTime.Today;
+        public bool IsFuture => !IsPaid && !IsDueToday && !IsOverdue;
+        public string StatusDisplay =>
+            IsPaid ? "Paid" :
+            IsOverdue ? "Overdue" :
+            IsDueToday ? "Due Today" : "Scheduled";
+        public decimal TotalLinePayable => Math.Max(0m, Schedule.AmountDue - Schedule.AmountPaid) + (Schedule.LateFeeWaived ? 0m : Math.Max(0m, Schedule.LateFee - Schedule.LateFeePaid));
+    }
     public sealed record InstallmentPaymentRow(string ReceiptNumber, DateTime CreatedAt, decimal Amount, string PaymentMode, string Status);
     public sealed record CustomerDocumentRow(long Id, string DocumentType, string FileName);
 
@@ -130,6 +157,19 @@ namespace POS.ViewModels
         [ObservableProperty] private decimal _overdueTotal;
         [ObservableProperty] private string _contractSearchText = string.Empty;
         [ObservableProperty] private string _selectedStatusFilter = "All statuses";
+        [ObservableProperty] private bool _isDetailView;
+        [ObservableProperty] private string _activeDetailSection = "NextInstallment";
+        [ObservableProperty] private string _pendingFilter = "Pending";
+        [ObservableProperty] private InstallmentScheduleRow? _nextScheduleRow;
+        [ObservableProperty] private Customer? _contractCustomer;
+        [ObservableProperty] private KhataAccount? _contractCustomerAccount;
+        [ObservableProperty] private ObservableCollection<InstallmentContractItem> _contractItems = new();
+        [ObservableProperty] private InstallmentPaymentRow? _lastPaymentReceipt;
+        [ObservableProperty] private bool _isScheduleTodoView = true;
+        [ObservableProperty] private int _pendingContractsCount;
+        [ObservableProperty] private int _dueTodayContractsCount;
+        [ObservableProperty] private int _overdueContractsCount;
+        [ObservableProperty] private int _upcomingContractsCount;
 
         public List<string> MarkupModes { get; } = new() { "Percent", "Fixed PKR" };
         public List<string> Frequencies { get; } = new() { "Monthly", "Weekly", "Custom" };
@@ -179,6 +219,7 @@ namespace POS.ViewModels
         partial void OnFirstDueDateChanged(DateTime value) => RecalculatePlan();
         partial void OnContractSearchTextChanged(string value) => ApplyContractFilters();
         partial void OnSelectedStatusFilterChanged(string value) => ApplyContractFilters();
+        partial void OnPendingFilterChanged(string value) => ApplyContractFilters();
 
         public void Receive(DataChangedMessage message)
         {
@@ -219,6 +260,16 @@ namespace POS.ViewModels
                 .Where(a => a.PartyType == "Recovery Agent" && a.IsActive).OrderBy(a => a.Name).ToList());
             var customerNames = Customers.ToDictionary(customer => customer.Id, customer => customer.Name);
             var customerPhones = Customers.ToDictionary(customer => customer.Id, customer => customer.Phone);
+            var customerCnics = Customers.ToDictionary(customer => customer.Id, customer => !string.IsNullOrWhiteSpace(customer.Cnic) ? customer.Cnic : string.Empty);
+            var khataAccounts = context.KhataAccounts.AsNoTracking().Where(a => a.CustomerId.HasValue).ToList();
+            foreach (var acc in khataAccounts)
+            {
+                if (acc.CustomerId.HasValue && string.IsNullOrWhiteSpace(customerCnics.GetValueOrDefault(acc.CustomerId.Value)) && !string.IsNullOrWhiteSpace(acc.CNIC))
+                {
+                    customerCnics[acc.CustomerId.Value] = acc.CNIC;
+                }
+            }
+
             var schedules = context.InstallmentSchedules.AsNoTracking().ToList();
             var allRows = context.InstallmentContracts.AsNoTracking().OrderByDescending(c => c.CreatedAt).ToList().Select(contract =>
             {
@@ -227,8 +278,22 @@ namespace POS.ViewModels
                 decimal balance = contractSchedules.Sum(GetScheduleOutstanding);
                 var next = contractSchedules.Where(s => (s.Status != "Paid" && s.AmountPaid < s.AmountDue) || (!s.LateFeeWaived && s.LateFeePaid < s.LateFee))
                     .OrderBy(s => s.DueDate).FirstOrDefault();
+                decimal nextDueAmount = next != null ? GetScheduleOutstanding(next) : 0m;
                 int overdueCount = contractSchedules.Count(s => s.Status == "Overdue");
-                return new InstallmentContractRow(contract, customerNames.GetValueOrDefault(contract.CustomerId, "Unknown customer"), customerPhones.GetValueOrDefault(contract.CustomerId, string.Empty), paid, balance, next?.DueDate, overdueCount);
+                int totalCount = contractSchedules.Count;
+                int paidCount = contractSchedules.Count(s => s.Status == "Paid");
+                return new InstallmentContractRow(
+                    contract,
+                    customerNames.GetValueOrDefault(contract.CustomerId, "Unknown customer"),
+                    customerPhones.GetValueOrDefault(contract.CustomerId, string.Empty),
+                    customerCnics.GetValueOrDefault(contract.CustomerId, string.Empty),
+                    paid,
+                    balance,
+                    next?.DueDate,
+                    nextDueAmount,
+                    overdueCount,
+                    totalCount,
+                    paidCount);
             }).ToList();
 
             Contracts = new ObservableCollection<InstallmentContractRow>(allRows);
@@ -245,6 +310,11 @@ namespace POS.ViewModels
             UpcomingTotal = schedules.Where(s => s.DueDate.Date > today && s.DueDate.Date <= today.AddDays(7) && s.Status != "Paid").Sum(GetScheduleOutstanding);
             OverdueTotal = schedules.Where(s => s.Status == "Overdue").Sum(GetScheduleOutstanding);
 
+            PendingContractsCount = allRows.Count(row => row.HasPending && row.Contract.Status == "Active");
+            DueTodayContractsCount = allRows.Count(row => row.IsDueToday);
+            OverdueContractsCount = allRows.Count(row => row.IsOverdue);
+            UpcomingContractsCount = Upcoming.Count;
+
             if (SelectedContract != null)
                 SelectedContract = FilteredContracts.FirstOrDefault(row => row.Contract.Id == SelectedContract.Contract.Id);
             else if (FilteredContracts.Count > 0)
@@ -255,9 +325,20 @@ namespace POS.ViewModels
         {
             string query = ContractSearchText.Trim();
             IEnumerable<InstallmentContractRow> rows = Contracts;
+
+            if (PendingFilter == "DueToday")
+                rows = rows.Where(row => row.IsDueToday);
+            else if (PendingFilter == "Overdue")
+                rows = rows.Where(row => row.IsOverdue);
+            else if (PendingFilter == "Upcoming")
+                rows = rows.Where(row => row.NextDue.HasValue && row.NextDue.Value.Date > DateTime.Today && row.NextDue.Value.Date <= DateTime.Today.AddDays(7));
+            else if (PendingFilter == "Pending")
+                rows = rows.Where(row => row.HasPending && row.Contract.Status == "Active");
+
             if (!string.IsNullOrWhiteSpace(query))
                 rows = rows.Where(row => row.CustomerName.Contains(query, StringComparison.CurrentCultureIgnoreCase)
                     || row.CustomerPhone.Contains(query, StringComparison.CurrentCultureIgnoreCase)
+                    || row.CustomerCnic.Contains(query, StringComparison.CurrentCultureIgnoreCase)
                     || row.Contract.ContractNumber.Contains(query, StringComparison.CurrentCultureIgnoreCase)
                     || row.Contract.RecoveryOfficer.Contains(query, StringComparison.CurrentCultureIgnoreCase));
             if (!string.IsNullOrWhiteSpace(SelectedStatusFilter) && SelectedStatusFilter != "All statuses")
@@ -269,21 +350,49 @@ namespace POS.ViewModels
 
         partial void OnSelectedContractChanged(InstallmentContractRow? value)
         {
-            if (value == null) { SelectedSchedule.Clear(); SelectedPayments.Clear(); SelectedGuarantors.Clear(); CustomerDocuments.Clear(); return; }
+            if (value == null)
+            {
+                SelectedSchedule.Clear();
+                SelectedPayments.Clear();
+                SelectedGuarantors.Clear();
+                CustomerDocuments.Clear();
+                ContractItems.Clear();
+                NextScheduleRow = null;
+                ContractCustomer = null;
+                ContractCustomerAccount = null;
+                LastPaymentReceipt = null;
+                return;
+            }
+
             using var context = new AppDbContext();
             var items = context.InstallmentSchedules.AsNoTracking().Where(s => s.ContractId == value.Contract.Id)
                 .OrderBy(s => s.Sequence).ToList();
             SelectedSchedule = new ObservableCollection<InstallmentScheduleRow>(items.Select(item => new InstallmentScheduleRow(item, GetScheduleOutstanding(item))));
+            NextScheduleRow = SelectedSchedule.FirstOrDefault(s => (s.Schedule.Status != "Paid" && s.Schedule.AmountPaid < s.Schedule.AmountDue) || (!s.Schedule.LateFeeWaived && s.Schedule.LateFeePaid < s.Schedule.LateFee));
+
             SelectedPayments = new ObservableCollection<InstallmentPaymentRow>(context.InstallmentPayments.AsNoTracking()
                 .Where(payment => payment.ContractId == value.Contract.Id).OrderByDescending(payment => payment.CreatedAt)
                 .Select(payment => new InstallmentPaymentRow(payment.ReceiptNumber, payment.CreatedAt, payment.Amount, payment.PaymentMode, payment.IsReversed ? "Reversed" : "Posted")).ToList());
+            LastPaymentReceipt = SelectedPayments.FirstOrDefault();
+
             SelectedGuarantors = new ObservableCollection<InstallmentGuarantor>(context.InstallmentGuarantors.AsNoTracking()
                 .Where(g => g.ContractId == value.Contract.Id).ToList());
             var customerId = value.Contract.CustomerId;
+            ContractCustomer = context.Customers.AsNoTracking().FirstOrDefault(c => c.Id == customerId);
+            ContractCustomerAccount = context.KhataAccounts.AsNoTracking().FirstOrDefault(a => a.CustomerId == customerId);
+            ContractItems = new ObservableCollection<InstallmentContractItem>(context.InstallmentContractItems.AsNoTracking().Where(i => i.ContractId == value.Contract.Id).ToList());
+
             CustomerDocuments = new ObservableCollection<CustomerDocumentRow>(context.CustomerDocuments.AsNoTracking()
                 .Where(document => document.CustomerId == customerId)
                 .OrderBy(document => document.UploadedAt)
                 .Select(document => new CustomerDocumentRow(document.Id, document.DocumentType, document.FileName)).ToList());
+
+            if (NextScheduleRow != null)
+                PaymentAmount = NextScheduleRow.Outstanding.ToString("0.00", System.Globalization.CultureInfo.CurrentCulture);
+            else if (value.Outstanding > 0m)
+                PaymentAmount = value.Outstanding.ToString("0.00", System.Globalization.CultureInfo.CurrentCulture);
+            else
+                PaymentAmount = string.Empty;
         }
 
         private void RecalculatePlan()
@@ -613,14 +722,104 @@ namespace POS.ViewModels
                 var receipt = await InstallmentRecoveryService.RecordPaymentAsync(context, contract, amount, PaymentMode, PaymentNotes);
                 await transaction.CommitAsync();
                 IsPaymentModalOpen = false;
+
+                int contractId = SelectedContract.Contract.Id;
                 RefreshData();
+                SelectedContract = FilteredContracts.FirstOrDefault(c => c.Contract.Id == contractId)
+                    ?? Contracts.FirstOrDefault(c => c.Contract.Id == contractId);
+
                 WeakReferenceMessenger.Default.Send(DataChangedMessage.CustomerUpdated);
                 WeakReferenceMessenger.Default.Send(DataChangedMessage.TransactionUpdated);
                 var paymentReceipt = context.Sales.AsNoTracking().FirstOrDefault(s => s.ReceiptNumber == receipt.ReceiptNumber);
                 if (paymentReceipt != null) _printService.PrintReceipt(paymentReceipt);
-                SetStatus($"Receipt {receipt.ReceiptNumber} recorded. Next due: {SelectedContract?.NextDue?.ToString("dd MMM yyyy") ?? "contract settled"}.", false);
+                SetStatus($"Receipt {receipt.ReceiptNumber} recorded for PKR {amount:N2}. Next due: {SelectedContract?.NextDue?.ToString("dd MMM yyyy") ?? "contract settled"}.", false);
             }
             catch (Exception ex) { ErrorMessage = $"Payment could not be recorded: {ex.Message}"; }
+        }
+
+        [RelayCommand]
+        private void OpenPersonRecords(InstallmentContractRow? row)
+        {
+            if (row != null) SelectedContract = row;
+            if (SelectedContract != null)
+            {
+                IsDetailView = true;
+                ActiveDetailSection = "NextInstallment";
+            }
+        }
+
+        [RelayCommand]
+        private void BackToPendingList()
+        {
+            IsDetailView = false;
+        }
+
+        [RelayCommand]
+        private void SelectDetailSection(string section)
+        {
+            ActiveDetailSection = section;
+        }
+
+        [RelayCommand]
+        private void SetPendingFilter(string filter)
+        {
+            PendingFilter = filter;
+        }
+
+        [RelayCommand]
+        private void QuickPayNextInstallment()
+        {
+            if (NextScheduleRow != null)
+            {
+                PaymentAmount = NextScheduleRow.Outstanding.ToString("0.00", System.Globalization.CultureInfo.CurrentCulture);
+            }
+        }
+
+        [RelayCommand]
+        private void QuickPayFullBalance()
+        {
+            if (SelectedContract != null)
+            {
+                PaymentAmount = SelectedContract.Outstanding.ToString("0.00", System.Globalization.CultureInfo.CurrentCulture);
+            }
+        }
+
+        [RelayCommand]
+        private void PrintLastReceipt()
+        {
+            if (LastPaymentReceipt == null)
+            {
+                SetStatus("No payment receipt available to print.", true);
+                return;
+            }
+            try
+            {
+                using var context = new AppDbContext();
+                var paymentReceipt = context.Sales.AsNoTracking().FirstOrDefault(s => s.ReceiptNumber == LastPaymentReceipt.ReceiptNumber);
+                if (paymentReceipt != null)
+                {
+                    _printService.PrintReceipt(paymentReceipt);
+                    SetStatus($"Receipt {LastPaymentReceipt.ReceiptNumber} sent to printer.", false);
+                }
+                else
+                {
+                    SetStatus("Receipt record not found in sales transactions.", true);
+                }
+            }
+            catch (Exception ex)
+            {
+                SetStatus($"Could not print receipt: {ex.Message}", true);
+            }
+        }
+
+        [RelayCommand]
+        private void JumpToSectionAndPay(InstallmentScheduleRow? row)
+        {
+            if (row != null)
+            {
+                PaymentAmount = row.Outstanding.ToString("0.00", System.Globalization.CultureInfo.CurrentCulture);
+            }
+            ActiveDetailSection = "NextInstallment";
         }
 
         [RelayCommand]

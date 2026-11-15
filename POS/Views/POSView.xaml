@@ -602,7 +602,7 @@
                             <TextBlock Text="{Binding CreditLimitWarning}" Foreground="{DynamicResource DangerBrush}" FontSize="11" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,8" Visibility="{Binding CreditLimitWarning, Converter={StaticResource StrNotEmptyToVis}}"/>
 
                             <!-- Primary Checkout Actions -->
-                            <Button Command="{Binding CompleteSaleCommand}" Content="PROCESS CHECKOUT (Ctrl+Enter / F9)" Style="{StaticResource PrimaryButtonStyle}" Padding="14,13" FontSize="13.5" Margin="0,4,0,8"/>
+                            <Button Command="{Binding CompleteSaleCommand}" Content="PROCESS CHECKOUT &amp; PRINT A4 (Ctrl+Enter / F9)" Style="{StaticResource PrimaryButtonStyle}" Padding="14,13" FontSize="13.5" Margin="0,4,0,8"/>
 
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -610,7 +610,7 @@
                                     <ColumnDefinition Width="8"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Button Grid.Column="0" Command="{Binding SaveAsEstimateCommand}" Content="Estimate (F8)" Style="{StaticResource SecondaryButtonStyle}" Padding="8,9" FontSize="11.5"/>
+                                <Button Grid.Column="0" Command="{Binding SaveAsEstimateCommand}" Content="Quotation / Estimate (F8)" Style="{StaticResource SecondaryButtonStyle}" Padding="8,9" FontSize="11.5"/>
                                 <Button Grid.Column="2" Command="{Binding CompleteSaleA4Command}" Content="Print A4 Invoice" Style="{StaticResource SecondaryButtonStyle}" Padding="8,9" FontSize="11.5"/>
                             </Grid>
                         </StackPanel>

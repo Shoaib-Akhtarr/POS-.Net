@@ -260,23 +260,6 @@
                             </StackPanel>
                         </Button>
 
-                        <Button Command="{Binding NavigateToKhataCommand}" ToolTip="Party Khata">
-                            <Button.Style>
-                                <Style TargetType="Button" BasedOn="{StaticResource SidebarNavButton}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding CurrentViewModel.GetType().Name}" Value="KhataViewModel">
-                                            <Setter Property="Background" Value="{DynamicResource BgSidebarActiveBrush}"/>
-                                            <Setter Property="Foreground" Value="White"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                            <StackPanel Orientation="Horizontal">
-                                <Path Data="{StaticResource Icon_Customers}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"/>
-                                <TextBlock Text="Party Khata" Margin="14,0,0,0" VerticalAlignment="Center" Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
-                            </StackPanel>
-                        </Button>
-
                         <Button Command="{Binding NavigateToNewInstallmentCustomerCommand}" ToolTip="Register new installment customer">
                             <Button.Style>
                                 <Style TargetType="Button" BasedOn="{StaticResource SidebarNavButton}">

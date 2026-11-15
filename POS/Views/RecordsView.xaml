@@ -241,15 +241,7 @@
                     <TextBlock Grid.Row="3" Text="{Binding ActionError}" Foreground="{DynamicResource DangerBrush}" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,10" Visibility="{Binding ActionError, Converter={StaticResource StrNotEmptyToVis}}"/>
 
                     <StackPanel Grid.Row="4">
-                        <Grid Margin="0,0,0,10" Visibility="{Binding SelectedRecord.IsSaleType, Converter={StaticResource BoolToVis}}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="8"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Button Grid.Column="0" Command="{Binding ReprintThermalCommand}" Content="Reprint 80mm" Style="{StaticResource SecondaryButtonStyle}"/>
-                            <Button Grid.Column="2" Command="{Binding PrintA4Command}" Content="Print A4 Invoice" Style="{StaticResource SecondaryButtonStyle}"/>
-                        </Grid>
+                        <Button Command="{Binding PrintA4Command}" Content="Print A4 Invoice" Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,0,10" Visibility="{Binding SelectedRecord.IsSaleType, Converter={StaticResource BoolToVis}}"/>
 
                         <Button Command="{Binding ConvertEstimateToSaleCommand}" Content="Convert Estimate to Sale" Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,0,8" Visibility="{Binding SelectedRecord.IsEstimate, Converter={StaticResource BoolToVis}}"/>
                         <Button Command="{Binding OpenReturnModalCommand}" Content="Process Item Return / Refund" Style="{StaticResource DangerButtonStyle}" Margin="0,0,0,8" Visibility="{Binding SelectedRecord.IsReturnableSale, Converter={StaticResource BoolToVis}}"/>
@@ -435,7 +427,7 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Button Grid.Column="0" Command="{Binding CloseZReportModalCommand}" Content="Close" Style="{StaticResource SecondaryButtonStyle}" Padding="14,8"/>
-                        <Button Grid.Column="2" Command="{Binding PrintZReportCommand}" Content="Print Z-Report Slip" Style="{StaticResource PrimaryButtonStyle}" Padding="14,8"/>
+                        <Button Grid.Column="2" Command="{Binding PrintZReportCommand}" Content="Print Z-Report (A4)" Style="{StaticResource PrimaryButtonStyle}" Padding="14,8"/>
                     </Grid>
                 </Grid>
             </Border>

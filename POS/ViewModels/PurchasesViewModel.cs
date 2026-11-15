@@ -5,6 +5,7 @@ using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.EntityFrameworkCore;
 using POS.Models;
 using POS.Services;
 
@@ -12,6 +13,8 @@ namespace POS.ViewModels
 {
     public partial class PurchasesViewModel : ObservableObject, IRecipient<DataChangedMessage>
     {
+        private readonly PrintService _printService = new();
+
         public List<string> AvailableDepartments { get; } = new()
         {
             "Electric", "Sanitary", "Hardware", "Tiles", "Paint", "Solar System", "Electronics"
@@ -26,6 +29,9 @@ namespace POS.ViewModels
         [ObservableProperty] private ObservableCollection<Product> _availableProducts = new();
         [ObservableProperty] private Purchase? _selectedPurchaseHistory;
         [ObservableProperty] private bool _isDetailModalOpen;
+        [ObservableProperty] private string _searchText = string.Empty;
+
+        private List<Purchase> _allPurchases = new();
 
         // Form Fields
         [ObservableProperty] private string _supplierName = string.Empty;
@@ -47,6 +53,7 @@ namespace POS.ViewModels
         [ObservableProperty] private bool _isErrorStatus;
 
         public bool IsOwner => SessionService.IsOwner;
+        public string ShopName => ThemeService.GetSettings().ShopName;
 
         public PurchasesViewModel()
         {
@@ -79,6 +86,30 @@ namespace POS.ViewModels
             }
         }
 
+        partial void OnSearchTextChanged(string value) => ApplyFilter();
+
+        private void ApplyFilter()
+        {
+            if (string.IsNullOrWhiteSpace(SearchText))
+            {
+                Purchases = new ObservableCollection<Purchase>(_allPurchases);
+            }
+            else
+            {
+                string term = SearchText.Trim();
+                var filtered = _allPurchases.Where(p =>
+                    (!string.IsNullOrEmpty(p.ProductName) && p.ProductName.Contains(term, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(p.SupplierName) && p.SupplierName.Contains(term, StringComparison.OrdinalIgnoreCase)) ||
+                    (p.Product != null && !string.IsNullOrEmpty(p.Product.Category) && p.Product.Category.Contains(term, StringComparison.OrdinalIgnoreCase)) ||
+                    (p.Product != null && !string.IsNullOrEmpty(p.Product.Brand) && p.Product.Brand.Contains(term, StringComparison.OrdinalIgnoreCase)) ||
+                    (p.Product != null && !string.IsNullOrEmpty(p.Product.Barcode) && p.Product.Barcode.Contains(term, StringComparison.OrdinalIgnoreCase)) ||
+                    ($"PUR-{p.Id}".Contains(term, StringComparison.OrdinalIgnoreCase)) ||
+                    (p.PurchaseDate.ToString("dd MMM yyyy").Contains(term, StringComparison.OrdinalIgnoreCase))
+                ).ToList();
+                Purchases = new ObservableCollection<Purchase>(filtered);
+            }
+        }
+
         [RelayCommand]
         private void IncrementQuantity() => Quantity += 1m;
 
@@ -92,6 +123,11 @@ namespace POS.ViewModels
         private void OpenDetail(Purchase? purchase)
         {
             if (purchase == null) return;
+            if (purchase.Product == null && purchase.ProductId > 0)
+            {
+                using var context = new AppDbContext();
+                purchase.Product = context.Products.Find(purchase.ProductId)!;
+            }
             SelectedPurchaseHistory = purchase;
             IsDetailModalOpen = true;
         }
@@ -99,12 +135,33 @@ namespace POS.ViewModels
         [RelayCommand]
         private void CloseDetail() => IsDetailModalOpen = false;
 
+        [RelayCommand]
+        private void PrintSlip() => PrintSlipA4();
+
+        [RelayCommand]
+        private void PrintSlipThermal() => PrintSlipA4();
+
+        [RelayCommand]
+        private void PrintSlipA4()
+        {
+            if (SelectedPurchaseHistory == null) return;
+            var result = _printService.PrintPurchaseA4Slip(SelectedPurchaseHistory);
+            if (!result.success && !string.IsNullOrWhiteSpace(result.message))
+            {
+                NotificationService.ShowError(result.message);
+            }
+        }
+
         public void RefreshData()
         {
             using var context = new AppDbContext();
 
-            var dbPurchases = context.Purchases.OrderByDescending(p => p.PurchaseDate).ToList();
-            Purchases = new ObservableCollection<Purchase>(dbPurchases);
+            var dbPurchases = context.Purchases
+                .Include(p => p.Product)
+                .OrderByDescending(p => p.PurchaseDate)
+                .ToList();
+            _allPurchases = dbPurchases;
+            ApplyFilter();
 
             var products = context.Products.Where(p => !p.IsDeleted).OrderBy(p => p.Name).ToList();
             AvailableProducts = new ObservableCollection<Product>(products);
@@ -193,6 +250,7 @@ namespace POS.ViewModels
             var purchase = new Purchase
             {
                 ProductId = targetProduct.Id,
+                Product = targetProduct,
                 ProductName = targetProduct.Name,
                 SupplierName = effectiveSupplier,
                 CostPrice = CostPrice,

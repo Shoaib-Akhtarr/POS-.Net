@@ -231,13 +231,7 @@ namespace POS.ViewModels
         }
 
         [RelayCommand]
-        private void ReprintThermal()
-        {
-            if (SelectedRecord?.OriginalObject is Sale sale)
-            {
-                _printService.PrintThermalReceipt(sale);
-            }
-        }
+        private void ReprintThermal() => PrintA4();
 
         [RelayCommand]
         private void PrintA4()

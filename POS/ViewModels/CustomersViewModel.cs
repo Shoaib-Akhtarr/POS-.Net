@@ -258,13 +258,7 @@ namespace POS.ViewModels
         private void CloseReceipt() => IsReceiptModalOpen = false;
 
         [RelayCommand]
-        private void ReprintReceipt80mm()
-        {
-            if (SelectedSaleHistory != null)
-            {
-                _printService.PrintThermalReceipt(SelectedSaleHistory);
-            }
-        }
+        private void ReprintReceipt80mm() => PrintReceiptA4();
 
         [RelayCommand]
         private void PrintReceiptA4()

@@ -4,156 +4,999 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:conv="clr-namespace:POS.Converters"
+             xmlns:vm="clr-namespace:POS.ViewModels"
              mc:Ignorable="d"
-             d:DesignHeight="800" d:DesignWidth="1200"
+             d:DesignHeight="850" d:DesignWidth="1280"
              Background="{DynamicResource BgCanvasBrush}">
-    <Grid Margin="22">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/><RowDefinition Height="12"/><RowDefinition Height="Auto"/><RowDefinition Height="12"/>
-            <RowDefinition Height="140"/><RowDefinition Height="12"/><RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Visibility="{Binding IsNewCustomerPage, Converter={StaticResource InverseBoolToVis}}">
-            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="8"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-            <StackPanel VerticalAlignment="Center">
-                <TextBlock Text="Installment records &amp; collections" FontSize="24" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}"/>
-                <TextBlock Text="Review contracts, due dates, outstanding balances, and received payments" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,3,0,0"/>
-            </StackPanel>
-            <Button Grid.Column="1" Command="{Binding OpenPaymentModalCommand}" Content="Record recovery" Style="{StaticResource SecondaryButtonStyle}"/>
-            <Button Grid.Column="3" Command="{Binding OpenNewCustomerPageCommand}" Content="+ New customer / contract" Style="{StaticResource PrimaryButtonStyle}"/>
-        </Grid>
+    <UserControl.Resources>
+        <!-- Pill / Tab RadioButton Style -->
+        <Style x:Key="TabPillStyle" TargetType="RadioButton">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Bd" Background="{DynamicResource BgSurfaceBrush}" CornerRadius="18" Padding="16,8" Margin="0,0,8,0" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource BgMutedBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-        <UniformGrid Grid.Row="2" Columns="4" Visibility="{Binding IsNewCustomerPage, Converter={StaticResource InverseBoolToVis}}">
-            <Border Style="{StaticResource SurfaceCardStyle}" Padding="14" Margin="0,0,8,0">
-                <StackPanel><TextBlock Text="ACTIVE OUTSTANDING" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/><TextBlock Text="{Binding TotalOutstanding, StringFormat=PKR {0:N0}}" FontSize="21" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,4,0,0"/></StackPanel>
-            </Border>
-            <Border Style="{StaticResource SurfaceCardStyle}" Padding="14" Margin="0,0,8,0">
-                <StackPanel><TextBlock Text="DUE TODAY" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/><TextBlock Text="{Binding DueTodayTotal, StringFormat=PKR {0:N0}}" FontSize="21" FontWeight="Black" Foreground="{DynamicResource WarningBrush}" Margin="0,4,0,0"/></StackPanel>
-            </Border>
-            <Border Style="{StaticResource SurfaceCardStyle}" Padding="14" Margin="0,0,8,0">
-                <StackPanel><TextBlock Text="NEXT 7 DAYS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/><TextBlock Text="{Binding UpcomingTotal, StringFormat=PKR {0:N0}}" FontSize="21" FontWeight="Black" Foreground="{DynamicResource PrimaryBrush}" Margin="0,4,0,0"/></StackPanel>
-            </Border>
-            <Border Style="{StaticResource SurfaceCardStyle}" Padding="14">
-                <StackPanel><TextBlock Text="OVERDUE" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/><TextBlock Text="{Binding OverdueTotal, StringFormat=PKR {0:N0}}" FontSize="21" FontWeight="Black" Foreground="{DynamicResource DangerBrush}" Margin="0,4,0,0"/></StackPanel>
-            </Border>
-        </UniformGrid>
+        <!-- Segment Section Tab Button Style -->
+        <Style x:Key="SegmentTabStyle" TargetType="RadioButton">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Bd" Background="Transparent" Padding="18,10" Margin="0,0,6,0" BorderThickness="0,0,0,3" BorderBrush="Transparent">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource BgMutedBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                <Setter Property="FontWeight" Value="Black"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
 
-        <UniformGrid Grid.Row="4" Columns="3" Visibility="{Binding IsNewCustomerPage, Converter={StaticResource InverseBoolToVis}}">
-            <Border Style="{StaticResource SurfaceCardStyle}" Padding="12" Margin="0,0,8,0">
-                <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-                    <TextBlock Text="DUE TODAY" FontSize="10" FontWeight="Black" Foreground="{DynamicResource WarningBrush}"/>
-                    <ItemsControl Grid.Row="1" ItemsSource="{Binding DueToday}" Margin="0,6,0,0">
-                        <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding CustomerName, StringFormat={}{0} · due}" FontSize="11" Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2"/></DataTemplate></ItemsControl.ItemTemplate>
-                    </ItemsControl>
+    <Grid Margin="20">
+        <!-- ========================================================================= -->
+        <!-- SCREEN 1: PENDING INSTALLMENTS PERSONS LIST PAGE                           -->
+        <!-- Visible when IsNewCustomerPage is False AND IsDetailView is False          -->
+        <!-- ========================================================================= -->
+        <Grid Visibility="{Binding IsNewCustomerPage, Converter={StaticResource InverseBoolToVis}}">
+            <Grid Visibility="{Binding IsDetailView, Converter={StaticResource InverseBoolToVis}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <!-- 0: Header -->
+                    <RowDefinition Height="12"/>
+                    <RowDefinition Height="Auto"/> <!-- 2: 4 Summary KPI Cards -->
+                    <RowDefinition Height="12"/>
+                    <RowDefinition Height="Auto"/> <!-- 4: Search & Filters -->
+                    <RowDefinition Height="12"/>
+                    <RowDefinition Height="*"/>    <!-- 6: Persons List Table -->
+                </Grid.RowDefinitions>
+
+                <!-- 0: Header -->
+                <Grid Grid.Row="0">
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Installment Collections &amp; Pending Dues" FontSize="23" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="List of persons whose installments are pending. Click 'Open Records' or double-click to view complete records and collect installment." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,3,0,0"/>
+                    </StackPanel>
                 </Grid>
-            </Border>
-            <Border Style="{StaticResource SurfaceCardStyle}" Padding="12" Margin="0,0,8,0">
-                <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-                    <TextBlock Text="UPCOMING · 7 DAYS" FontSize="10" FontWeight="Black" Foreground="{DynamicResource PrimaryBrush}"/>
-                    <ItemsControl Grid.Row="1" ItemsSource="{Binding Upcoming}" Margin="0,6,0,0">
-                        <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding CustomerName, StringFormat={}{0} · next due}" FontSize="11" Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2"/></DataTemplate></ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </Grid>
-            </Border>
-            <Border Style="{StaticResource SurfaceCardStyle}" Padding="12">
-                <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-                    <TextBlock Text="OVERDUE / FIELD RECOVERY" FontSize="10" FontWeight="Black" Foreground="{DynamicResource DangerBrush}"/>
-                    <ItemsControl Grid.Row="1" ItemsSource="{Binding Overdue}" Margin="0,6,0,0">
-                        <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding Contract.RecoveryOfficer, TargetNullValue=Unassigned, StringFormat={}{0} · follow-up}" FontSize="11" Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2"/></DataTemplate></ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </Grid>
-            </Border>
-        </UniformGrid>
 
-        <Grid Grid.Row="6" Visibility="{Binding IsNewCustomerPage, Converter={StaticResource InverseBoolToVis}}">
-            <Grid.ColumnDefinitions><ColumnDefinition Width="1.15*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="1*"/></Grid.ColumnDefinitions>
-            <Border Grid.Column="0" Style="{StaticResource SurfaceCardStyle}" Padding="14">
-                <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-                    <Grid Margin="0,0,0,10">
-                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="8"/><ColumnDefinition Width="125"/></Grid.ColumnDefinitions>
-                        <TextBlock Text="CONTRACTS" FontSize="12" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                        <TextBox Grid.Column="2" Text="{Binding ContractSearchText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Padding="8,5" ToolTip="Search customer, contract, or recovery officer" conv:PlaceholderHelper.Placeholder="Search contracts"/>
-                        <ComboBox Grid.Column="4" ItemsSource="{Binding ContractStatusFilters}" SelectedItem="{Binding SelectedStatusFilter}" Padding="7,5" ToolTip="Filter by contract status"/>
+                <!-- 2: KPI Metrics Cards -->
+                <UniformGrid Grid.Row="2" Columns="4">
+                    <Border Style="{StaticResource SurfaceCardStyle}" Padding="14" Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Text="ACTIVE OUTSTANDING" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                            <TextBlock Text="{Binding TotalOutstanding, StringFormat=PKR {0:N0}}" FontSize="21" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,4,0,0"/>
+                            <TextBlock Text="{Binding PendingContractsCount, StringFormat='{}{0} active contracts pending'}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource SurfaceCardStyle}" Padding="14" Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Text="DUE TODAY" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                            <TextBlock Text="{Binding DueTodayTotal, StringFormat=PKR {0:N0}}" FontSize="21" FontWeight="Black" Foreground="{DynamicResource WarningBrush}" Margin="0,4,0,0"/>
+                            <TextBlock Text="{Binding DueTodayContractsCount, StringFormat='{}{0} persons due today'}" FontSize="11" Foreground="{DynamicResource WarningBrush}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource SurfaceCardStyle}" Padding="14" Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Text="NEXT 7 DAYS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                            <TextBlock Text="{Binding UpcomingTotal, StringFormat=PKR {0:N0}}" FontSize="21" FontWeight="Black" Foreground="{DynamicResource PrimaryBrush}" Margin="0,4,0,0"/>
+                            <TextBlock Text="{Binding UpcomingContractsCount, StringFormat='{}{0} persons upcoming'}" FontSize="11" Foreground="{DynamicResource PrimaryBrush}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource SurfaceCardStyle}" Padding="14">
+                        <StackPanel>
+                            <TextBlock Text="OVERDUE" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                            <TextBlock Text="{Binding OverdueTotal, StringFormat=PKR {0:N0}}" FontSize="21" FontWeight="Black" Foreground="{DynamicResource DangerBrush}" Margin="0,4,0,0"/>
+                            <TextBlock Text="{Binding OverdueContractsCount, StringFormat='{}{0} contracts overdue'}" FontSize="11" Foreground="{DynamicResource DangerBrush}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+
+                <!-- 4: Filter & Search Bar -->
+                <Border Grid.Row="4" Style="{StaticResource SurfaceCardStyle}" Padding="12,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="240"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="130"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Filter Pills -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <RadioButton Style="{StaticResource TabPillStyle}" IsChecked="{Binding PendingFilter, Converter={StaticResource EqualityConverter}, ConverterParameter='Pending'}">
+                                <TextBlock Text="{Binding PendingContractsCount, StringFormat='Pending Dues ({0})'}" FontWeight="SemiBold" FontSize="12"/>
+                            </RadioButton>
+                            <RadioButton Style="{StaticResource TabPillStyle}" IsChecked="{Binding PendingFilter, Converter={StaticResource EqualityConverter}, ConverterParameter='DueToday'}">
+                                <TextBlock Text="{Binding DueTodayContractsCount, StringFormat='Due Today ({0})'}" FontWeight="SemiBold" FontSize="12"/>
+                            </RadioButton>
+                            <RadioButton Style="{StaticResource TabPillStyle}" IsChecked="{Binding PendingFilter, Converter={StaticResource EqualityConverter}, ConverterParameter='Overdue'}">
+                                <TextBlock Text="{Binding OverdueContractsCount, StringFormat='Overdue ({0})'}" FontWeight="SemiBold" FontSize="12"/>
+                            </RadioButton>
+                            <RadioButton Style="{StaticResource TabPillStyle}" IsChecked="{Binding PendingFilter, Converter={StaticResource EqualityConverter}, ConverterParameter='Upcoming'}">
+                                <TextBlock Text="{Binding UpcomingContractsCount, StringFormat='Next 7 Days ({0})'}" FontWeight="SemiBold" FontSize="12"/>
+                            </RadioButton>
+                            <RadioButton Style="{StaticResource TabPillStyle}" IsChecked="{Binding PendingFilter, Converter={StaticResource EqualityConverter}, ConverterParameter='All'}">
+                                <TextBlock Text="All Contracts" FontWeight="SemiBold" FontSize="12"/>
+                            </RadioButton>
+                        </StackPanel>
+
+                        <!-- Search -->
+                        <TextBox Grid.Column="2" Text="{Binding ContractSearchText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Padding="9,6" conv:PlaceholderHelper.Placeholder="Search person, phone, CNIC..."/>
+
+                        <!-- Status Filter -->
+                        <ComboBox Grid.Column="4" ItemsSource="{Binding ContractStatusFilters}" SelectedItem="{Binding SelectedStatusFilter}" Padding="8,6"/>
                     </Grid>
-                    <DataGrid Grid.Row="1" ItemsSource="{Binding FilteredContracts}" SelectedItem="{Binding SelectedContract}" Style="{StaticResource ModernDataGridStyle}" IsReadOnly="True" AutoGenerateColumns="False">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="CONTRACT" Binding="{Binding Contract.ContractNumber}" Width="150"/>
-                            <DataGridTextColumn Header="CUSTOMER" Binding="{Binding CustomerName}" Width="*"/>
-                            <DataGridTextColumn Header="NEXT DUE" Binding="{Binding NextDue, StringFormat=dd MMM yy}" Width="92"/>
-                            <DataGridTextColumn Header="BALANCE" Binding="{Binding Outstanding, StringFormat=PKR {0:N0}}" Width="120"/>
-                            <DataGridTextColumn Header="OFFICER" Binding="{Binding Contract.RecoveryOfficer}" Width="110"/>
-                            <DataGridTextColumn Header="STATUS" Binding="{Binding Contract.Status}" Width="82"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
+                </Border>
+
+                <!-- 6: Persons List Table -->
+                <Border Grid.Row="6" Style="{StaticResource SurfaceCardStyle}" Padding="14">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Section Header Bar with Table Actions -->
+                        <Grid Grid.Row="0" Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding FilteredContracts.Count, StringFormat='PERSONS WITH PENDING INSTALLMENTS ({0})'}" FontSize="11" FontWeight="Black" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <Button Command="{Binding OpenPaymentModalCommand}" Content="⚡ Quick Recovery" Style="{StaticResource SecondaryButtonStyle}" Padding="10,4" FontSize="11" FontWeight="SemiBold" Margin="0,0,8,0"/>
+                                <Button Command="{Binding OpenNewContractModalCommand}" Content="+ New Customer Contract" Style="{StaticResource PrimaryButtonStyle}" Padding="10,4" FontSize="11" FontWeight="Bold"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <DataGrid Grid.Row="1" ItemsSource="{Binding FilteredContracts}" SelectedItem="{Binding SelectedContract}" Style="{StaticResource ModernDataGridStyle}" IsReadOnly="True" AutoGenerateColumns="False">
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                                    <EventSetter Event="MouseDoubleClick" Handler="OnContractRowDoubleClick"/>
+                                </Style>
+                            </DataGrid.RowStyle>
+                            <DataGrid.Columns>
+                                <!-- Person & Contact -->
+                                <DataGridTemplateColumn Header="PERSON / CUSTOMER" Width="2.2*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" Margin="4,2">
+                                                <Border Width="34" Height="34" CornerRadius="17" Background="{DynamicResource PrimarySoftBrush}" Margin="0,0,10,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding CustomerName, Converter={StaticResource InitialConv}}" FontSize="14" FontWeight="Black" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding CustomerName}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                                        <TextBlock Text="{Binding CustomerPhone}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                                        <TextBlock Text=" · " FontSize="11" Foreground="{DynamicResource TextMutedBrush}"/>
+                                                        <TextBlock Text="{Binding CustomerCnic, TargetNullValue=No CNIC}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Contract Number -->
+                                <DataGridTextColumn Header="CONTRACT #" Binding="{Binding Contract.ContractNumber}" Width="1.5*"/>
+
+                                <!-- Due Status -->
+                                <DataGridTemplateColumn Header="DUE STATUS" Width="1.3*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border CornerRadius="6" Padding="8,4" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="{DynamicResource PrimarySoftBrush}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsOverdue}" Value="True">
+                                                                <Setter Property="Background" Value="{DynamicResource DangerSoftBrush}"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsDueToday}" Value="True">
+                                                                <Setter Property="Background" Value="{DynamicResource WarningSoftBrush}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock Text="{Binding DueStatusBadge}" FontWeight="Bold" FontSize="11">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsOverdue}" Value="True">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding IsDueToday}" Value="True">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource WarningBrush}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Next Kisht Due -->
+                                <DataGridTextColumn Header="NEXT KISHT" Binding="{Binding NextDueAmount, StringFormat=PKR {0:N0}}" Width="1.2*"/>
+
+                                <!-- Balance -->
+                                <DataGridTemplateColumn Header="TOTAL BALANCE" Width="1.4*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Outstanding, StringFormat=PKR {0:N0}}" FontWeight="Black" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Progress -->
+                                <DataGridTemplateColumn Header="INSTALLMENTS PROGRESS" Width="1.6*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel VerticalAlignment="Center" Margin="0,0,10,0">
+                                                <Grid>
+                                                    <TextBlock Text="{Binding PaidInstallments, StringFormat='{}{0} paid'}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                                    <TextBlock Text="{Binding TotalInstallments, StringFormat='of {0} total'}" HorizontalAlignment="Right" FontSize="10" Foreground="{DynamicResource TextMutedBrush}"/>
+                                                </Grid>
+                                                <ProgressBar Value="{Binding ProgressPercentage, Mode=OneWay}" Maximum="100" Height="5" Margin="0,3,0,0" Foreground="{DynamicResource PrimaryBrush}"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Officer -->
+                                <DataGridTextColumn Header="OFFICER" Binding="{Binding Contract.RecoveryOfficer, TargetNullValue=Unassigned}" Width="1.2*"/>
+
+                                <!-- Action Button -->
+                                <DataGridTemplateColumn Header="ACTION" Width="1.3*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Command="{Binding DataContext.OpenPersonRecordsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Content="Open Records →" Style="{StaticResource PrimaryButtonStyle}" Padding="10,5" FontSize="11" HorizontalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- ========================================================================= -->
+            <!-- SCREEN 2: PERSON'S FULL RECORDS PAGE ("NEW PAGE")                         -->
+            <!-- Visible when IsDetailView is True                                         -->
+            <!-- ========================================================================= -->
+            <Grid Visibility="{Binding IsDetailView, Converter={StaticResource BoolToVis}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <!-- 0: Top Navigation & Action Bar -->
+                    <RowDefinition Height="12"/>
+                    <RowDefinition Height="Auto"/> <!-- 2: Customer Overview Header Card -->
+                    <RowDefinition Height="10"/>
+                    <RowDefinition Height="Auto"/> <!-- 4: 3-Section Switcher Tabs -->
+                    <RowDefinition Height="10"/>
+                    <RowDefinition Height="*"/>    <!-- 6: Active Section Content -->
+                </Grid.RowDefinitions>
+
+                <!-- 0: Navigation Breadcrumb & Top Buttons -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="0" Command="{Binding BackToPendingListCommand}" Content="← Back to Pending List" Style="{StaticResource SecondaryButtonStyle}" Padding="14,8" FontWeight="Bold"/>
+
+                    <TextBlock Grid.Column="1" Text="{Binding StatusMessage}" Foreground="{Binding IsErrorStatus, Converter={StaticResource DuesColorConv}}" FontWeight="SemiBold" FontSize="12" Margin="16,0,0,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                        <Button Command="{Binding PrintContractAgreementCommand}" Content="Print Agreement (A4)" Style="{StaticResource GhostButtonStyle}" Padding="10,6" FontSize="12" Margin="0,0,8,0"/>
+                        <Button Command="{Binding PrintContractPassbookCommand}" Content="Print Passbook (A4)" Style="{StaticResource GhostButtonStyle}" Padding="10,6" FontSize="12" Margin="0,0,8,0"/>
+                        <Button Command="{Binding OpenPaymentModalCommand}" Content="Quick recovery modal" Style="{StaticResource SecondaryButtonStyle}" Padding="12,6" FontSize="12"/>
+                    </StackPanel>
                 </Grid>
-            </Border>
-            <Border Grid.Column="2" Style="{StaticResource SurfaceCardStyle}" Padding="14">
-                <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                    <Grid Grid.Row="0" Margin="0,0,0,8">
-                        <StackPanel><TextBlock Text="{Binding SelectedContract.Contract.ContractNumber, TargetNullValue=Select a contract}" FontSize="14" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}"/><TextBlock Text="{Binding SelectedContract.CustomerName}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/></StackPanel>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Command="{Binding PrintContractAgreementCommand}" Content="Print Kisht Nama" Style="{StaticResource GhostButtonStyle}" Padding="8,4" FontSize="11" Margin="0,0,6,0"/>
-                            <Button Command="{Binding PrintContractPassbookCommand}" Content="Print Qist Card" Style="{StaticResource GhostButtonStyle}" Padding="8,4" FontSize="11" Margin="0,0,6,0"/>
-                            <Button Command="{Binding OpenPaymentModalCommand}" Content="Take payment" Style="{StaticResource PrimaryButtonStyle}" Padding="10,6"/>
+
+                <!-- 2: Customer Profile & Financial Summary Banner -->
+                <Border Grid.Row="2" Style="{StaticResource SurfaceCardStyle}" Padding="16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Customer Avatar & Basic Badges -->
+                        <Border Grid.Column="0" Width="48" Height="48" CornerRadius="24" Background="{DynamicResource PrimarySoftBrush}" Margin="0,0,16,0" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding SelectedContract.CustomerName, Converter={StaticResource InitialConv}}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding SelectedContract.CustomerName}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                <Border Background="{DynamicResource SuccessSoftBrush}" CornerRadius="10" Padding="8,2" Margin="10,0,0,0" VerticalAlignment="Center">
+                                    <TextBlock Text="Verified Customer" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}"/>
+                                </Border>
+                                <Border CornerRadius="10" Padding="8,2" Margin="8,0,0,0" VerticalAlignment="Center">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="{DynamicResource PrimarySoftBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SelectedContract.IsOverdue}" Value="True">
+                                                    <Setter Property="Background" Value="{DynamicResource DangerSoftBrush}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock Text="{Binding SelectedContract.DueStatusBadge}" FontSize="10" FontWeight="Bold">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SelectedContract.IsOverdue}" Value="True">
+                                                        <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                <TextBlock Text="Phone: " FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                <TextBlock Text="{Binding SelectedContract.CustomerPhone}" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                <TextBlock Text="  |  CNIC: " FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                <TextBlock Text="{Binding SelectedContract.CustomerCnic, TargetNullValue=Not recorded}" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                <TextBlock Text="  |  Contract #: " FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                <TextBlock Text="{Binding SelectedContract.Contract.ContractNumber}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
+                                <TextBlock Text="  |  Officer: " FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                <TextBlock Text="{Binding SelectedContract.Contract.RecoveryOfficer, TargetNullValue=Unassigned}" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Right Side Financial Indicators -->
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Border BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="0,0,1,0" Padding="0,0,16,0" Margin="0,0,16,0">
+                                <StackPanel HorizontalAlignment="Right">
+                                    <TextBlock Text="TOTAL CONTRACT" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                                    <TextBlock Text="{Binding SelectedContract.Contract.TotalPayable, StringFormat=PKR {0:N0}}" FontSize="16" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="0,0,1,0" Padding="0,0,16,0" Margin="0,0,16,0">
+                                <StackPanel HorizontalAlignment="Right">
+                                    <TextBlock Text="TOTAL PAID" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                                    <TextBlock Text="{Binding SelectedContract.Paid, StringFormat=PKR {0:N0}}" FontSize="16" FontWeight="Black" Foreground="{DynamicResource SuccessBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <StackPanel HorizontalAlignment="Right">
+                                <TextBlock Text="OUTSTANDING BALANCE" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                                <TextBlock Text="{Binding SelectedContract.Outstanding, StringFormat=PKR {0:N0}}" FontSize="18" FontWeight="Black" Foreground="{DynamicResource DangerBrush}" Margin="0,2,0,0"/>
+                                <TextBlock Text="{Binding SelectedContract.PaidInstallments, StringFormat='{}{0} of {0} Kisht Paid'}" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,1,0,0"/>
+                            </StackPanel>
                         </StackPanel>
                     </Grid>
-                    <DataGrid Grid.Row="1" ItemsSource="{Binding SelectedSchedule}" SelectedItem="{Binding SelectedScheduleForWaiver}" Style="{StaticResource ModernDataGridStyle}" IsReadOnly="True" AutoGenerateColumns="False">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="#" Binding="{Binding Schedule.Sequence}" Width="40"/>
-                            <DataGridTextColumn Header="DUE DATE" Binding="{Binding Schedule.DueDate, StringFormat=dd MMM yyyy}" Width="110"/>
-                            <DataGridTextColumn Header="INSTALLMENT" Binding="{Binding Schedule.AmountDue, StringFormat=PKR {0:N2}}" Width="*"/>
-                            <DataGridTextColumn Header="PAID" Binding="{Binding Schedule.AmountPaid, StringFormat=PKR {0:N2}}" Width="*"/>
-                            <DataGridTextColumn Header="LATE FEE" Binding="{Binding Schedule.LateFee, StringFormat=PKR {0:N2}}" Width="90"/>
-                            <DataGridTextColumn Header="LEFT" Binding="{Binding Outstanding, StringFormat=PKR {0:N2}}" Width="105"/>
-                            <DataGridTextColumn Header="STATUS" Binding="{Binding Schedule.Status}" Width="80"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                    <Grid Grid.Row="2" Margin="0,8,0,4">
-                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                        <TextBox Grid.Column="0" Text="{Binding WaiverReason, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Padding="7,5" conv:PlaceholderHelper.Placeholder="Reason required to waive late fee"/>
-                        <Button Grid.Column="2" Command="{Binding WaiveLateFeeCommand}" Content="Waive fee" Style="{StaticResource SecondaryButtonStyle}" Padding="10,5"/>
-                    </Grid>
-                    <TabControl Grid.Row="3" Height="130" Margin="0,6,0,0">
-                        <TabItem Header="Zamin · guarantors">
-                            <DataGrid ItemsSource="{Binding SelectedGuarantors}" Style="{StaticResource ModernDataGridStyle}" IsReadOnly="True" AutoGenerateColumns="False">
-                                <DataGrid.Columns><DataGridTextColumn Header="NAME" Binding="{Binding FullName}" Width="*"/><DataGridTextColumn Header="CNIC" Binding="{Binding CNIC}" Width="130"/><DataGridTextColumn Header="PHONE" Binding="{Binding Phone}" Width="110"/><DataGridTextColumn Header="RELATION" Binding="{Binding Relationship}" Width="100"/></DataGrid.Columns>
-                            </DataGrid>
-                        </TabItem>
-                        <TabItem Header="Customer document vault">
-                            <Grid Margin="8"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                <DataGrid Grid.Column="0" ItemsSource="{Binding CustomerDocuments}" SelectedItem="{Binding SelectedCustomerDocument}" Style="{StaticResource ModernDataGridStyle}" IsReadOnly="True" AutoGenerateColumns="False">
-                                    <DataGrid.Columns><DataGridTextColumn Header="TYPE" Binding="{Binding DocumentType}" Width="150"/><DataGridTextColumn Header="FILE" Binding="{Binding FileName}" Width="*"/></DataGrid.Columns>
-                                </DataGrid>
-                                <Button Grid.Column="2" Command="{Binding ExportSelectedCustomerDocumentCommand}" Content="Export" Style="{StaticResource SecondaryButtonStyle}" VerticalAlignment="Top"/>
+                </Border>
+
+                <!-- 4: The 3 Section Tabs Bar -->
+                <Border Grid.Row="4" Style="{StaticResource SurfaceCardStyle}" Padding="10,4">
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton Style="{StaticResource SegmentTabStyle}" IsChecked="{Binding ActiveDetailSection, Converter={StaticResource EqualityConverter}, ConverterParameter='NextInstallment'}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="⚡ 1. Next Installment &amp; Receipt" FontSize="13"/>
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton Style="{StaticResource SegmentTabStyle}" IsChecked="{Binding ActiveDetailSection, Converter={StaticResource EqualityConverter}, ConverterParameter='AllSchedule'}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📋 2. All Installment Records &amp; Future (To-Do)" FontSize="13"/>
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton Style="{StaticResource SegmentTabStyle}" IsChecked="{Binding ActiveDetailSection, Converter={StaticResource EqualityConverter}, ConverterParameter='CustomerGuarantor'}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="👤 3. Customer &amp; Guarantor Details" FontSize="13"/>
+                            </StackPanel>
+                        </RadioButton>
+                    </StackPanel>
+                </Border>
+
+                <!-- 6: The 3 Sections Content Grid -->
+                <Grid Grid.Row="6">
+                    <!-- ========================================================================= -->
+                    <!-- SECTION 1: NEXT INSTALLMENT RECORD & RECEIPT                               -->
+                    <!-- ========================================================================= -->
+                    <Grid Visibility="{Binding ActiveDetailSection, Converter={StaticResource EqToVis}, ConverterParameter='NextInstallment'}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.15*"/>
+                            <ColumnDefinition Width="14"/>
+                            <ColumnDefinition Width="0.95*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left Column: Next Installment Details & Direct Recovery Form -->
+                        <Border Grid.Column="0" Style="{StaticResource SurfaceCardStyle}" Padding="18">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <TextBlock Text="NEXT INSTALLMENT DUE" FontSize="11" FontWeight="Black" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,10"/>
+
+                                    <!-- Next Installment Highlight Card -->
+                                    <Border Background="{DynamicResource BgSubtleBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,0,0,16">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="12"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <!-- Header: Sequence & Due Date -->
+                                            <Grid Grid.Row="0">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding NextScheduleRow.Schedule.Sequence, StringFormat='INSTALLMENT #{0}', TargetNullValue='ALL INSTALLMENTS PAID'}" FontSize="15" FontWeight="Black" Foreground="{DynamicResource PrimaryBrush}"/>
+                                                    <TextBlock Text="{Binding NextScheduleRow.Schedule.DueDate, StringFormat='Due on: {0:dd MMMM yyyy}', TargetNullValue='No pending installments'}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0"/>
+                                                </StackPanel>
+                                                <Border CornerRadius="8" Padding="8,4" HorizontalAlignment="Right" VerticalAlignment="Top">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Background" Value="{DynamicResource PrimarySoftBrush}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding NextScheduleRow.IsOverdue}" Value="True">
+                                                                    <Setter Property="Background" Value="{DynamicResource DangerSoftBrush}"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding NextScheduleRow.IsDueToday}" Value="True">
+                                                                    <Setter Property="Background" Value="{DynamicResource WarningSoftBrush}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <TextBlock Text="{Binding NextScheduleRow.StatusDisplay, TargetNullValue=Settled}" FontWeight="Bold" FontSize="11">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding NextScheduleRow.IsOverdue}" Value="True">
+                                                                        <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding NextScheduleRow.IsDueToday}" Value="True">
+                                                                        <Setter Property="Foreground" Value="{DynamicResource WarningBrush}"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </Border>
+                                            </Grid>
+
+                                            <!-- Amount Breakdown -->
+                                            <UniformGrid Grid.Row="2" Columns="3">
+                                                <StackPanel>
+                                                    <TextBlock Text="SCHEDULED KISHT" Style="{StaticResource FormLabelStyle}"/>
+                                                    <TextBlock Text="{Binding NextScheduleRow.Schedule.AmountDue, StringFormat=PKR {0:N2}, TargetNullValue=PKR 0.00}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                                </StackPanel>
+                                                <StackPanel>
+                                                    <TextBlock Text="LATE FEE" Style="{StaticResource FormLabelStyle}"/>
+                                                    <TextBlock Text="{Binding NextScheduleRow.Schedule.LateFee, StringFormat=PKR {0:N2}, TargetNullValue=PKR 0.00}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource DangerBrush}"/>
+                                                </StackPanel>
+                                                <StackPanel>
+                                                    <TextBlock Text="TOTAL DUE NOW" Style="{StaticResource FormLabelStyle}"/>
+                                                    <TextBlock Text="{Binding NextScheduleRow.TotalLinePayable, StringFormat=PKR {0:N2}, TargetNullValue=PKR 0.00}" FontSize="16" FontWeight="Black" Foreground="{DynamicResource PrimaryBrush}"/>
+                                                </StackPanel>
+                                            </UniformGrid>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Direct Payment Receive Box -->
+                                    <TextBlock Text="RECEIVE INSTALLMENT PAYMENT" FontSize="11" FontWeight="Black" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,10"/>
+
+                                    <!-- Quick Fill Buttons -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                        <Button Command="{Binding QuickPayNextInstallmentCommand}" Content="{Binding NextScheduleRow.Outstanding, StringFormat='Pay Next Kisht · PKR {0:N2}', TargetNullValue='Pay Next Kisht'}" Style="{StaticResource SecondaryButtonStyle}" Padding="10,5" FontSize="11" Margin="0,0,8,0"/>
+                                        <Button Command="{Binding QuickPayFullBalanceCommand}" Content="{Binding SelectedContract.Outstanding, StringFormat='Pay Full Balance · PKR {0:N2}'}" Style="{StaticResource SecondaryButtonStyle}" Padding="10,5" FontSize="11"/>
+                                    </StackPanel>
+
+                                    <!-- Payment Amount Input -->
+                                    <TextBlock Text="AMOUNT RECEIVED (PKR)" Style="{StaticResource FormLabelStyle}"/>
+                                    <TextBox Text="{Binding PaymentAmount, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" FontSize="18" FontWeight="Black" Margin="0,0,0,12"/>
+
+                                    <!-- Payment Mode -->
+                                    <TextBlock Text="PAYMENT MODE" Style="{StaticResource FormLabelStyle}"/>
+                                    <ComboBox ItemsSource="{Binding PaymentModes}" SelectedItem="{Binding PaymentMode}" Padding="8,7" Margin="0,0,0,12"/>
+
+                                    <!-- Notes -->
+                                    <TextBlock Text="PAYMENT REFERENCE / RECOVERY NOTE" Style="{StaticResource FormLabelStyle}"/>
+                                    <TextBox Text="{Binding PaymentNotes, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="e.g. Received by officer at shop / Raast transaction ID" Margin="0,0,0,14"/>
+
+                                    <!-- Error / Validation Alert -->
+                                    <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource DangerBrush}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,10" Visibility="{Binding ErrorMessage, Converter={StaticResource StrNotEmptyToVis}}"/>
+
+                                    <!-- Post Payment Button -->
+                                    <Button Command="{Binding RecordPaymentCommand}" Content="POST PAYMENT &amp; GENERATE RECEIPT" Style="{StaticResource PrimaryButtonStyle}" Padding="16,12" FontSize="13"/>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+
+                        <!-- Right Column: Official Installment Receipt Voucher & History -->
+                        <Border Grid.Column="2" Style="{StaticResource SurfaceCardStyle}" Padding="18">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="14"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Text="INSTALLMENT RECEIPT VOUCHER" FontSize="11" FontWeight="Black" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,10"/>
+
+                                <!-- Official Receipt Slip Card -->
+                                <Border Grid.Row="1" Background="{DynamicResource BgSubtleBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="10" Padding="16">
+                                    <StackPanel>
+                                        <Grid Margin="0,0,0,8">
+                                            <TextBlock Text="PAYMENT RECEIPT" FontWeight="Black" FontSize="14" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                            <Button HorizontalAlignment="Right" Command="{Binding PrintLastReceiptCommand}" Content="🖨 Print Receipt" Style="{StaticResource GhostButtonStyle}" Padding="8,4" FontSize="11"/>
+                                        </Grid>
+
+                                        <Border BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,8"/>
+
+                                        <Grid Margin="0,3">
+                                            <TextBlock Text="Receipt Number:" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                            <TextBlock HorizontalAlignment="Right" Text="{Binding LastPaymentReceipt.ReceiptNumber, TargetNullValue=Ready for payment}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        </Grid>
+                                        <Grid Margin="0,3">
+                                            <TextBlock Text="Date &amp; Time:" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                            <TextBlock HorizontalAlignment="Right" Text="{Binding LastPaymentReceipt.CreatedAt, StringFormat=dd MMM yyyy hh:mm tt, TargetNullValue=--}" FontSize="11" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        </Grid>
+                                        <Grid Margin="0,3">
+                                            <TextBlock Text="Customer Name:" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                            <TextBlock HorizontalAlignment="Right" Text="{Binding SelectedContract.CustomerName}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        </Grid>
+                                        <Grid Margin="0,3">
+                                            <TextBlock Text="Contract #:" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                            <TextBlock HorizontalAlignment="Right" Text="{Binding SelectedContract.Contract.ContractNumber}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryBrush}"/>
+                                        </Grid>
+                                        <Grid Margin="0,3">
+                                            <TextBlock Text="Amount Paid:" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                            <TextBlock HorizontalAlignment="Right" Text="{Binding LastPaymentReceipt.Amount, StringFormat=PKR {0:N2}, TargetNullValue=PKR 0.00}" FontSize="15" FontWeight="Black" Foreground="{DynamicResource SuccessBrush}"/>
+                                        </Grid>
+                                        <Grid Margin="0,3">
+                                            <TextBlock Text="Payment Mode:" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                            <TextBlock HorizontalAlignment="Right" Text="{Binding LastPaymentReceipt.PaymentMode, TargetNullValue=Cash}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        </Grid>
+                                        <Grid Margin="0,3">
+                                            <TextBlock Text="Remaining Balance:" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                            <TextBlock HorizontalAlignment="Right" Text="{Binding SelectedContract.Outstanding, StringFormat=PKR {0:N2}}" FontSize="12" FontWeight="Black" Foreground="{DynamicResource DangerBrush}"/>
+                                        </Grid>
+                                        <Grid Margin="0,3">
+                                            <TextBlock Text="Next Due Date:" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                            <TextBlock HorizontalAlignment="Right" Text="{Binding SelectedContract.NextDue, StringFormat=dd MMM yyyy, TargetNullValue=Settled}" FontSize="11" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Payment History List -->
+                                <Grid Grid.Row="3">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Text="PREVIOUS PAYMENT RECEIPTS" FontSize="10" FontWeight="Black" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,6"/>
+
+                                    <DataGrid Grid.Row="1" ItemsSource="{Binding SelectedPayments}" Style="{StaticResource ModernDataGridStyle}" IsReadOnly="True" AutoGenerateColumns="False">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="RECEIPT" Binding="{Binding ReceiptNumber}" Width="*"/>
+                                            <DataGridTextColumn Header="DATE" Binding="{Binding CreatedAt, StringFormat=dd MMM yy}" Width="85"/>
+                                            <DataGridTextColumn Header="AMOUNT" Binding="{Binding Amount, StringFormat=PKR {0:N0}}" Width="95"/>
+                                            <DataGridTextColumn Header="MODE" Binding="{Binding PaymentMode}" Width="80"/>
+                                            <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" Width="65"/>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </Grid>
                             </Grid>
-                        </TabItem>
-                        <TabItem Header="Payment history">
-                            <DataGrid ItemsSource="{Binding SelectedPayments}" Style="{StaticResource ModernDataGridStyle}" IsReadOnly="True" AutoGenerateColumns="False">
+                        </Border>
+                    </Grid>
+
+                    <!-- ========================================================================= -->
+                    <!-- SECTION 2: ALL INSTALLMENT RECORDS & FUTURE IN TO-DO FORM                  -->
+                    <!-- ========================================================================= -->
+                    <Grid Visibility="{Binding ActiveDetailSection, Converter={StaticResource EqToVis}, ConverterParameter='AllSchedule'}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/> <!-- View Switcher & Fee Waiver Bar -->
+                            <RowDefinition Height="10"/>
+                            <RowDefinition Height="*"/>    <!-- To-Do Checklist or Grid Content -->
+                        </Grid.RowDefinitions>
+
+                        <!-- Top Toolbar with Fee Waiver & Switcher -->
+                        <Border Grid.Row="0" Style="{StaticResource SurfaceCardStyle}" Padding="14,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Summary Text -->
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="INSTALLMENT SCHEDULE TIMELINE" FontSize="13" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    <TextBlock Text="Track past collected installments, active pending action items, and upcoming scheduled installments." FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                </StackPanel>
+
+                                <!-- Late Fee Waiver Form -->
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,20,0" VerticalAlignment="Center">
+                                    <TextBlock Text="Waive Late Fee:" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBox Text="{Binding WaiverReason, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Width="220" Padding="8,5" conv:PlaceholderHelper.Placeholder="Reason required to waive"/>
+                                    <Button Command="{Binding WaiveLateFeeCommand}" Content="Waive fee" Style="{StaticResource SecondaryButtonStyle}" Padding="10,5" Margin="8,0,0,0"/>
+                                </StackPanel>
+
+                                <!-- View Toggle -->
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <RadioButton Style="{StaticResource TabPillStyle}" IsChecked="{Binding IsScheduleTodoView}" Content="To-Do Checklist Form" FontSize="11"/>
+                                    <RadioButton Style="{StaticResource TabPillStyle}" IsChecked="{Binding IsScheduleTodoView, Converter={StaticResource InverseBool}}" Content="Data Table View" FontSize="11"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- 1: To-Do Checklist View (When IsScheduleTodoView is True) -->
+                        <Border Grid.Row="2" Style="{StaticResource SurfaceCardStyle}" Padding="16" Visibility="{Binding IsScheduleTodoView, Converter={StaticResource BoolToVis}}">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <ItemsControl ItemsSource="{Binding SelectedSchedule}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border CornerRadius="10" Padding="14,10" Margin="0,0,0,8" BorderThickness="1">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="{DynamicResource BgSurfaceBrush}"/>
+                                                        <Setter Property="BorderBrush" Value="{DynamicResource BorderDefaultBrush}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsPaid}" Value="True">
+                                                                <Setter Property="Background" Value="#F7FEFA"/>
+                                                                <Setter Property="BorderBrush" Value="#BBF7D0"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsOverdue}" Value="True">
+                                                                <Setter Property="Background" Value="#FEF2F2"/>
+                                                                <Setter Property="BorderBrush" Value="#FECACA"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsDueToday}" Value="True">
+                                                                <Setter Property="Background" Value="#FFFBEB"/>
+                                                                <Setter Property="BorderBrush" Value="#FDE68A"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/> <!-- Status Icon / Circle -->
+                                                        <ColumnDefinition Width="*"/>    <!-- Text & Details -->
+                                                        <ColumnDefinition Width="Auto"/> <!-- Amount Info -->
+                                                        <ColumnDefinition Width="Auto"/> <!-- Action Buttons -->
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <!-- Left Status Icon Badge -->
+                                                    <Border Grid.Column="0" Width="32" Height="32" CornerRadius="16" Margin="0,0,12,0" VerticalAlignment="Center">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="Background" Value="{DynamicResource BgMutedBrush}"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsPaid}" Value="True">
+                                                                        <Setter Property="Background" Value="{DynamicResource SuccessBrush}"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding IsOverdue}" Value="True">
+                                                                        <Setter Property="Background" Value="{DynamicResource DangerBrush}"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding IsDueToday}" Value="True">
+                                                                        <Setter Property="Background" Value="{DynamicResource WarningBrush}"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+
+                                                        <TextBlock FontWeight="Black" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Text" Value="{Binding Schedule.Sequence}"/>
+                                                                    <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsPaid}" Value="True">
+                                                                            <Setter Property="Text" Value="✔"/>
+                                                                            <Setter Property="Foreground" Value="White"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding IsOverdue}" Value="True">
+                                                                            <Setter Property="Text" Value="⚠"/>
+                                                                            <Setter Property="Foreground" Value="White"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding IsDueToday}" Value="True">
+                                                                            <Setter Property="Text" Value="⚡"/>
+                                                                            <Setter Property="Foreground" Value="White"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                    </Border>
+
+                                                    <!-- Center Description -->
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding Schedule.Sequence, StringFormat='Installment #{0}'}" FontWeight="Black" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                                            <TextBlock Text="  ·  " Foreground="{DynamicResource TextMutedBrush}"/>
+                                                            <TextBlock Text="{Binding Schedule.DueDate, StringFormat='Due: {0:dd MMMM yyyy}'}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                                        </StackPanel>
+
+                                                        <!-- Dynamic status message -->
+                                                        <TextBlock FontSize="11" Margin="0,2,0,0">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Text" Value="Upcoming future installment scheduled in plan."/>
+                                                                    <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsPaid}" Value="True">
+                                                                            <Setter Property="Text" Value="Installment paid in full."/>
+                                                                            <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding IsOverdue}" Value="True">
+                                                                            <Setter Property="Text" Value="Overdue installment! Action required."/>
+                                                                            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding IsDueToday}" Value="True">
+                                                                            <Setter Property="Text" Value="Installment due today!"/>
+                                                                            <Setter Property="Foreground" Value="{DynamicResource WarningBrush}"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                    </StackPanel>
+
+                                                    <!-- Right Financials -->
+                                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="16,0,16,0" HorizontalAlignment="Right">
+                                                        <TextBlock Text="{Binding Schedule.AmountDue, StringFormat=PKR {0:N2}}" FontWeight="Black" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Right"/>
+                                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,2,0,0">
+                                                            <TextBlock Text="{Binding Schedule.AmountPaid, StringFormat='Paid: PKR {0:N0}'}" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                                            <TextBlock Text="{Binding Outstanding, StringFormat=' · Left: PKR {0:N0}'}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource DangerBrush}"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+
+                                                    <!-- Actions (Pay / Select for waiver) -->
+                                                    <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                                                        <Button Command="{Binding DataContext.JumpToSectionAndPayCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Content="Pay Now" Padding="10,5" FontSize="11" Margin="0,0,6,0">
+                                                            <Button.Style>
+                                                                <Style TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsPaid}" Value="True">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Button.Style>
+                                                        </Button>
+
+                                                        <Button Command="{Binding DataContext.SelectScheduleForWaiverCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Content="Select to waive" Padding="8,5" FontSize="11">
+                                                            <Button.Style>
+                                                                <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsOverdue}" Value="True">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Button.Style>
+                                                        </Button>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
+
+                        <!-- 2: DataGrid Table View (When IsScheduleTodoView is False) -->
+                        <Border Grid.Row="2" Style="{StaticResource SurfaceCardStyle}" Padding="14" Visibility="{Binding IsScheduleTodoView, Converter={StaticResource InverseBoolToVis}}">
+                            <DataGrid ItemsSource="{Binding SelectedSchedule}" SelectedItem="{Binding SelectedScheduleForWaiver}" Style="{StaticResource ModernDataGridStyle}" IsReadOnly="True" AutoGenerateColumns="False">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="RECEIPT" Binding="{Binding ReceiptNumber}" Width="*"/>
-                                    <DataGridTextColumn Header="DATE" Binding="{Binding CreatedAt, StringFormat=dd MMM yyyy HH:mm}" Width="140"/>
-                                    <DataGridTextColumn Header="AMOUNT" Binding="{Binding Amount, StringFormat=PKR {0:N2}}" Width="130"/>
-                                    <DataGridTextColumn Header="METHOD" Binding="{Binding PaymentMode}" Width="110"/>
-                                    <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" Width="90"/>
+                                    <DataGridTextColumn Header="#" Binding="{Binding Schedule.Sequence}" Width="50"/>
+                                    <DataGridTextColumn Header="DUE DATE" Binding="{Binding Schedule.DueDate, StringFormat=dd MMM yyyy}" Width="120"/>
+                                    <DataGridTextColumn Header="INSTALLMENT" Binding="{Binding Schedule.AmountDue, StringFormat=PKR {0:N2}}" Width="*"/>
+                                    <DataGridTextColumn Header="PAID" Binding="{Binding Schedule.AmountPaid, StringFormat=PKR {0:N2}}" Width="*"/>
+                                    <DataGridTextColumn Header="LATE FEE" Binding="{Binding Schedule.LateFee, StringFormat=PKR {0:N2}}" Width="100"/>
+                                    <DataGridTextColumn Header="LEFT" Binding="{Binding Outstanding, StringFormat=PKR {0:N2}}" Width="110"/>
+                                    <DataGridTextColumn Header="STATUS" Binding="{Binding Schedule.Status}" Width="90"/>
                                 </DataGrid.Columns>
                             </DataGrid>
-                        </TabItem>
-                    </TabControl>
+                        </Border>
+                    </Grid>
+
+                    <!-- ========================================================================= -->
+                    <!-- SECTION 3: ALL INFORMATION ABOUT CUSTOMER & GUARANTORS                    -->
+                    <!-- ========================================================================= -->
+                    <Grid Visibility="{Binding ActiveDetailSection, Converter={StaticResource EqToVis}, ConverterParameter='CustomerGuarantor'}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="14"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left Column: Customer Information & Contract Purchased Items -->
+                        <Border Grid.Column="0" Style="{StaticResource SurfaceCardStyle}" Padding="18">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <TextBlock Text="CUSTOMER PROFILE INFORMATION" FontSize="11" FontWeight="Black" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,12"/>
+
+                                    <Grid Margin="0,0,0,16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="1*"/>
+                                            <ColumnDefinition Width="1*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="8"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="8"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="8"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Full Name -->
+                                        <StackPanel Grid.Row="0" Grid.Column="0">
+                                            <TextBlock Text="FULL NAME" Style="{StaticResource FormLabelStyle}"/>
+                                            <TextBlock Text="{Binding ContractCustomer.Name}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        </StackPanel>
+
+                                        <!-- CNIC -->
+                                        <StackPanel Grid.Row="0" Grid.Column="1">
+                                            <TextBlock Text="CNIC NUMBER" Style="{StaticResource FormLabelStyle}"/>
+                                            <TextBlock Text="{Binding SelectedContract.CustomerCnic, TargetNullValue=Not recorded}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        </StackPanel>
+
+                                        <!-- Father / Husband -->
+                                        <StackPanel Grid.Row="2" Grid.Column="0">
+                                            <TextBlock Text="FATHER / HUSBAND NAME" Style="{StaticResource FormLabelStyle}"/>
+                                            <TextBlock Text="{Binding ContractCustomerAccount.FatherOrHusbandName, TargetNullValue=Not recorded}" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        </StackPanel>
+
+                                        <!-- Phone -->
+                                        <StackPanel Grid.Row="2" Grid.Column="1">
+                                            <TextBlock Text="MOBILE PHONE" Style="{StaticResource FormLabelStyle}"/>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding ContractCustomer.Phone}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                                <TextBlock Text=" (Verified)" FontSize="11" Foreground="{DynamicResource SuccessBrush}" Margin="4,0,0,0"/>
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <!-- Residential Address -->
+                                        <StackPanel Grid.Row="4" Grid.Column="0">
+                                            <TextBlock Text="RESIDENTIAL ADDRESS" Style="{StaticResource FormLabelStyle}"/>
+                                            <TextBlock Text="{Binding ContractCustomer.Address, TargetNullValue=Not recorded}" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        </StackPanel>
+
+                                        <!-- Work Address -->
+                                        <StackPanel Grid.Row="4" Grid.Column="1">
+                                            <TextBlock Text="WORK / SITE ADDRESS" Style="{StaticResource FormLabelStyle}"/>
+                                            <TextBlock Text="{Binding ContractCustomerAccount.WorkAddress, TargetNullValue=Not recorded}" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        </StackPanel>
+
+                                        <!-- Credit Limit -->
+                                        <StackPanel Grid.Row="6" Grid.Column="0">
+                                            <TextBlock Text="CREDIT LIMIT" Style="{StaticResource FormLabelStyle}"/>
+                                            <TextBlock Text="{Binding ContractCustomer.CreditLimit, StringFormat=PKR {0:N2}}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
+                                        </StackPanel>
+
+                                        <!-- Ledger Dues -->
+                                        <StackPanel Grid.Row="6" Grid.Column="1">
+                                            <TextBlock Text="TOTAL LEDGER DUES" Style="{StaticResource FormLabelStyle}"/>
+                                            <TextBlock Text="{Binding ContractCustomer.TotalDues, StringFormat=PKR {0:N2}}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource DangerBrush}"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- Contract Products Items Section -->
+                                    <TextBlock Text="CONTRACT PRODUCTS &amp; ITEMS PURCHASED" FontSize="11" FontWeight="Black" Foreground="{DynamicResource TextMutedBrush}" Margin="0,10,0,8"/>
+
+                                    <DataGrid ItemsSource="{Binding ContractItems}" Style="{StaticResource ModernDataGridStyle}" IsReadOnly="True" AutoGenerateColumns="False" Height="140">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="PRODUCT / ITEM" Binding="{Binding ProductName}" Width="*"/>
+                                            <DataGridTextColumn Header="QTY" Binding="{Binding Quantity}" Width="65"/>
+                                            <DataGridTextColumn Header="UNIT" Binding="{Binding Unit}" Width="60"/>
+                                            <DataGridTextColumn Header="PRICE" Binding="{Binding UnitPrice, StringFormat=PKR {0:N2}}" Width="110"/>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+
+                        <!-- Right Column: Guarantors (Zamin) & Document Vault -->
+                        <Border Grid.Column="2" Style="{StaticResource SurfaceCardStyle}" Padding="18">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <TextBlock Text="ZAMIN · GUARANTORS INFORMATION" FontSize="11" FontWeight="Black" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,10"/>
+
+                                    <DataGrid ItemsSource="{Binding SelectedGuarantors}" Style="{StaticResource ModernDataGridStyle}" IsReadOnly="True" AutoGenerateColumns="False" Height="130" Margin="0,0,0,16">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="NAME" Binding="{Binding FullName}" Width="1.3*"/>
+                                            <DataGridTextColumn Header="CNIC" Binding="{Binding CNIC}" Width="130"/>
+                                            <DataGridTextColumn Header="PHONE" Binding="{Binding Phone}" Width="110"/>
+                                            <DataGridTextColumn Header="RELATION" Binding="{Binding Relationship}" Width="95"/>
+                                            <DataGridTextColumn Header="ADDRESS" Binding="{Binding Address}" Width="*"/>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+
+                                    <!-- Customer Document Vault -->
+                                    <Grid Margin="0,4,0,8">
+                                        <TextBlock Text="CUSTOMER DOCUMENT VAULT" FontSize="11" FontWeight="Black" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
+                                        <Button HorizontalAlignment="Right" Command="{Binding ExportSelectedCustomerDocumentCommand}" Content="Export Document" Style="{StaticResource SecondaryButtonStyle}" Padding="10,4" FontSize="11"/>
+                                    </Grid>
+
+                                    <DataGrid ItemsSource="{Binding CustomerDocuments}" SelectedItem="{Binding SelectedCustomerDocument}" Style="{StaticResource ModernDataGridStyle}" IsReadOnly="True" AutoGenerateColumns="False" Height="140">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="DOCUMENT TYPE" Binding="{Binding DocumentType}" Width="140"/>
+                                            <DataGridTextColumn Header="FILE NAME" Binding="{Binding FileName}" Width="*"/>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <TextBlock Text="Attached CNIC copies and stamp paper agreements are backed up in the system database." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,8,0,0"/>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
                 </Grid>
-            </Border>
+            </Grid>
         </Grid>
 
-        <Border Grid.RowSpan="7" Background="{DynamicResource BgCanvasBrush}" Visibility="{Binding IsNewCustomerPage, Converter={StaticResource BoolToVis}}" Margin="-22">
-            <Border Style="{StaticResource SurfaceCardStyle}" MaxWidth="1080" MaxHeight="760" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="12" Padding="20">
-                <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                    <Grid Grid.Row="0" Margin="0,0,0,10"><StackPanel><TextBlock Text="New installment customer" FontSize="22" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}"/><TextBlock Text="Register customer, verify details, add contract items, then activate the payment plan." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,3,0,0"/></StackPanel><Button HorizontalAlignment="Right" Command="{Binding CloseModalCommand}" Content="View installment records" Style="{StaticResource GhostButtonStyle}"/></Grid>
+        <!-- ========================================================================= -->
+        <!-- NEW CUSTOMER / CONTRACT FULL-PAGE MODAL (EXISTING CONTRACT CREATION FLOW) -->
+        <!-- ========================================================================= -->
+        <Border Grid.RowSpan="7" Background="{DynamicResource BgCanvasBrush}" Visibility="{Binding IsNewCustomerPage, Converter={StaticResource BoolToVis}}" Margin="-20">
+            <Border Style="{StaticResource SurfaceCardStyle}" MaxWidth="1080" MaxHeight="780" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="12" Padding="20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="New installment customer &amp; contract" FontSize="22" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="Register customer, verify details, add contract items, then activate payment plan." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,3,0,0"/>
+                        </StackPanel>
+                        <Button HorizontalAlignment="Right" Command="{Binding CloseModalCommand}" Content="← Back to Installments" Style="{StaticResource GhostButtonStyle}"/>
+                    </Grid>
+
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                         <StackPanel>
+                            <!-- Step 1: Customer Details -->
                             <Border Style="{StaticResource SurfaceCardStyle}" Padding="12" Margin="0,0,0,10">
                                 <Grid>
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="8"/><RowDefinition Height="Auto"/><RowDefinition Height="8"/><RowDefinition Height="Auto"/><RowDefinition Height="8"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                                    <StackPanel Grid.Row="0" Grid.ColumnSpan="5" Orientation="Horizontal" Margin="0,0,0,10"><Button Command="{Binding UseExistingCustomerCommand}" Content="Existing customer" Style="{StaticResource SecondaryButtonStyle}" Padding="10,6" Margin="0,0,8,0"/><Button Command="{Binding StartNewCustomerCommand}" Content="Register new customer" Style="{StaticResource PrimaryButtonStyle}" Padding="10,6"/></StackPanel>
+                                    <StackPanel Grid.Row="0" Grid.ColumnSpan="5" Orientation="Horizontal" Margin="0,0,0,10">
+                                        <Button Command="{Binding UseExistingCustomerCommand}" Content="Existing customer" Style="{StaticResource SecondaryButtonStyle}" Padding="10,6" Margin="0,0,8,0"/>
+                                        <Button Command="{Binding StartNewCustomerCommand}" Content="Register new customer" Style="{StaticResource PrimaryButtonStyle}" Padding="10,6"/>
+                                    </StackPanel>
                                     <StackPanel Grid.Row="2" Visibility="{Binding IsNewCustomer, Converter={StaticResource InverseBoolToVis}}"><TextBlock Text="CUSTOMER" Style="{StaticResource FormLabelStyle}"/><ComboBox ItemsSource="{Binding Customers}" SelectedItem="{Binding SelectedCustomer}" DisplayMemberPath="Name" Padding="8,6"/></StackPanel>
                                     <StackPanel Grid.Row="2" Visibility="{Binding IsNewCustomer, Converter={StaticResource BoolToVis}}"><TextBlock Text="CUSTOMER FULL NAME" Style="{StaticResource FormLabelStyle}"/><TextBox Text="{Binding NewCustomerName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}"/></StackPanel>
                                     <StackPanel Grid.Row="2" Grid.Column="2"><TextBlock Text="CNIC · XXXXX-XXXXXXX-X" Style="{StaticResource FormLabelStyle}"/><TextBox Text="{Binding CustomerCNIC, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}"/></StackPanel>
@@ -167,6 +1010,7 @@
                                 </Grid>
                             </Border>
 
+                            <!-- Step 2: Products Lines -->
                             <Border Style="{StaticResource SurfaceCardStyle}" Padding="12" Margin="0,0,0,10">
                                 <StackPanel>
                                     <TextBlock Text="PRODUCTS · STOCK IS DEDUCTED WHEN CONTRACT IS ACTIVATED" FontSize="10" FontWeight="Black" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,8"/>
@@ -182,6 +1026,7 @@
                                 </StackPanel>
                             </Border>
 
+                            <!-- Step 3: Terms & Schedule -->
                             <Border Style="{StaticResource SurfaceCardStyle}" Padding="12" Margin="0,0,0,10">
                                 <Grid>
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -205,6 +1050,7 @@
                                 </Grid>
                             </Border>
 
+                            <!-- Step 4: Guarantors (Zamin) -->
                             <Border Style="{StaticResource SurfaceCardStyle}" Padding="12" Margin="0,0,0,10">
                                 <StackPanel>
                                     <TextBlock Text="ZAMIN · FIRST GUARANTOR REQUIRED, SECOND OPTIONAL" FontSize="10" FontWeight="Black" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,8"/>
@@ -225,6 +1071,7 @@
                                 </StackPanel>
                             </Border>
 
+                            <!-- Step 5: Document Vault -->
                             <Border Style="{StaticResource SurfaceCardStyle}" Padding="12">
                                 <StackPanel><TextBlock Text="CUSTOMER DOCUMENT VAULT · INCLUDED IN DATABASE BACKUPS" FontSize="10" FontWeight="Black" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,8"/>
                                     <UniformGrid Columns="3">
@@ -236,7 +1083,9 @@
                             </Border>
                         </StackPanel>
                     </ScrollViewer>
-                    <Grid Grid.Row="2" Margin="0,10,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="10"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+
+                    <Grid Grid.Row="2" Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="10"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="{Binding ErrorMessage}" Foreground="{DynamicResource DangerBrush}" TextWrapping="Wrap" VerticalAlignment="Center"/>
                         <Button Grid.Column="1" Command="{Binding CloseModalCommand}" Content="Cancel" Style="{StaticResource SecondaryButtonStyle}"/>
                         <Button Grid.Column="3" Command="{Binding CreateContractCommand}" Content="Activate contract" Style="{StaticResource PrimaryButtonStyle}"/>
@@ -245,22 +1094,29 @@
             </Border>
         </Border>
 
-        <Border Grid.RowSpan="7" Background="{DynamicResource ModalOverlayBrush}" Visibility="{Binding IsPaymentModalOpen, Converter={StaticResource BoolToVis}}" Margin="-22">
-            <Border Style="{StaticResource SurfaceCardStyle}" Width="420" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="24">
+        <!-- ========================================================================= -->
+        <!-- QUICK PAYMENT POPUP MODAL                                                 -->
+        <!-- ========================================================================= -->
+        <Border Grid.RowSpan="7" Background="{DynamicResource ModalOverlayBrush}" Visibility="{Binding IsPaymentModalOpen, Converter={StaticResource BoolToVis}}" Margin="-20">
+            <Border Style="{StaticResource SurfaceCardStyle}" Width="430" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="24">
                 <StackPanel>
                     <TextBlock Text="INSTALLMENT RECOVERY" FontSize="16" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}"/>
                     <TextBlock Text="{Binding SelectedContract.CustomerName}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,3,0,16"/>
-                    <Grid Margin="0,0,0,5"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                    <Grid Margin="0,0,0,5">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                         <TextBlock Text="AMOUNT RECEIVED (PKR)" Style="{StaticResource FormLabelStyle}" VerticalAlignment="Center"/>
                         <Button Grid.Column="1" Command="{Binding UseRemainingBalanceCommand}" Content="{Binding SelectedContract.Outstanding, StringFormat='Use balance · PKR {0:N2}'}" Style="{StaticResource GhostButtonStyle}" Padding="6,3" FontSize="10"/>
                     </Grid>
-                    <TextBox Text="{Binding PaymentAmount, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" FontSize="19" Margin="0,0,0,12"/>
+                    <TextBox Text="{Binding PaymentAmount, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" FontSize="19" FontWeight="Black" Margin="0,0,0,12"/>
                     <TextBlock Text="PAYMENT MODE" Style="{StaticResource FormLabelStyle}"/>
                     <ComboBox ItemsSource="{Binding PaymentModes}" SelectedItem="{Binding PaymentMode}" Padding="8,6" Margin="0,0,0,12"/>
                     <TextBox Text="{Binding PaymentNotes, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" conv:PlaceholderHelper.Placeholder="Reference or recovery note" Margin="0,0,0,14"/>
-                    <TextBlock Text="Payment is applied oldest installment first. Partial payments remain on the schedule; a receipt is created." FontSize="10" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,12"/>
-                    <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource DangerBrush}" TextWrapping="Wrap" Margin="0,0,0,10"/>
-                    <UniformGrid Columns="2"><Button Command="{Binding CloseModalCommand}" Content="Cancel" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,5,0"/><Button Command="{Binding RecordPaymentCommand}" Content="Post recovery" Style="{StaticResource PrimaryButtonStyle}" Margin="5,0,0,0"/></UniformGrid>
+                    <TextBlock Text="Payment is applied oldest installment first. Partial payments remain on schedule; a receipt is generated." FontSize="10" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                    <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource DangerBrush}" TextWrapping="Wrap" Margin="0,0,0,10" Visibility="{Binding ErrorMessage, Converter={StaticResource StrNotEmptyToVis}}"/>
+                    <UniformGrid Columns="2">
+                        <Button Command="{Binding CloseModalCommand}" Content="Cancel" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,5,0"/>
+                        <Button Command="{Binding RecordPaymentCommand}" Content="Post recovery" Style="{StaticResource PrimaryButtonStyle}" Margin="5,0,0,0"/>
+                    </UniformGrid>
                 </StackPanel>
             </Border>
         </Border>

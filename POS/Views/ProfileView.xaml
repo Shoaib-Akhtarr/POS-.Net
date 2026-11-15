@@ -176,23 +176,10 @@
                             <TextBox Text="{Binding ReceiptFooter, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,14"/>
 
                             <TextBlock Text="{DynamicResource Lang_PrinterSettings}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,6,0,10"/>
-                            <Grid Margin="0,0,0,10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="10"/>
-                                    <ColumnDefinition Width="140"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="RECEIPT PRINTER *" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
-                                    <ComboBox ItemsSource="{Binding InstalledPrinters}" Text="{Binding PrinterName}" IsEditable="True" Padding="10,8"/>
-                                </StackPanel>
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="PRINT FORMAT *" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
-                                    <ComboBox ItemsSource="{Binding PrintFormats}" SelectedItem="{Binding PreferredPrintFormat}" Padding="10,8"/>
-                                </StackPanel>
-                            </Grid>
-
-                            <CheckBox IsChecked="{Binding UseBitmapThermalForUrdu}" Content="Use Bitmap Thermal Printing (enables Urdu font on 80mm receipts)" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,14"/>
+                            <StackPanel Margin="0,0,0,14">
+                                <TextBlock Text="A4 / INVOICE PRINTER" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <ComboBox ItemsSource="{Binding InstalledPrinters}" Text="{Binding PrinterName}" IsEditable="True" Padding="10,8"/>
+                            </StackPanel>
 
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -201,7 +188,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <Button Grid.Column="0" Command="{Binding SaveStoreSettingsCommand}" Content="{DynamicResource Lang_SaveChanges}" Style="{StaticResource PrimaryButtonStyle}"/>
-                                <Button Grid.Column="2" Command="{Binding TestPrintCommand}" Content="Test Print" Style="{StaticResource SecondaryButtonStyle}"/>
+                                <Button Grid.Column="2" Command="{Binding TestPrintCommand}" Content="Test Print (A4)" Style="{StaticResource SecondaryButtonStyle}"/>
                             </Grid>
                         </StackPanel>
                     </Border>
