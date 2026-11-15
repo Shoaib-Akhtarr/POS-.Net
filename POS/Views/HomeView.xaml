@@ -87,6 +87,8 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="12"/>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
                     <!-- Action 1: New Sale (F2) -->
@@ -183,6 +185,31 @@
                                             <TextBlock Text="Contracts &amp; collections" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0"/>
                                         </StackPanel>
                                         <TextBlock Grid.Column="2" Text="→" FontSize="14" FontWeight="Bold" Foreground="#6366F1" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <!-- Action 5: Records & Reports -->
+                    <Button Grid.Column="8" Command="{Binding QuickRecordsCommand}" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Style="{StaticResource SurfaceCardStyle}" Padding="16,14" Background="{DynamicResource BgSurfaceBrush}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="38" Height="38" CornerRadius="10" Background="#FCE7F3" Margin="0,0,12,0">
+                                            <Path Data="{StaticResource Icon_Records}" Fill="#DB2777" Width="18" Height="18" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="Records &amp; Reports" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                            <TextBlock Text="Sales history &amp; Z-Report" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="2" Text="→" FontSize="14" FontWeight="Bold" Foreground="#DB2777" VerticalAlignment="Center"/>
                                     </Grid>
                                 </Border>
                             </ControlTemplate>
@@ -395,7 +422,124 @@
                         </Grid>
                     </StackPanel>
 
-                    <!-- RIGHT: Top Selling Products (Matching CosyPOS & Starline) -->
+                    <!-- ANALYTICS CHARTS ROW -->
+                    <Grid Grid.Row="3" Margin="0,24,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Chart 1: Payment Method Mix (Donut) -->
+                        <Border Grid.Column="0" Style="{StaticResource SurfaceCardStyle}" Padding="20">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                                    <TextBlock Text="PAYMENT METHOD MIX" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    <TextBlock Text="Last 30 days · By amount collected" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <Grid Grid.Row="1">
+                                    <Canvas x:Name="PaymentDonutCanvas" Width="180" Height="180" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Canvas.Left="84" Canvas.Top="84" Text="{Binding TotalAmountPaid, StringFormat='Rs {0:N0}'}" FontSize="16" FontWeight="Black" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <TextBlock Canvas.Left="72" Canvas.Top="106" Text="Collected" FontSize="9" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Canvas>
+                                    <ItemsControl Grid.Row="1" ItemsSource="{Binding PaymentMethodMix}" Margin="10,0,10,10" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" Margin="6,4">
+                                                    <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2" Fill="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding Method}" FontSize="9.5" Foreground="{DynamicResource TextSecondaryBrush}" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding Percent, StringFormat=' {0:F1}%'}" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Grid>
+                            </Grid>
+                        </Border>
+
+                        <!-- Chart 2: Department Revenue (Horizontal Bar) -->
+                        <Border Grid.Column="2" Style="{StaticResource SurfaceCardStyle}" Padding="20">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                                    <TextBlock Text="DEPARTMENT REVENUE" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    <TextBlock Text="Last 30 days · By category" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <ItemsControl Grid.Row="1" ItemsSource="{Binding DepartmentRevenue}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,8,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="110"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="60"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="{Binding Department}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                                <Grid Grid.Column="1" Height="24" VerticalAlignment="Center" MaxWidth="220">
+                                                    <Border Background="{DynamicResource BgSubtleBrush}" CornerRadius="4"/>
+                                                    <Border Background="{DynamicResource PrimaryBrush}" CornerRadius="4" Height="24" VerticalAlignment="Center"
+                                                            Width="{Binding Percent, Converter={StaticResource PctWidthConv}}"/>
+                                                </Grid>
+                                                <TextBlock Grid.Column="2" Text="{Binding Amount, StringFormat='Rs {0:N0}'}" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+                        </Border>
+
+                        <!-- Chart 3: Monthly Sales Trend (Line) -->
+                        <Border Grid.Column="4" Style="{StaticResource SurfaceCardStyle}" Padding="20">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                                    <TextBlock Text="MONTHLY SALES TREND" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    <TextBlock Text="Last 6 months · Net revenue" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <Grid Grid.Row="1">
+                                    <ItemsControl ItemsSource="{Binding MonthlyTrend}" Margin="0,10,0,0">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,6,0,0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="70"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="50"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="{Binding Month}" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                                                    <Grid Grid.Column="1" Height="16" VerticalAlignment="Center" MaxWidth="220">
+                                                        <Border Background="{DynamicResource BgSubtleBrush}" CornerRadius="4"/>
+                                                        <Border Background="{DynamicResource PrimaryBrush}" CornerRadius="4" Height="16" VerticalAlignment="Center"
+                                                                Width="{Binding PointHeight, Converter={StaticResource PctWidthConv}}"/>
+                                                    </Grid>
+                                                    <TextBlock Grid.Column="2" Text="{Binding Amount, StringFormat='Rs {0:N0}'}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <!-- RIGHT: Top Selling Products -->
                     <Border Grid.Column="2" Style="{StaticResource SurfaceCardStyle}" Padding="22">
                         <Grid>
                             <Grid.RowDefinitions>

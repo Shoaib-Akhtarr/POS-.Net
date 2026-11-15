@@ -38,6 +38,7 @@
             <converters:EqualityToVisibilityConverter x:Key="EqToVis" />
             <converters:ImageFallbackConverter x:Key="SafeImageConv" />
             <converters:HasImageConverter x:Key="HasImageConv" />
+            <converters:PercentageToWidthConverter x:Key="PctWidthConv" MaxWidth="220" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -131,6 +131,7 @@ namespace POS.ViewModels
                     case "Khata": NavigateToKhata(); break;
                     case "Installments": NavigateToInstallments(); break;
                     case "Products": NavigateToProducts(); break;
+                    case "Records": NavigateToRecords(); break;
                     case "Home": NavigateToHome(); break;
                 }
             });

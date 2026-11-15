@@ -18,12 +18,14 @@ namespace POS.ViewModels
     public sealed record InstallmentContractRow(
         InstallmentContract Contract,
         string CustomerName,
+        string CustomerPhone,
         decimal Paid,
         decimal Outstanding,
         DateTime? NextDue,
         int OverdueCount);
 
     public sealed record InstallmentScheduleRow(InstallmentSchedule Schedule, decimal Outstanding);
+    public sealed record InstallmentPaymentRow(string ReceiptNumber, DateTime CreatedAt, decimal Amount, string PaymentMode, string Status);
     public sealed record CustomerDocumentRow(long Id, string DocumentType, string FileName);
 
     public sealed class InstallmentLineDraft : ObservableObject
@@ -60,10 +62,12 @@ namespace POS.ViewModels
         [ObservableProperty] private ObservableCollection<Customer> _customers = new();
         [ObservableProperty] private ObservableCollection<Product> _products = new();
         [ObservableProperty] private ObservableCollection<InstallmentContractRow> _contracts = new();
+        [ObservableProperty] private ObservableCollection<InstallmentContractRow> _filteredContracts = new();
         [ObservableProperty] private ObservableCollection<InstallmentContractRow> _dueToday = new();
         [ObservableProperty] private ObservableCollection<InstallmentContractRow> _upcoming = new();
         [ObservableProperty] private ObservableCollection<InstallmentContractRow> _overdue = new();
         [ObservableProperty] private ObservableCollection<InstallmentScheduleRow> _selectedSchedule = new();
+        [ObservableProperty] private ObservableCollection<InstallmentPaymentRow> _selectedPayments = new();
         [ObservableProperty] private ObservableCollection<InstallmentGuarantor> _selectedGuarantors = new();
         [ObservableProperty] private ObservableCollection<CustomerDocumentRow> _customerDocuments = new();
         [ObservableProperty] private CustomerDocumentRow? _selectedCustomerDocument;
@@ -124,10 +128,13 @@ namespace POS.ViewModels
         [ObservableProperty] private decimal _dueTodayTotal;
         [ObservableProperty] private decimal _upcomingTotal;
         [ObservableProperty] private decimal _overdueTotal;
+        [ObservableProperty] private string _contractSearchText = string.Empty;
+        [ObservableProperty] private string _selectedStatusFilter = "All statuses";
 
         public List<string> MarkupModes { get; } = new() { "Percent", "Fixed PKR" };
         public List<string> Frequencies { get; } = new() { "Monthly", "Weekly", "Custom" };
         public List<int> Tenures { get; } = new() { 3, 6, 12, 18, 24, 36 };
+        public List<string> ContractStatusFilters { get; } = new() { "All statuses", "Active", "Completed" };
         public List<string> PaymentModes { get; } = new() { "Cash", "Bank Transfer", "Raast", "JazzCash", "EasyPaisa" };
         public decimal MarkupAmount => MarkupMode == "Percent"
             ? decimal.Round(CashPrice * MarkupValue / 100m, 2, MidpointRounding.AwayFromZero)
@@ -170,6 +177,8 @@ namespace POS.ViewModels
         partial void OnFrequencyChanged(string value) => RecalculatePlan();
         partial void OnCustomIntervalDaysChanged(int value) => RecalculatePlan();
         partial void OnFirstDueDateChanged(DateTime value) => RecalculatePlan();
+        partial void OnContractSearchTextChanged(string value) => ApplyContractFilters();
+        partial void OnSelectedStatusFilterChanged(string value) => ApplyContractFilters();
 
         public void Receive(DataChangedMessage message)
         {
@@ -209,6 +218,7 @@ namespace POS.ViewModels
             RecoveryAgents = new ObservableCollection<KhataAccount>(context.KhataAccounts.AsNoTracking()
                 .Where(a => a.PartyType == "Recovery Agent" && a.IsActive).OrderBy(a => a.Name).ToList());
             var customerNames = Customers.ToDictionary(customer => customer.Id, customer => customer.Name);
+            var customerPhones = Customers.ToDictionary(customer => customer.Id, customer => customer.Phone);
             var schedules = context.InstallmentSchedules.AsNoTracking().ToList();
             var allRows = context.InstallmentContracts.AsNoTracking().OrderByDescending(c => c.CreatedAt).ToList().Select(contract =>
             {
@@ -218,10 +228,11 @@ namespace POS.ViewModels
                 var next = contractSchedules.Where(s => (s.Status != "Paid" && s.AmountPaid < s.AmountDue) || (!s.LateFeeWaived && s.LateFeePaid < s.LateFee))
                     .OrderBy(s => s.DueDate).FirstOrDefault();
                 int overdueCount = contractSchedules.Count(s => s.Status == "Overdue");
-                return new InstallmentContractRow(contract, customerNames.GetValueOrDefault(contract.CustomerId, "Unknown customer"), paid, balance, next?.DueDate, overdueCount);
+                return new InstallmentContractRow(contract, customerNames.GetValueOrDefault(contract.CustomerId, "Unknown customer"), customerPhones.GetValueOrDefault(contract.CustomerId, string.Empty), paid, balance, next?.DueDate, overdueCount);
             }).ToList();
 
             Contracts = new ObservableCollection<InstallmentContractRow>(allRows);
+            ApplyContractFilters();
             var today = DateTime.Today;
             var todayIds = schedules.Where(s => s.Status != "Paid" && s.DueDate.Date == today && GetScheduleOutstanding(s) > 0m).Select(s => s.ContractId).ToHashSet();
             var upcomingIds = schedules.Where(s => s.Status != "Paid" && s.DueDate.Date > today && s.DueDate.Date <= today.AddDays(7) && GetScheduleOutstanding(s) > 0m).Select(s => s.ContractId).ToHashSet();
@@ -235,18 +246,37 @@ namespace POS.ViewModels
             OverdueTotal = schedules.Where(s => s.Status == "Overdue").Sum(GetScheduleOutstanding);
 
             if (SelectedContract != null)
-                SelectedContract = Contracts.FirstOrDefault(row => row.Contract.Id == SelectedContract.Contract.Id);
-            else if (Contracts.Count > 0)
-                SelectedContract = Contracts[0];
+                SelectedContract = FilteredContracts.FirstOrDefault(row => row.Contract.Id == SelectedContract.Contract.Id);
+            else if (FilteredContracts.Count > 0)
+                SelectedContract = FilteredContracts[0];
+        }
+
+        private void ApplyContractFilters()
+        {
+            string query = ContractSearchText.Trim();
+            IEnumerable<InstallmentContractRow> rows = Contracts;
+            if (!string.IsNullOrWhiteSpace(query))
+                rows = rows.Where(row => row.CustomerName.Contains(query, StringComparison.CurrentCultureIgnoreCase)
+                    || row.CustomerPhone.Contains(query, StringComparison.CurrentCultureIgnoreCase)
+                    || row.Contract.ContractNumber.Contains(query, StringComparison.CurrentCultureIgnoreCase)
+                    || row.Contract.RecoveryOfficer.Contains(query, StringComparison.CurrentCultureIgnoreCase));
+            if (!string.IsNullOrWhiteSpace(SelectedStatusFilter) && SelectedStatusFilter != "All statuses")
+                rows = rows.Where(row => row.Contract.Status.Equals(SelectedStatusFilter, StringComparison.OrdinalIgnoreCase));
+            FilteredContracts = new ObservableCollection<InstallmentContractRow>(rows);
+            if (SelectedContract != null && !FilteredContracts.Any(row => row.Contract.Id == SelectedContract.Contract.Id))
+                SelectedContract = FilteredContracts.FirstOrDefault();
         }
 
         partial void OnSelectedContractChanged(InstallmentContractRow? value)
         {
-            if (value == null) { SelectedSchedule.Clear(); SelectedGuarantors.Clear(); CustomerDocuments.Clear(); return; }
+            if (value == null) { SelectedSchedule.Clear(); SelectedPayments.Clear(); SelectedGuarantors.Clear(); CustomerDocuments.Clear(); return; }
             using var context = new AppDbContext();
             var items = context.InstallmentSchedules.AsNoTracking().Where(s => s.ContractId == value.Contract.Id)
                 .OrderBy(s => s.Sequence).ToList();
             SelectedSchedule = new ObservableCollection<InstallmentScheduleRow>(items.Select(item => new InstallmentScheduleRow(item, GetScheduleOutstanding(item))));
+            SelectedPayments = new ObservableCollection<InstallmentPaymentRow>(context.InstallmentPayments.AsNoTracking()
+                .Where(payment => payment.ContractId == value.Contract.Id).OrderByDescending(payment => payment.CreatedAt)
+                .Select(payment => new InstallmentPaymentRow(payment.ReceiptNumber, payment.CreatedAt, payment.Amount, payment.PaymentMode, payment.IsReversed ? "Reversed" : "Posted")).ToList());
             SelectedGuarantors = new ObservableCollection<InstallmentGuarantor>(context.InstallmentGuarantors.AsNoTracking()
                 .Where(g => g.ContractId == value.Contract.Id).ToList());
             var customerId = value.Contract.CustomerId;
@@ -557,6 +587,13 @@ namespace POS.ViewModels
             PaymentNotes = string.Empty;
             ErrorMessage = string.Empty;
             IsPaymentModalOpen = true;
+        }
+
+        [RelayCommand]
+        private void UseRemainingBalance()
+        {
+            if (SelectedContract != null)
+                PaymentAmount = SelectedContract.Outstanding.ToString("0.00", System.Globalization.CultureInfo.CurrentCulture);
         }
 
         [RelayCommand]

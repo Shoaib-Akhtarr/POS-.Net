@@ -231,6 +231,18 @@
                     </DataGrid.Columns>
                 </DataGrid>
             </Border>
+
+            <!-- Empty State -->
+            <Border Style="{StaticResource SurfaceCardStyle}" Visibility="{Binding HasProducts, Converter={StaticResource InverseBoolToVis}}">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="40">
+                    <Border Width="80" Height="80" CornerRadius="20" Background="{DynamicResource BgSubtleBrush}" HorizontalAlignment="Center" Margin="0,0,0,16">
+                        <Path Data="{StaticResource Icon_Inventory}" Fill="{DynamicResource TextMutedBrush}" Width="32" Height="32" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock Text="No Products Yet" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                    <TextBlock Text="Start by adding your first product to the catalog." FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,24" TextWrapping="Center" MaxWidth="300"/>
+                    <Button Command="{Binding OpenAddModalCommand}" Content="+ Add First Product" Style="{StaticResource PrimaryButtonStyle}" Padding="20,12" Visibility="{Binding IsOwner, Converter={StaticResource BoolToVis}}"/>
+                </StackPanel>
+            </Border>
         </Grid>
 
         <!-- Add / Edit Product Modal -->

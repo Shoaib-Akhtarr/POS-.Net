@@ -938,6 +938,32 @@ namespace POS.ViewModels
                 string successMsg = isEstimate ? $"Estimate #{sale.ReceiptNumber} saved." : $"Sale #{sale.ReceiptNumber} completed{fbrNote}.";
                 SetStatus(successMsg, isError: false);
                 NotificationService.ShowSuccess(successMsg);
+
+                // Offer SMS/WhatsApp receipt to customer (non-estimates only)
+                if (!isEstimate && SelectedCustomer != null && sale.CustomerId.HasValue)
+                {
+                    var settings = ThemeService.GetSettings();
+                    var receiptSms = SmsService.GenerateSmsReceipt(sale, settings);
+                    var receiptWhatsApp = SmsService.GenerateWhatsAppReceipt(sale, settings);
+
+                    // Auto-send SMS receipt (production would show confirmation dialog)
+                    try
+                    {
+                        var smsResult = await SmsService.SendSmsAsync(SelectedCustomer.Phone, receiptSms);
+                        if (smsResult.Success)
+                        {
+                            // Success - could notify user
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"(SMS) Failed: {smsResult.Message}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"(SMS) Exception: {ex.Message}");
+                    }
+                }
             }
             catch (Exception ex)
             {

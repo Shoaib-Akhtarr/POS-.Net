@@ -13,6 +13,9 @@ namespace POS.ViewModels
 {
     public sealed record SalesTrendPoint(string Label, decimal Amount, double BarHeight);
     public sealed record TopProductItem(string Name, string Category, string? ImagePath, int SalesCount, decimal Revenue, double ProgressPercent);
+    public sealed record PaymentMethodItem(string Method, decimal Amount, int Count, double Percent);
+    public sealed record DepartmentRevenueItem(string Department, decimal Amount, int Count, double Percent);
+    public sealed record MonthlyTrendPoint(string Month, decimal Amount, double PointHeight);
 
     public partial class HomeViewModel : ObservableObject, IRecipient<DataChangedMessage>
     {
@@ -43,6 +46,10 @@ namespace POS.ViewModels
         public List<string> AvailablePeriods { get; } = new() { "Today", "Last 7 Days", "Last 30 Days", "All Time" };
 
         [ObservableProperty] private ObservableCollection<SalesTrendPoint> _salesTrend = new();
+        [ObservableProperty] private ObservableCollection<PaymentMethodItem> _paymentMethodMix = new();
+        [ObservableProperty] private ObservableCollection<DepartmentRevenueItem> _departmentRevenue = new();
+        [ObservableProperty] private ObservableCollection<MonthlyTrendPoint> _monthlyTrend = new();
+        [ObservableProperty] private decimal _totalAmountPaid;
 
         public bool IsOwner => SessionService.IsOwner;
 
@@ -83,6 +90,9 @@ namespace POS.ViewModels
 
         [RelayCommand]
         private void QuickProducts() => WeakReferenceMessenger.Default.Send(new NavigationRequestMessage("Products"));
+
+        [RelayCommand]
+        private void QuickRecords() => WeakReferenceMessenger.Default.Send(new NavigationRequestMessage("Records"));
 
         [RelayCommand]
         private void ToggleLowStockModal()
@@ -241,6 +251,68 @@ namespace POS.ViewModels
                     point.Day.ToString("ddd dd"),
                     point.Amount,
                     maxDailySales > 0m ? (double)(point.Amount / maxDailySales * 112m) : 2d)));
+
+            // Payment Method Mix (last 30 days)
+            var thirtyDaysAgo = DateTime.Today.AddDays(-30);
+            var salesForPaymentMix = context.Sales
+                .Where(s => s.CreatedAt >= thirtyDaysAgo && s.RecordType == "Sale")
+                .ToList();
+            var paymentGroups = salesForPaymentMix
+                .GroupBy(s => s.PaymentMethod)
+                .Select(g => new { Method = g.Key, Amount = g.Sum(s => s.AmountPaid), Count = g.Count() })
+                .OrderByDescending(g => g.Amount)
+                .ToList();
+            decimal totalPaymentAmount = paymentGroups.Sum(g => g.Amount);
+            TotalAmountPaid = totalPaymentAmount;
+            PaymentMethodMix = new ObservableCollection<PaymentMethodItem>(paymentGroups.Select(g =>
+                new PaymentMethodItem(
+                    g.Method,
+                    g.Amount,
+                    g.Count,
+                    totalPaymentAmount > 0m ? Math.Round((double)(g.Amount / totalPaymentAmount * 100m), 2) : 0d)));
+
+            // Department Revenue (last 30 days)
+            var saleItemsForDept = context.SaleItems
+                .Include(i => i.Product)
+                .Where(i => i.Sale.CreatedAt >= thirtyDaysAgo && i.Sale.RecordType == "Sale")
+                .ToList();
+            var deptGroups = saleItemsForDept
+                .GroupBy(i => string.IsNullOrWhiteSpace(i.Product?.Category) ? "Uncategorized" : i.Product!.Category)
+                .Select(g => new { Department = g.Key, Amount = g.Sum(i => i.Price), Count = g.Count() })
+                .OrderByDescending(g => g.Amount)
+                .ToList();
+            decimal totalDeptAmount = deptGroups.Sum(g => g.Amount);
+            DepartmentRevenue = new ObservableCollection<DepartmentRevenueItem>(deptGroups.Select(g =>
+                new DepartmentRevenueItem(
+                    g.Department,
+                    g.Amount,
+                    g.Count,
+                    totalDeptAmount > 0m ? Math.Round((double)(g.Amount / totalDeptAmount * 100m), 2) : 0d)));
+
+            // Monthly Sales Trend (last 6 months)
+            var sixMonthsAgo = DateTime.Today.AddMonths(-5);
+            var monthlySales = context.Sales
+                .Where(s => s.CreatedAt >= sixMonthsAgo && s.RecordType == "Sale")
+                .ToList();
+            var monthLabels = Enumerable.Range(0, 6)
+                .Select(i => DateTime.Today.AddMonths(-i))
+                .OrderBy(d => d)
+                .Select(d => d.ToString("MMM yyyy"))
+                .ToList();
+            var monthlyGrouped = monthlySales
+                .GroupBy(s => new { s.CreatedAt.Year, s.CreatedAt.Month })
+                .Select(g => new { Month = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM yyyy"), Amount = g.Sum(s => s.TotalAmount) })
+                .ToList();
+            decimal maxMonthlyAmount = monthlyGrouped.Any() ? monthlyGrouped.Max(g => g.Amount) : 0m;
+            MonthlyTrend = new ObservableCollection<MonthlyTrendPoint>(monthLabels.Select(label =>
+            {
+                var data = monthlyGrouped.FirstOrDefault(g => g.Month == label);
+                var amount = data?.Amount ?? 0m;
+                return new MonthlyTrendPoint(
+                    label,
+                    amount,
+                    maxMonthlyAmount > 0m ? Math.Round((double)(amount / maxMonthlyAmount * 100m), 2) : 0d);
+            }));
 
             // Top Selling Products with Revenue & Progress
             var topItems = context.Products

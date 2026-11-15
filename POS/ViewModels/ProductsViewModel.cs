@@ -31,6 +31,7 @@ namespace POS.ViewModels
         [ObservableProperty] private ObservableCollection<Product> _allProducts = new();
         [ObservableProperty] private ObservableCollection<Product> _filteredProducts = new();
         [ObservableProperty] private ObservableCollection<string> _categories = new();
+        [ObservableProperty] private bool _hasProducts;
         [ObservableProperty] private string _searchText = string.Empty;
         [ObservableProperty] private string _selectedCategory = "All";
         [ObservableProperty] private decimal _totalRemainingStock;
@@ -124,6 +125,7 @@ namespace POS.ViewModels
 
             var result = query.OrderBy(p => p.Name).ToList();
             FilteredProducts = new ObservableCollection<Product>(result);
+            HasProducts = result.Count > 0;
 
             TotalRemainingStock = result.Sum(p => p.Quantity);
             TotalSKUs = result.Count;
@@ -283,6 +285,18 @@ namespace POS.ViewModels
                 };
                 context.Products.Add(product);
                 await context.SaveChangesAsync();
+                AuditLogService.Write("Products", product.Id, "INSERT", null, new
+                {
+                    product.Name,
+                    product.Barcode,
+                    product.Brand,
+                    product.Category,
+                    product.Unit,
+                    product.CostPrice,
+                    product.SellingPrice,
+                    product.Quantity,
+                    product.LowStockThreshold
+                });
                 NotificationService.ShowSuccess($"Product '{trimmedName}' added.");
             }
             else
@@ -293,6 +307,19 @@ namespace POS.ViewModels
                     ModalError = "Product record not found.";
                     return;
                 }
+
+                var oldProductValues = new
+                {
+                    dbProduct.Name,
+                    dbProduct.Barcode,
+                    dbProduct.Brand,
+                    dbProduct.Category,
+                    dbProduct.Unit,
+                    dbProduct.CostPrice,
+                    dbProduct.SellingPrice,
+                    dbProduct.Quantity,
+                    dbProduct.LowStockThreshold
+                };
 
                 dbProduct.Name = EditName.Trim();
                 dbProduct.Barcode = EditBarcode.Trim();
@@ -310,6 +337,18 @@ namespace POS.ViewModels
                 dbProduct.UpdatedAt = DateTime.Now;
 
                 await context.SaveChangesAsync();
+                AuditLogService.Write("Products", EditId, "UPDATE", oldProductValues, new
+                {
+                    dbProduct.Name,
+                    dbProduct.Barcode,
+                    dbProduct.Brand,
+                    dbProduct.Category,
+                    dbProduct.Unit,
+                    dbProduct.CostPrice,
+                    dbProduct.SellingPrice,
+                    dbProduct.Quantity,
+                    dbProduct.LowStockThreshold
+                });
                 NotificationService.ShowSuccess($"Product '{dbProduct.Name}' updated.");
             }
 
@@ -328,9 +367,11 @@ namespace POS.ViewModels
             var dbProduct = await context.Products.FindAsync(SelectedProduct.Id);
             if (dbProduct != null)
             {
+                var oldDeleteValues = new { dbProduct.Name, dbProduct.IsDeleted };
                 dbProduct.IsDeleted = true;
                 dbProduct.UpdatedAt = DateTime.Now;
                 await context.SaveChangesAsync();
+                AuditLogService.Write("Products", SelectedProduct.Id, "DELETE", oldDeleteValues, new { IsDeleted = true });
                 NotificationService.ShowWarning($"Product '{dbProduct.Name}' removed from catalog.");
             }
 

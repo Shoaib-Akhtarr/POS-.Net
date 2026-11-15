@@ -67,6 +67,9 @@ namespace POS.ViewModels
         [ObservableProperty] private decimal _todayShiftSalesVolume;
         [ObservableProperty] private string _roleDescription = string.Empty;
         [ObservableProperty] private string _userInitials = "U";
+        [ObservableProperty] private bool _isShiftOpen;
+        [ObservableProperty] private decimal _shiftOpeningCash;
+        [ObservableProperty] private string _shiftStatusMessage = string.Empty;
 
         public bool IsOwner => SessionService.IsOwner;
         public string CurrentUserName => SessionService.CurrentUserName;
@@ -97,6 +100,89 @@ namespace POS.ViewModels
                     OnPropertyChanged(nameof(CurrentUserRole));
                     RefreshData();
                 });
+            }
+        }
+
+        [RelayCommand]
+        private void OpenShift()
+        {
+            if (_isShiftOpen)
+            {
+                SetShiftStatus("Shift is already open.");
+                return;
+            }
+
+            if (_shiftOpeningCash <= 0m)
+            {
+                SetShiftStatus("Please enter opening cash amount.");
+                return;
+            }
+
+            try
+            {
+                using var context = new AppDbContext();
+                var newShift = new CashShift
+                {
+                    CashierId = SessionService.CurrentUser?.Id ?? 0,
+                    CashierName = SessionService.CurrentUserName,
+                    OpenedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                    OpeningCash = _shiftOpeningCash,
+                    Status = "Open",
+                    CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                };
+                context.CashShifts.Add(newShift);
+                context.SaveChanges();
+
+                _isShiftOpen = true;
+                _shiftOpeningCash = 0m;
+                SetShiftStatus($"Shift opened successfully for {SessionService.CurrentUserName}.");
+                NotificationService.ShowInfo($"Shift opened. Opening cash: Rs {_shiftOpeningCash:N0}");
+            }
+            catch (Exception ex)
+            {
+                SetShiftStatus($"Failed to open shift: {ex.Message}");
+                NotificationService.ShowError($"Shift open failed: {ex.Message}");
+            }
+        }
+
+        [RelayCommand]
+        private void CloseShift()
+        {
+            if (!_isShiftOpen)
+            {
+                SetShiftStatus("No shift is currently open.");
+                return;
+            }
+
+            // Calculate variance
+            decimal countedCash = _shiftOpeningCash; // In real app, this would be physical count
+            decimal expectedCash = _shiftOpeningCash; // Revenue + starting cash
+            decimal variance = countedCash - expectedCash;
+
+            try
+            {
+                using var context = new AppDbContext();
+                var shift = context.CashShifts.OrderByDescending(s => s.OpenedAt).FirstOrDefault(s => s.Status == "Open");
+                if (shift != null)
+                {
+                    shift.ClosedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                    shift.ClosingCash = countedCash;
+                    shift.ExpectedCash = _shiftOpeningCash;
+                    shift.Variance = variance;
+                    shift.Status = (Math.Abs(variance) < 0.01m) ? "Closed" : "Z-Reported";
+
+                    context.SaveChanges();
+                }
+
+                _isShiftOpen = false;
+                _shiftOpeningCash = 0m;
+                SetShiftStatus($"Shift closed. Variance: Rs {variance:N0} {(variance >= 0 ? " (Surplus)" : " (Shortage)")}");
+                NotificationService.ShowInfo($"Shift closed. Variance: Rs {variance:N0}");
+            }
+            catch (Exception ex)
+            {
+                SetShiftStatus($"Failed to close shift: {ex.Message}");
+                NotificationService.ShowError($"Shift close failed: {ex.Message}");
             }
         }
 
@@ -460,6 +546,12 @@ namespace POS.ViewModels
             {
                 NotificationService.ShowSuccess(message);
             }
+        }
+
+        private void SetShiftStatus(string message)
+        {
+            ShiftStatusMessage = message;
+            SetStatus(message, false);
         }
     }
 }

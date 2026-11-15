@@ -116,6 +116,42 @@ namespace POS.Services
                         WHERE CAST(UnitPrice AS REAL) = 0 AND CAST(Price AS REAL) > 0;
                     ");
 
+                    ExecuteNonQuery(conn, @"
+                        CREATE TABLE IF NOT EXISTS AuditLogs (
+                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            TableName TEXT NOT NULL DEFAULT '',
+                            RecordId INTEGER NOT NULL DEFAULT 0,
+                            Action TEXT NOT NULL DEFAULT '',
+                            OldValues TEXT NULL,
+                            NewValues TEXT NULL,
+                            CreatedBy TEXT NOT NULL DEFAULT '',
+                            CreatedByUserId INTEGER NULL,
+                            CreatedAt TEXT NOT NULL DEFAULT ''
+                        );
+                        CREATE INDEX IF NOT EXISTS IX_AuditLogs_TableDate ON AuditLogs(TableName, CreatedAt);
+                        CREATE INDEX IF NOT EXISTS IX_AuditLogs_CreatedBy ON AuditLogs(CreatedBy);
+                    ");
+
+                    ExecuteNonQuery(conn, @"
+                        CREATE TABLE IF NOT EXISTS CashShifts (
+                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            CashierId INTEGER NOT NULL DEFAULT 0,
+                            CashierName TEXT NOT NULL DEFAULT '',
+                            OpenedAt TEXT NOT NULL DEFAULT '',
+                            ClosedAt TEXT NULL,
+                            OpeningCash TEXT NOT NULL DEFAULT '0',
+                            ClosingCash TEXT NULL DEFAULT NULL,
+                            ExpectedCash TEXT NOT NULL DEFAULT '0',
+                            Variance TEXT NULL DEFAULT NULL,
+                            Status TEXT NOT NULL DEFAULT 'Open',
+                            Notes TEXT NULL DEFAULT '',
+                            CreatedAt TEXT NOT NULL DEFAULT '',
+                            ZReportId INTEGER NULL DEFAULT NULL
+                        );
+                        CREATE INDEX IF NOT EXISTS IX_CashShifts_Cashier ON CashShifts(CashierName);
+                        CREATE INDEX IF NOT EXISTS IX_CashShifts_Status ON CashShifts(Status);
+                    ");
+
                     EnsureLedgerAccounts(conn);
                     EnsureColumns(conn, "PaymentInstruments", new Dictionary<string, string>
                     {

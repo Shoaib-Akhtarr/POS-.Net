@@ -23,6 +23,8 @@ namespace POS.Models
         public DbSet<InstallmentSchedule> InstallmentSchedules { get; set; }
         public DbSet<InstallmentPayment> InstallmentPayments { get; set; }
         public DbSet<InstallmentPaymentAllocation> InstallmentPaymentAllocations { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<CashShift> CashShifts { get; set; }
 
         public static string GetAppDataDirectory()
         {
