@@ -15,6 +15,8 @@
                 <Grid Margin="0,0,0,20">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
@@ -27,8 +29,13 @@
                         <TextBlock Text="Aizaz Fareed Center &amp; Al-Kuwait Electronics • Real-time Store Intelligence" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,3,0,0"/>
                     </StackPanel>
 
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
+                        <TextBlock Text="{Binding LastRefreshedLabel}" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <Button Command="{Binding RefreshDashboardCommand}" Content="↻" ToolTip="Refresh dashboard" Style="{StaticResource GhostButtonStyle}" Padding="8,5" FontSize="16"/>
+                    </StackPanel>
+
                     <!-- Period Filter Pills -->
-                    <Border Grid.Column="1" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="18" Padding="4">
+                    <Border Grid.Column="3" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="18" Padding="4">
                         <ItemsControl ItemsSource="{Binding AvailablePeriods}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -79,11 +86,12 @@
 
                 <!-- QUICK ACTIONS ROW (Inspired by Medipulse & Starline POS) -->
                 <Grid Margin="0,0,0,20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="12"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="12"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="12"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="12"/>
                         <ColumnDefinition Width="*"/>
@@ -92,24 +100,24 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Action 1: New Sale (F2) -->
-                    <Button Grid.Column="0" Command="{Binding QuickNewSaleCommand}" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0">
+                    <Button Grid.Row="0" Grid.Column="0" Command="{Binding QuickNewSaleCommand}" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
-                                <Border Style="{StaticResource SurfaceCardStyle}" Padding="16,14" Background="{DynamicResource BgSurfaceBrush}">
+                                <Border Style="{StaticResource SurfaceCardStyle}" Padding="16,14" Background="{DynamicResource PrimaryBrush}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <Border Grid.Column="0" Width="38" Height="38" CornerRadius="10" Background="{DynamicResource PrimarySoftBrush}" Margin="0,0,12,0">
-                                            <Path Data="{StaticResource Icon_POS}" Fill="{DynamicResource PrimaryBrush}" Width="18" Height="18" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="0" Width="38" Height="38" CornerRadius="10" Background="#2FFFFFFF" Margin="0,0,12,0">
+                                            <Path Data="{StaticResource Icon_POS}" Fill="White" Width="18" Height="18" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         </Border>
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                            <TextBlock Text="New Sale (F2)" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                            <TextBlock Text="Fast counter checkout" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0"/>
+                                            <TextBlock Text="New Sale (F2)" FontSize="13" FontWeight="Bold" Foreground="White"/>
+                                            <TextBlock Text="Fast counter checkout" FontSize="11" Foreground="#CCFFFFFF" Margin="0,2,0,0"/>
                                         </StackPanel>
-                                        <TextBlock Grid.Column="2" Text="→" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="2" Text="→" FontSize="14" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                                     </Grid>
                                 </Border>
                             </ControlTemplate>
@@ -117,7 +125,7 @@
                     </Button>
 
                     <!-- Action 2: Stock Procurement -->
-                    <Button Grid.Column="2" Command="{Binding QuickStockInCommand}" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0">
+                    <Button Grid.Row="0" Grid.Column="2" Command="{Binding QuickStockInCommand}" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border Style="{StaticResource SurfaceCardStyle}" Padding="16,14" Background="{DynamicResource BgSurfaceBrush}">
@@ -142,7 +150,7 @@
                     </Button>
 
                     <!-- Action 3: Party Khata -->
-                    <Button Grid.Column="4" Command="{Binding QuickKhataCommand}" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0">
+                    <Button Grid.Row="0" Grid.Column="4" Command="{Binding QuickKhataCommand}" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border Style="{StaticResource SurfaceCardStyle}" Padding="16,14" Background="{DynamicResource BgSurfaceBrush}">
@@ -167,7 +175,7 @@
                     </Button>
 
                     <!-- Action 4: Installment Plans -->
-                    <Button Grid.Column="6" Command="{Binding QuickInstallmentsCommand}" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0">
+                    <Button Grid.Row="2" Grid.Column="0" Command="{Binding QuickInstallmentsCommand}" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border Style="{StaticResource SurfaceCardStyle}" Padding="16,14" Background="{DynamicResource BgSurfaceBrush}">
@@ -192,7 +200,7 @@
                     </Button>
 
                     <!-- Action 5: Records & Reports -->
-                    <Button Grid.Column="8" Command="{Binding QuickRecordsCommand}" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0">
+                    <Button Grid.Row="2" Grid.Column="2" Command="{Binding QuickRecordsCommand}" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border Style="{StaticResource SurfaceCardStyle}" Padding="16,14" Background="{DynamicResource BgSurfaceBrush}">
@@ -219,11 +227,12 @@
 
                 <!-- KPI METRICS SUMMARY GRID -->
                 <Grid Margin="0,0,0,20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="12"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="12"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="12"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="12"/>
                         <ColumnDefinition Width="*"/>
@@ -232,7 +241,7 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Card 1: Revenue -->
-                    <Border Grid.Column="0" Style="{StaticResource SurfaceCardStyle}" Padding="18">
+                    <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource SurfaceCardStyle}" Padding="18">
                         <StackPanel>
                             <Grid Margin="0,0,0,10">
                                 <Border Width="32" Height="32" CornerRadius="8" Background="{DynamicResource SuccessSoftBrush}" HorizontalAlignment="Left">
@@ -247,7 +256,7 @@
                     </Border>
 
                     <!-- Card 2: Net Profit (Owner Only) -->
-                    <Border Grid.Column="2" Style="{StaticResource SurfaceCardStyle}" Padding="18">
+                    <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource SurfaceCardStyle}" Padding="18">
                         <StackPanel>
                             <Grid Margin="0,0,0,10">
                                 <Border Width="32" Height="32" CornerRadius="8" Background="{DynamicResource PrimarySoftBrush}" HorizontalAlignment="Left">
@@ -267,7 +276,7 @@
                     </Border>
 
                     <!-- Card 3: Invoices / Orders -->
-                    <Border Grid.Column="4" Style="{StaticResource SurfaceCardStyle}" Padding="18">
+                    <Border Grid.Row="0" Grid.Column="4" Style="{StaticResource SurfaceCardStyle}" Padding="18">
                         <StackPanel>
                             <Grid Margin="0,0,0,10">
                                 <Border Width="32" Height="32" CornerRadius="8" Background="#F0FDF4" HorizontalAlignment="Left">
@@ -282,7 +291,7 @@
                     </Border>
 
                     <!-- Card 4: Customer Khata Dues -->
-                    <Border Grid.Column="6" Style="{StaticResource SurfaceCardStyle}" Padding="18">
+                    <Border Grid.Row="2" Grid.Column="0" Style="{StaticResource SurfaceCardStyle}" Padding="18">
                         <StackPanel>
                             <Grid Margin="0,0,0,10">
                                 <Border Width="32" Height="32" CornerRadius="8" Background="{DynamicResource WarningSoftBrush}" HorizontalAlignment="Left">
@@ -297,7 +306,7 @@
                     </Border>
 
                     <!-- Card 5: Low Stock Alerts -->
-                    <Button Grid.Column="8" Command="{Binding ToggleLowStockModalCommand}" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0">
+                    <Button Grid.Row="2" Grid.Column="2" Command="{Binding ToggleLowStockModalCommand}" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border Style="{StaticResource SurfaceCardStyle}" Padding="18" Background="{DynamicResource BgSurfaceBrush}">
@@ -318,10 +327,42 @@
                             </ControlTemplate>
                         </Button.Template>
                     </Button>
+
+                    <Button Grid.Row="2" Grid.Column="4" Command="{Binding QuickInstallmentsCommand}" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Style="{StaticResource SurfaceCardStyle}" Padding="18" Background="{DynamicResource BgSurfaceBrush}">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid>
+                                            <TextBlock Text="OPERATIONS WATCH" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                                            <TextBlock Text="Open →" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Right"/>
+                                        </Grid>
+                                        <Grid Grid.Row="1" Margin="0,9,0,0">
+                                            <TextBlock Text="Overdue installments" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                            <TextBlock Text="{Binding OverdueInstallmentCount, StringFormat='{}{0} accounts'}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WarningBrush}" HorizontalAlignment="Right"/>
+                                        </Grid>
+                                        <Grid Grid.Row="2" Margin="0,6,0,0">
+                                            <TextBlock Text="FBR sync queue" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                            <TextBlock Text="{Binding FbrOfflinePendingCount, StringFormat='{}{0} pending'}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource DangerBrush}" HorizontalAlignment="Right"/>
+                                        </Grid>
+                                    </Grid>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
                 </Grid>
 
                 <!-- DUAL-COLUMN OPERATIONAL DASHBOARD (62% Chart & Health / 38% Top Products) -->
                 <Grid Margin="0,0,0,20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="1.6*"/>
                         <ColumnDefinition Width="16"/>
@@ -423,7 +464,7 @@
                     </StackPanel>
 
                     <!-- ANALYTICS CHARTS ROW -->
-                    <Grid Grid.Row="3" Margin="0,24,0,0">
+                    <Grid Grid.Row="1" Grid.ColumnSpan="3" Margin="0,20,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="12"/>
@@ -444,11 +485,20 @@
                                     <TextBlock Text="Last 30 days · By amount collected" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <Grid Grid.Row="1">
-                                    <Canvas x:Name="PaymentDonutCanvas" Width="180" Height="180" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <TextBlock Canvas.Left="84" Canvas.Top="84" Text="{Binding TotalAmountPaid, StringFormat='Rs {0:N0}'}" FontSize="16" FontWeight="Black" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        <TextBlock Canvas.Left="72" Canvas.Top="106" Text="Collected" FontSize="9" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Canvas>
-                                    <ItemsControl Grid.Row="1" ItemsSource="{Binding PaymentMethodMix}" Margin="10,0,10,10" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="190"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid Grid.Row="0" Width="180" Height="180" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Canvas x:Name="PaymentDonutCanvas" Width="180" Height="180"/>
+                                        <Border Width="104" Height="104" CornerRadius="52" Background="{DynamicResource BgSurfaceBrush}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding TotalAmountPaid, StringFormat='Rs {0:N0}'}" FontSize="16" FontWeight="Black" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="Collected" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                    <ItemsControl Grid.Row="1" ItemsSource="{Binding PaymentMethodMix}" Margin="4,8,4,0" HorizontalAlignment="Center">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
                                                 <WrapPanel Orientation="Horizontal"/>
@@ -457,7 +507,6 @@
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <StackPanel Orientation="Horizontal" Margin="6,4">
-                                                    <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2" Fill="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
                                                     <TextBlock Text="{Binding Method}" FontSize="9.5" Foreground="{DynamicResource TextSecondaryBrush}" Margin="4,0,0,0" VerticalAlignment="Center"/>
                                                     <TextBlock Text="{Binding Percent, StringFormat=' {0:F1}%'}" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="4,0,0,0" VerticalAlignment="Center"/>
                                                 </StackPanel>
@@ -510,8 +559,8 @@
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
                                 <StackPanel Grid.Row="0" Margin="0,0,0,16">
-                                    <TextBlock Text="MONTHLY SALES TREND" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                    <TextBlock Text="Last 6 months · Net revenue" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0"/>
+                                    <TextBlock Text="MONTHLY SALES" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    <TextBlock Text="Last 6 months · Revenue by month" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <Grid Grid.Row="1">
                                     <ItemsControl ItemsSource="{Binding MonthlyTrend}" Margin="0,10,0,0">
@@ -544,6 +593,7 @@
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
 
@@ -555,7 +605,16 @@
                                 <Button Command="{Binding QuickProductsCommand}" Content="View All →" Style="{StaticResource GhostButtonStyle}" Padding="6,2" FontSize="11" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                             </Grid>
 
-                            <ItemsControl Grid.Row="1" ItemsSource="{Binding TopSellingProducts}">
+                            <Grid Grid.Row="1" Margin="0,0,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="54"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="1" Text="PRODUCT / DEPARTMENT" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
+                                <TextBlock Grid.Column="2" Text="REVENUE / UNITS" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Right"/>
+                            </Grid>
+                            <ItemsControl Grid.Row="2" ItemsSource="{Binding TopSellingProducts}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,0,1" Padding="0,10">

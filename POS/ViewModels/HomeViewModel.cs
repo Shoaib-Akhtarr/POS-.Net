@@ -50,6 +50,7 @@ namespace POS.ViewModels
         [ObservableProperty] private ObservableCollection<DepartmentRevenueItem> _departmentRevenue = new();
         [ObservableProperty] private ObservableCollection<MonthlyTrendPoint> _monthlyTrend = new();
         [ObservableProperty] private decimal _totalAmountPaid;
+        [ObservableProperty] private string _lastRefreshedLabel = "Updated now";
 
         public bool IsOwner => SessionService.IsOwner;
 
@@ -107,6 +108,9 @@ namespace POS.ViewModels
         [RelayCommand]
         private void RestoreAlert() => IsAlertDismissed = false;
 
+        [RelayCommand]
+        private void RefreshDashboard() => RefreshData();
+
         public void RefreshData()
         {
             using var context = new AppDbContext();
@@ -119,6 +123,7 @@ namespace POS.ViewModels
             };
 
             var periodTransactions = context.Sales
+                .AsNoTracking()
                 .Include(s => s.SaleItems)
                 .Where(s => s.CreatedAt >= startDate && s.RecordType != "Estimate" && s.RecordType != "Payment")
                 .ToList();
@@ -136,7 +141,17 @@ namespace POS.ViewModels
             CurrentUserName = SessionService.CurrentUserName;
 
             // Load product cost dictionary once to avoid N+1 queries
-            var productCosts = context.Products.ToDictionary(p => p.Id, p => p.CostPrice);
+            var productIdsNeedingCost = periodTransactions
+                .SelectMany(sale => sale.SaleItems)
+                .Where(item => item.UnitCost <= 0m && item.ProductId.HasValue)
+                .Select(item => item.ProductId!.Value)
+                .Distinct()
+                .ToList();
+            var productCosts = productIdsNeedingCost.Count == 0
+                ? new Dictionary<int, decimal>()
+                : context.Products.AsNoTracking()
+                    .Where(product => productIdsNeedingCost.Contains(product.Id))
+                    .ToDictionary(product => product.Id, product => product.CostPrice);
 
             decimal netProfit = 0m;
             foreach (var sale in salesList)
@@ -166,29 +181,28 @@ namespace POS.ViewModels
             }
             WeeklyProfit = netProfit;
 
-            WeeklyPurchasesSum = context.Purchases
+            WeeklyPurchasesSum = context.Purchases.AsNoTracking()
                 .Where(p => p.PurchaseDate >= startDate)
-                .ToList()
-                .Sum(p => p.TotalCost);
+                .Select(p => (decimal?)p.TotalCost)
+                .Sum() ?? 0m;
 
-            TotalPendingDues = context.Customers
-                .ToList()
+            TotalPendingDues = context.Customers.AsNoTracking()
                 .Where(c => c.TotalDues > 0m)
-                .Sum(c => c.TotalDues);
+                .Select(c => (decimal?)c.TotalDues)
+                .Sum() ?? 0m;
 
             // Khata party balances (Receivables vs Payables)
-            var accounts = context.KhataAccounts.AsNoTracking().ToList();
-            var entries = context.KhataEntries.AsNoTracking().ToList();
-            var balances = entries.GroupBy(e => e.AccountId)
-                .ToDictionary(g => g.Key, g => g.Sum(e => e.Debit - e.Credit));
+            var balances = context.KhataEntries.AsNoTracking()
+                .GroupBy(entry => entry.AccountId)
+                .Select(group => group.Sum(entry => entry.Debit - entry.Credit))
+                .ToList();
 
             decimal receivable = 0m;
             decimal payable = 0m;
-            foreach (var account in accounts)
+            foreach (var balance in balances)
             {
-                decimal bal = balances.GetValueOrDefault(account.Id, 0m);
-                if (bal > 0) receivable += bal;
-                else if (bal < 0) payable += Math.Abs(bal);
+                if (balance > 0) receivable += balance;
+                else if (balance < 0) payable += Math.Abs(balance);
             }
             KhataTotalReceivable = receivable;
             KhataTotalPayable = payable;
@@ -196,12 +210,14 @@ namespace POS.ViewModels
             // Active Installments Portfolio (Capital in market)
             var activeContracts = context.InstallmentContracts.AsNoTracking()
                 .Where(c => c.Status == "Active")
+                .Select(c => new { c.TotalPayable, c.DownPayment })
                 .ToList();
             ActiveInstallmentPortfolio = activeContracts.Sum(c => Math.Max(0m, c.TotalPayable - c.DownPayment));
 
             // Overdue Installments
             var overdueSchedules = context.InstallmentSchedules.AsNoTracking()
                 .Where(s => s.Status == "Overdue")
+                .Select(s => new { s.AmountDue, s.AmountPaid, s.LateFee, s.LateFeePaid, s.LateFeeWaived })
                 .ToList();
             OverdueInstallmentCount = overdueSchedules.Count;
             OverdueInstallmentAmount = overdueSchedules.Sum(s => Math.Max(0m, s.AmountDue - s.AmountPaid) + (s.LateFeeWaived ? 0m : Math.Max(0m, s.LateFee - s.LateFeePaid)));
@@ -211,9 +227,8 @@ namespace POS.ViewModels
             OnPropertyChanged(nameof(HasFbrOfflinePending));
 
             // Low Stock (< threshold)
-            var activeProducts = context.Products.Where(p => !p.IsDeleted).ToList();
-            var lowStock = activeProducts
-                .Where(p => p.Quantity <= p.LowStockThreshold)
+            var lowStock = context.Products.AsNoTracking()
+                .Where(p => !p.IsDeleted && p.Quantity <= p.LowStockThreshold)
                 .OrderBy(p => p.Quantity)
                 .ToList();
 
@@ -233,10 +248,14 @@ namespace POS.ViewModels
                 .ToList();
 
             var recentSales = context.Sales
+                .AsNoTracking()
                 .Where(s => s.CreatedAt >= chartStart && s.RecordType == "Sale")
+                .Select(s => new { s.CreatedAt, s.TotalAmount })
                 .ToList();
             var recentReturns = context.Sales
+                .AsNoTracking()
                 .Where(s => s.CreatedAt >= chartStart && s.RecordType == "Return")
+                .Select(s => new { s.CreatedAt, s.TotalAmount })
                 .ToList();
 
             var dailySales = last7Days.Select(day =>
@@ -254,10 +273,8 @@ namespace POS.ViewModels
 
             // Payment Method Mix (last 30 days)
             var thirtyDaysAgo = DateTime.Today.AddDays(-30);
-            var salesForPaymentMix = context.Sales
+            var paymentGroups = context.Sales.AsNoTracking()
                 .Where(s => s.CreatedAt >= thirtyDaysAgo && s.RecordType == "Sale")
-                .ToList();
-            var paymentGroups = salesForPaymentMix
                 .GroupBy(s => s.PaymentMethod)
                 .Select(g => new { Method = g.Key, Amount = g.Sum(s => s.AmountPaid), Count = g.Count() })
                 .OrderByDescending(g => g.Amount)
@@ -272,12 +289,12 @@ namespace POS.ViewModels
                     totalPaymentAmount > 0m ? Math.Round((double)(g.Amount / totalPaymentAmount * 100m), 2) : 0d)));
 
             // Department Revenue (last 30 days)
-            var saleItemsForDept = context.SaleItems
-                .Include(i => i.Product)
+            var saleItemsForDept = context.SaleItems.AsNoTracking()
                 .Where(i => i.Sale.CreatedAt >= thirtyDaysAgo && i.Sale.RecordType == "Sale")
+                .Select(i => new { Department = i.Product == null ? "Uncategorized" : i.Product.Category, i.Price })
                 .ToList();
             var deptGroups = saleItemsForDept
-                .GroupBy(i => string.IsNullOrWhiteSpace(i.Product?.Category) ? "Uncategorized" : i.Product!.Category)
+                .GroupBy(i => string.IsNullOrWhiteSpace(i.Department) ? "Uncategorized" : i.Department)
                 .Select(g => new { Department = g.Key, Amount = g.Sum(i => i.Price), Count = g.Count() })
                 .OrderByDescending(g => g.Amount)
                 .ToList();
@@ -292,7 +309,9 @@ namespace POS.ViewModels
             // Monthly Sales Trend (last 6 months)
             var sixMonthsAgo = DateTime.Today.AddMonths(-5);
             var monthlySales = context.Sales
+                .AsNoTracking()
                 .Where(s => s.CreatedAt >= sixMonthsAgo && s.RecordType == "Sale")
+                .Select(s => new { s.CreatedAt, s.TotalAmount })
                 .ToList();
             var monthLabels = Enumerable.Range(0, 6)
                 .Select(i => DateTime.Today.AddMonths(-i))
@@ -341,6 +360,7 @@ namespace POS.ViewModels
                     p.SalesCount > 0 ? p.SalesCount * p.SellingPrice : p.SellingPrice,
                     Math.Min(100.0, Math.Max(15.0, (double)p.SalesCount / maxSalesCount * 100.0))
                 )));
+            LastRefreshedLabel = $"Updated {DateTime.Now:hh:mm tt}";
         }
     }
 }
