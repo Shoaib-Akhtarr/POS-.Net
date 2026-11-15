@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using POS.Services;
@@ -11,6 +13,19 @@ namespace POS
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            AppDomain.CurrentDomain.UnhandledException += (s, args) =>
+            {
+                try { File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "crash.log"), args.ExceptionObject?.ToString() ?? "Unknown AppDomain exception"); } catch { }
+            };
+            DispatcherUnhandledException += (s, args) =>
+            {
+                try { File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "crash_dispatcher.log"), args.Exception?.ToString() ?? "Unknown Dispatcher exception"); } catch { }
+            };
+            TaskScheduler.UnobservedTaskException += (s, args) =>
+            {
+                try { File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "crash_task.log"), args.Exception?.ToString() ?? "Unknown Task exception"); } catch { }
+            };
+
             base.OnStartup(e);
 
             ShortcutService.EnsureShortcut();
